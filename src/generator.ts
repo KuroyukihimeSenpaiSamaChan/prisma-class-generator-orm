@@ -3,13 +3,11 @@ import { parseEnvValue } from '@prisma/internals'
 import * as path from 'path'
 import { GeneratorPathNotExists } from './error-handler'
 import { PrismaConvertor } from './convertor'
-import {
-	parseBoolean,
-	parseNumber
-} from './util'
+import { parseBoolean, parseNumber } from './util'
 import * as prettier from 'prettier'
 import { FileComponent } from './components/file.component'
 import { PrismaModelComponent } from './components/prismamodel.component'
+import { PrismaDecoComponent } from './components/prismadeco.component'
 
 export const GENERATOR_NAME = 'Prisma Class Generator'
 
@@ -20,14 +18,6 @@ export const PrismaClassGeneratorOptions = {
 	},
 	separateRelationFields: {
 		desc: 'separate relation fields',
-		defaultValue: false,
-	},
-	useSwagger: {
-		desc: 'use swagger decorstor',
-		defaultValue: true,
-	},
-	useGraphQL: {
-		desc: 'use graphql',
 		defaultValue: false,
 	},
 	useUndefinedDefault: {
@@ -90,7 +80,7 @@ export class PrismaClassGenerator {
 			throw new GeneratorPathNotExists()
 		}
 		let finalPath = path.relative(this.rootPath, this.clientPath)
-		if(finalPath.includes('@prisma'))
+		if (finalPath.includes('@prisma'))
 			finalPath = finalPath.substring(finalPath.indexOf('@prisma'))
 		return finalPath.replace('node_modules/', '')
 	}
@@ -142,6 +132,7 @@ export class PrismaClassGenerator {
 		})
 
 		files.push(new PrismaModelComponent(output, classes));
+		// files.push(new PrismaDecoComponent(output));
 
 		files.forEach((fileRow) => {
 			fileRow.write(config.dryRun)

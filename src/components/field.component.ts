@@ -1,4 +1,8 @@
-import { FIELD_TEMPLATE, FIELD_GETTER_ONE_TEMPLATE, FIELD_GETTER_MANY_TEMPLATE } from '../templates/field.template'
+import {
+	FIELD_TEMPLATE,
+	FIELD_GETTER_ONE_TEMPLATE,
+	FIELD_GETTER_MANY_TEMPLATE,
+} from '../templates/field.template'
 import { Echoable } from '../interfaces/echoable'
 import { BaseComponent } from './base.component'
 
@@ -8,11 +12,11 @@ export class FieldComponent extends BaseComponent implements Echoable {
 	useUndefinedDefault: boolean
 	isId: boolean
 	relation?: {
-		hasFieldForOne?: FieldComponent,
-		justLinkedToMany?: FieldComponent,
-		alsoHasFieldForOne?: FieldComponent,
-		relationFromFields?: string[],
-		relationToFields?: string[],
+		hasFieldForOne?: FieldComponent
+		justLinkedToMany?: FieldComponent
+		alsoHasFieldForOne?: FieldComponent
+		relationFromFields?: string[]
+		relationToFields?: string[]
 		name?: string
 	}
 	default?: string
@@ -20,13 +24,18 @@ export class FieldComponent extends BaseComponent implements Echoable {
 
 	echo = () => {
 		let name = this.name
-		if (this.nullable === true && !this.relation) {
+		if (!this.relation && !this.isId) {
 			name += '?'
 		}
 
-		if(this.isId){
+		let decorators = ''
+		if (this.isId) {
 			this.default = '-1'
+			// decorators = '@PrismaDecorators.id'
 		}
+		// else if (!this.nullable) {
+		// 	decorators = '@PrismaDecorators.required'
+		// }
 
 		let defaultValue = ''
 		if (this.default) {
@@ -37,37 +46,58 @@ export class FieldComponent extends BaseComponent implements Echoable {
 			}
 		}
 
-		if(!this.relation){
+		if (!this.relation) {
 			return FIELD_TEMPLATE.replaceAll('#!{NAME}', name)
-			.replaceAll('#!{TYPE}', this.type)
-			.replaceAll('#!{DECORATORS}', this.echoDecorators())
-			.replaceAll('#!{DEFAULT}', defaultValue)
-		}
-		else{
-			if(this.relation.hasFieldForOne === this){
-					return FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
 				.replaceAll('#!{TYPE}', this.type)
-				.replaceAll('#!{RELATION_FROM}', this.relation.relationFromFields[0])
-				.replaceAll('#!{RELATION_TO}', this.relation.relationToFields[0])
-			}
-			else if(this.relation.alsoHasFieldForOne === this){
+				.replaceAll('#!{DECORATORS}', decorators)
+				.replaceAll('#!{DEFAULT}', defaultValue)
+		} else {
+			if (this.relation.hasFieldForOne === this) {
 				return FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
-				.replaceAll('#!{TYPE}', this.type)
-				.replaceAll('#!{RELATION_TO}', this.relation.relationFromFields[0])
-				.replaceAll('#!{RELATION_FROM}', this.relation.relationToFields[0])
-			}
-			else {
-					return FIELD_GETTER_MANY_TEMPLATE.replaceAll('#!{NAME}', name)
-				.replaceAll('#!{TYPE}', this.type)
-				.replaceAll('#!{TYPE_BASE}', this.type.substring(0, this.type.length-2))
-				.replaceAll('#!{RELATION_TO}', this.relation.relationFromFields[0])
-				.replaceAll('#!{RELATION_FROM}', this.relation.relationToFields[0])
+					.replaceAll('#!{TYPE}', `_${this.type}`)
+					.replaceAll(
+						'#!{RELATION_FROM}',
+						this.relation.relationFromFields[0],
+					)
+					.replaceAll(
+						'#!{RELATION_TO}',
+						this.relation.relationToFields[0],
+					)
+			} else if (this.relation.alsoHasFieldForOne === this) {
+				return FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
+					.replaceAll('#!{TYPE}', `_${this.type}`)
+					.replaceAll(
+						'#!{RELATION_TO}',
+						this.relation.relationFromFields[0],
+					)
+					.replaceAll(
+						'#!{RELATION_FROM}',
+						this.relation.relationToFields[0],
+					)
+			} else {
+				return FIELD_GETTER_MANY_TEMPLATE.replaceAll('#!{NAME}', name)
+					.replaceAll('#!{TYPE}', `_${this.type}`)
+					.replaceAll(
+						'#!{TYPE_BASE}',
+						`_${this.type.substring(0, this.type.length - 2)}`,
+					)
+					.replaceAll(
+						'#!{RELATION_TO}',
+						this.relation.relationFromFields[0],
+					)
+					.replaceAll(
+						'#!{RELATION_FROM}',
+						this.relation.relationToFields[0],
+					)
 			}
 		}
-
 	}
 
-	constructor(obj: { name: string; useUndefinedDefault: boolean, isId: boolean }) {
+	constructor(obj: {
+		name: string
+		useUndefinedDefault: boolean
+		isId: boolean
+	}) {
 		super(obj)
 	}
 }

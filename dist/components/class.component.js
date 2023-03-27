@@ -11,34 +11,71 @@ class ClassComponent extends base_component_1.BaseComponent {
         this.extra = '';
         this.echo = () => {
             const fieldsNonNullable = this.fields.reduce((acc, _field) => {
-                if (_field.nullable || _field.relation)
+                if (_field.nullable ||
+                    _field.relation ||
+                    _field.default !== undefined) {
                     return acc;
+                }
                 acc.push(_field);
                 return acc;
             }, []);
             let constructor = '';
             if (fieldsNonNullable.length > 0) {
                 let declaration = '';
+                let initialization = '';
                 for (const _field of fieldsNonNullable) {
                     if (_field.isId)
                         continue;
-                    declaration += `${_field.name}: ${_field.type}, `;
+                    declaration += `${_field.name}?: ${_field.type}, `;
+                    initialization += `this.${_field.name} = obj.${_field.name}
+				`;
                 }
-                constructor =
-                    `
+                constructor = `
 			constructor(obj: {${declaration}}){
+				${initialization}
 				Object.assign(this, obj)
 			}
 			`;
             }
             const prismamodel_type = `Prisma.${this.name}Delegate<undefined>`;
             const model_getter = `get model(): ${prismamodel_type} {
-			return ${this.name}.model
+			return _${this.name}.model
 		}`;
             let fromId = '';
             const fieldId = this.fields.filter((_field) => _field.isId);
             if (fieldId.length === 1) {
-                fromId = idmodel_template_1.IDMODEL_TEMPLATE.replace('#!{FIELD_NAME}', fieldId[0].name);
+                const relationFields = this.fields.reduce((acc, _field) => {
+                    if (_field.relation)
+                        acc.push(_field.relation.relationFromFields[0]);
+                    return acc;
+                }, []);
+                let fieldsDataCreate = '';
+                let fieldsDataUpdate = '';
+                for (const _field of this.fields) {
+                    if (_field.relation !== void 0)
+                        continue;
+                    fieldsDataUpdate += `${_field.name}: this.${_field.name},`;
+                    if (_field.isId && !relationFields.includes(_field.name))
+                        continue;
+                    fieldsDataCreate += `${_field.name}: this.${_field.name},`;
+                }
+                let checkRequired = '';
+                for (const _field of fieldsNonNullable) {
+                    if (_field.isId)
+                        continue;
+                    checkRequired += `this.${_field.name} === void 0
+				|| `;
+                }
+                if (checkRequired.length > 0) {
+                    checkRequired = checkRequired.substring(0, checkRequired.length - 3);
+                }
+                else {
+                    checkRequired = 'false';
+                }
+                fromId = idmodel_template_1.IDMODEL_TEMPLATE.replaceAll('#!{FIELD_NAME}', `${fieldId[0].name}`)
+                    .replaceAll('#!{REQUIRED_FIELDS_CREATE}', fieldsDataCreate)
+                    .replaceAll('#!{REQUIRED_FIELDS_UPDATE}', fieldsDataUpdate)
+                    .replaceAll('#!{CHECK_REQUIRED}', checkRequired);
             }
             const fieldContent = this.fields.map((_field) => _field.echo());
             let str = class_template_1.CLASS_TEMPLATE.replace('#!{DECORATORS}', this.echoDecorators())
@@ -52,7 +89,7 @@ class ClassComponent extends base_component_1.BaseComponent {
             return str;
         };
         this.reExportPrefixed = (prefix) => {
-            return `export class ${this.name} extends ${prefix}${this.name} {}`;
+            return `export class _${this.name} extends ${prefix}${this.name} {}`;
         };
     }
 }
