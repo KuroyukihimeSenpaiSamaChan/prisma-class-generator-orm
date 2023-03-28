@@ -13,4 +13,11 @@ export declare class _Product_categories {
     });
     get model(): Prisma.Product_categoriesDelegate<undefined>;
     static fromId(id: number): Promise<_Product_categories | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

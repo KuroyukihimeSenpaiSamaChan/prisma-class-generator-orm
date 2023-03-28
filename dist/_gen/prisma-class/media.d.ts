@@ -22,4 +22,11 @@ export declare class _Media {
     });
     get model(): Prisma.MediaDelegate<undefined>;
     static fromId(id: number): Promise<_Media | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

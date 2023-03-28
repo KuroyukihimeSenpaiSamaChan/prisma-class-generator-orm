@@ -15,4 +15,11 @@ export declare class _Access_token {
     });
     get model(): Prisma.Access_tokenDelegate<undefined>;
     static fromId(id: number): Promise<_Access_token | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

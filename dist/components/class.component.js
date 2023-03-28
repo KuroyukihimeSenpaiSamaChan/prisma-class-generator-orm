@@ -59,6 +59,11 @@ class ClassComponent extends base_component_1.BaseComponent {
                         continue;
                     fieldsDataCreate += `${_field.name}: this.${_field.name},`;
                 }
+                let trueCheckRequired = `if(
+				#!{TRUE_CHECK_REQUIRED}
+			){
+				return {status: false}
+			}`;
                 let checkRequired = '';
                 for (const _field of fieldsNonNullable) {
                     if (_field.isId)
@@ -68,14 +73,15 @@ class ClassComponent extends base_component_1.BaseComponent {
                 }
                 if (checkRequired.length > 0) {
                     checkRequired = checkRequired.substring(0, checkRequired.length - 3);
+                    trueCheckRequired = trueCheckRequired.replace('#!{TRUE_CHECK_REQUIRED}', checkRequired);
                 }
                 else {
-                    checkRequired = 'false';
+                    trueCheckRequired = '';
                 }
                 fromId = idmodel_template_1.IDMODEL_TEMPLATE.replaceAll('#!{FIELD_NAME}', `${fieldId[0].name}`)
                     .replaceAll('#!{REQUIRED_FIELDS_CREATE}', fieldsDataCreate)
                     .replaceAll('#!{REQUIRED_FIELDS_UPDATE}', fieldsDataUpdate)
-                    .replaceAll('#!{CHECK_REQUIRED}', checkRequired);
+                    .replaceAll('#!{CHECK_REQUIRED}', trueCheckRequired);
             }
             const fieldContent = this.fields.map((_field) => _field.echo());
             let str = class_template_1.CLASS_TEMPLATE.replace('#!{DECORATORS}', this.echoDecorators())

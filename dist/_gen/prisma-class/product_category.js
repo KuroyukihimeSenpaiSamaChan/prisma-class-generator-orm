@@ -35,6 +35,7 @@ class _Product_category {
         this._product = null;
         this.product_id = obj.product_id;
         this.category_id = obj.category_id;
+        Object.assign(this, obj);
     }
     get model() {
         return _Product_category.model;

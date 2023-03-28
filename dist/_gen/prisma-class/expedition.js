@@ -25,6 +25,7 @@ class _Expedition {
         this.slug = obj.slug;
         this.max_weight = obj.max_weight;
         this.price = obj.price;
+        Object.assign(this, obj);
     }
     get model() {
         return _Expedition.model;
@@ -37,10 +38,52 @@ class _Expedition {
         });
         if (dbModel === null)
             return null;
-        return new _Expedition({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Expedition(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.name === void 0 ||
+                this.slug === void 0 ||
+                this.max_weight === void 0 ||
+                this.price === void 0) {
+                return { status: false };
+            }
+            const data = {
+                name: this.name,
+                slug: this.slug,
+                max_weight: this.max_weight,
+                price: this.price,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                name: this.name,
+                slug: this.slug,
+                max_weight: this.max_weight,
+                price: this.price,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Expedition = _Expedition;

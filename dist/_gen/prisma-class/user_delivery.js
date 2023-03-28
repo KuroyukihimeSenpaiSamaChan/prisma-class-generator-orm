@@ -26,6 +26,7 @@ class _User_delivery {
         this.country = obj.country;
         this.region = obj.region;
         this.phone_number = obj.phone_number;
+        Object.assign(this, obj);
     }
     get model() {
         return _User_delivery.model;
@@ -38,10 +39,65 @@ class _User_delivery {
         });
         if (dbModel === null)
             return null;
-        return new _User_delivery({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _User_delivery(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.user_id === void 0 ||
+                this.address === void 0 ||
+                this.zipcode === void 0 ||
+                this.city === void 0 ||
+                this.country === void 0 ||
+                this.region === void 0 ||
+                this.phone_number === void 0) {
+                return { status: false };
+            }
+            const data = {
+                user_id: this.user_id,
+                address: this.address,
+                additional_address: this.additional_address,
+                zipcode: this.zipcode,
+                city: this.city,
+                country: this.country,
+                region: this.region,
+                phone_number: this.phone_number,
+                company_name: this.company_name,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                user_id: this.user_id,
+                address: this.address,
+                additional_address: this.additional_address,
+                zipcode: this.zipcode,
+                city: this.city,
+                country: this.country,
+                region: this.region,
+                phone_number: this.phone_number,
+                company_name: this.company_name,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._User_delivery = _User_delivery;

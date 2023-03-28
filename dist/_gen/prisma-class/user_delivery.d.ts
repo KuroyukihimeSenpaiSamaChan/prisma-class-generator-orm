@@ -25,4 +25,11 @@ export declare class _User_delivery {
     });
     get model(): Prisma.User_deliveryDelegate<undefined>;
     static fromId(id: number): Promise<_User_delivery | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

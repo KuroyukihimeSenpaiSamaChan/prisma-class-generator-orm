@@ -86,6 +86,7 @@ class _Sub_order {
         this.product_price = obj.product_price;
         this.quantity = obj.quantity;
         this.taxe_id = obj.taxe_id;
+        Object.assign(this, obj);
     }
     get model() {
         return _Sub_order.model;
@@ -98,10 +99,61 @@ class _Sub_order {
         });
         if (dbModel === null)
             return null;
-        return new _Sub_order({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Sub_order(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.order_id === void 0 ||
+                this.vendor_id === void 0 ||
+                this.expedition_id === void 0 ||
+                this.product_id === void 0 ||
+                this.product_price === void 0 ||
+                this.quantity === void 0 ||
+                this.taxe_id === void 0) {
+                return { status: false };
+            }
+            const data = {
+                order_id: this.order_id,
+                vendor_id: this.vendor_id,
+                expedition_id: this.expedition_id,
+                product_id: this.product_id,
+                product_price: this.product_price,
+                quantity: this.quantity,
+                taxe_id: this.taxe_id,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                order_id: this.order_id,
+                vendor_id: this.vendor_id,
+                expedition_id: this.expedition_id,
+                product_id: this.product_id,
+                product_price: this.product_price,
+                quantity: this.quantity,
+                taxe_id: this.taxe_id,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Sub_order = _Sub_order;

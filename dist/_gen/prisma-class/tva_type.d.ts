@@ -14,4 +14,11 @@ export declare class _TVA_type {
     });
     get model(): Prisma.TVA_typeDelegate<undefined>;
     static fromId(id: number): Promise<_TVA_type | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

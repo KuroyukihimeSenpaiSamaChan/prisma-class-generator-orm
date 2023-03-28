@@ -21,6 +21,7 @@ class _Access_token {
         this._user = null;
         this.user_id = obj.user_id;
         this.token = obj.token;
+        Object.assign(this, obj);
     }
     get model() {
         return _Access_token.model;
@@ -33,10 +34,49 @@ class _Access_token {
         });
         if (dbModel === null)
             return null;
-        return new _Access_token({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Access_token(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.user_id === void 0 || this.token === void 0) {
+                return { status: false };
+            }
+            const data = {
+                user_id: this.user_id,
+                token: this.token,
+                created_at: this.created_at,
+                expires_at: this.expires_at,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                user_id: this.user_id,
+                token: this.token,
+                created_at: this.created_at,
+                expires_at: this.expires_at,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Access_token = _Access_token;

@@ -116,6 +116,7 @@ class _Product {
         this.creation_date = obj.creation_date;
         this.modification_date = obj.modification_date;
         this.has_tva = obj.has_tva;
+        Object.assign(this, obj);
     }
     get model() {
         return _Product.model;
@@ -128,10 +129,98 @@ class _Product {
         });
         if (dbModel === null)
             return null;
-        return new _Product({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Product(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.vendor_id === void 0 ||
+                this.state === void 0 ||
+                this.tva === void 0 ||
+                this.product_name === void 0 ||
+                this.vendor_sku === void 0 ||
+                this.product_sku === void 0 ||
+                this.price === void 0 ||
+                this.price_promo === void 0 ||
+                this.description === void 0 ||
+                this.backorder === void 0 ||
+                this.unique_product === void 0 ||
+                this.linked_products === void 0 ||
+                this.product_image === void 0 ||
+                this.product_state === void 0 ||
+                this.product_keywords === void 0 ||
+                this.creation_date === void 0 ||
+                this.modification_date === void 0 ||
+                this.has_tva === void 0) {
+                return { status: false };
+            }
+            const data = {
+                vendor_id: this.vendor_id,
+                state: this.state,
+                tva: this.tva,
+                product_name: this.product_name,
+                vendor_sku: this.vendor_sku,
+                product_sku: this.product_sku,
+                price: this.price,
+                price_promo: this.price_promo,
+                description: this.description,
+                additional_description: this.additional_description,
+                backorder: this.backorder,
+                unique_product: this.unique_product,
+                linked_products: this.linked_products,
+                product_image: this.product_image,
+                product_image_gallery: this.product_image_gallery,
+                product_state: this.product_state,
+                product_keywords: this.product_keywords,
+                creation_date: this.creation_date,
+                modification_date: this.modification_date,
+                has_tva: this.has_tva,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                vendor_id: this.vendor_id,
+                state: this.state,
+                tva: this.tva,
+                product_name: this.product_name,
+                vendor_sku: this.vendor_sku,
+                product_sku: this.product_sku,
+                price: this.price,
+                price_promo: this.price_promo,
+                description: this.description,
+                additional_description: this.additional_description,
+                backorder: this.backorder,
+                unique_product: this.unique_product,
+                linked_products: this.linked_products,
+                product_image: this.product_image,
+                product_image_gallery: this.product_image_gallery,
+                product_state: this.product_state,
+                product_keywords: this.product_keywords,
+                creation_date: this.creation_date,
+                modification_date: this.modification_date,
+                has_tva: this.has_tva,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Product = _Product;

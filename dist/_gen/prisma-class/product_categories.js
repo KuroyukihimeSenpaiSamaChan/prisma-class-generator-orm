@@ -23,6 +23,7 @@ class _Product_categories {
         this._product_category = null;
         this.category_name = obj.category_name;
         this.category_slug = obj.category_slug;
+        Object.assign(this, obj);
     }
     get model() {
         return _Product_categories.model;
@@ -35,10 +36,46 @@ class _Product_categories {
         });
         if (dbModel === null)
             return null;
-        return new _Product_categories({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Product_categories(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.category_name === void 0 ||
+                this.category_slug === void 0) {
+                return { status: false };
+            }
+            const data = {
+                category_name: this.category_name,
+                category_slug: this.category_slug,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                category_name: this.category_name,
+                category_slug: this.category_slug,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Product_categories = _Product_categories;

@@ -62,4 +62,11 @@ export declare class _Product {
     });
     get model(): Prisma.ProductDelegate<undefined>;
     static fromId(id: number): Promise<_Product | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

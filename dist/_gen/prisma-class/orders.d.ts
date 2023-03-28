@@ -29,4 +29,11 @@ export declare class _Orders {
     });
     get model(): Prisma.OrdersDelegate<undefined>;
     static fromId(id: number): Promise<_Orders | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

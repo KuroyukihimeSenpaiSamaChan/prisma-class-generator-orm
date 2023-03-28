@@ -17,4 +17,11 @@ export declare class _Expedition {
     });
     get model(): Prisma.ExpeditionDelegate<undefined>;
     static fromId(id: number): Promise<_Expedition | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

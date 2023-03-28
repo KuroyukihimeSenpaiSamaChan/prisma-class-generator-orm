@@ -129,6 +129,7 @@ class _User {
         this.lastname = obj.lastname;
         this.birthdate = obj.birthdate;
         this.token = obj.token;
+        Object.assign(this, obj);
     }
     get model() {
         return _User.model;
@@ -141,10 +142,63 @@ class _User {
         });
         if (dbModel === null)
             return null;
-        return new _User({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _User(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.user_login === void 0 ||
+                this.user_pass === void 0 ||
+                this.user_email === void 0 ||
+                this.firstname === void 0 ||
+                this.lastname === void 0 ||
+                this.birthdate === void 0 ||
+                this.token === void 0) {
+                return { status: false };
+            }
+            const data = {
+                user_login: this.user_login,
+                user_pass: this.user_pass,
+                user_email: this.user_email,
+                user_registered: this.user_registered,
+                firstname: this.firstname,
+                lastname: this.lastname,
+                birthdate: this.birthdate,
+                token: this.token,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                user_login: this.user_login,
+                user_pass: this.user_pass,
+                user_email: this.user_email,
+                user_registered: this.user_registered,
+                firstname: this.firstname,
+                lastname: this.lastname,
+                birthdate: this.birthdate,
+                token: this.token,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._User = _User;

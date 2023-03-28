@@ -22,6 +22,7 @@ class _Product_visibilty {
         this.id = -1;
         this._product = null;
         this.state = obj.state;
+        Object.assign(this, obj);
     }
     get model() {
         return _Product_visibilty.model;
@@ -34,10 +35,43 @@ class _Product_visibilty {
         });
         if (dbModel === null)
             return null;
-        return new _Product_visibilty({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Product_visibilty(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.state === void 0) {
+                return { status: false };
+            }
+            const data = {
+                state: this.state,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                state: this.state,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Product_visibilty = _Product_visibilty;

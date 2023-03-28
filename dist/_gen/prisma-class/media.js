@@ -41,6 +41,7 @@ class _Media {
         this.creation_date = obj.creation_date;
         this.modification_date = obj.modification_date;
         this.user_id = obj.user_id;
+        Object.assign(this, obj);
     }
     get model() {
         return _Media.model;
@@ -53,10 +54,55 @@ class _Media {
         });
         if (dbModel === null)
             return null;
-        return new _Media({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _Media(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.slug === void 0 ||
+                this.url === void 0 ||
+                this.creation_date === void 0 ||
+                this.modification_date === void 0 ||
+                this.user_id === void 0) {
+                return { status: false };
+            }
+            const data = {
+                slug: this.slug,
+                url: this.url,
+                creation_date: this.creation_date,
+                modification_date: this.modification_date,
+                user_id: this.user_id,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                slug: this.slug,
+                url: this.url,
+                creation_date: this.creation_date,
+                modification_date: this.modification_date,
+                user_id: this.user_id,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._Media = _Media;

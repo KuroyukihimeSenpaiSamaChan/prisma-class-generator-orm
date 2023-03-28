@@ -35,4 +35,11 @@ export declare class _Sub_order {
     });
     get model(): Prisma.Sub_orderDelegate<undefined>;
     static fromId(id: number): Promise<_Sub_order | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

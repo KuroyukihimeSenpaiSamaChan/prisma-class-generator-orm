@@ -19,11 +19,7 @@ async save(): Promise<{
   status: false
 }> {
   if(this.#!{FIELD_NAME} < 0){
-    if(
-      #!{CHECK_REQUIRED}
-    ){
-      return {status: false}
-    }
+    #!{CHECK_REQUIRED}
     
     const data = {
       #!{REQUIRED_FIELDS_CREATE}
@@ -33,6 +29,7 @@ async save(): Promise<{
       const user = await this.model.create({
         data: data
       })
+      this.#!{FIELD_NAME} = user.#!{FIELD_NAME}
       return {status: true, id: user.#!{FIELD_NAME}, type: "created"}
     } catch (_) {
       return {status: false}

@@ -11,4 +11,11 @@ export declare class _Product_visibilty {
     });
     get model(): Prisma.Product_visibiltyDelegate<undefined>;
     static fromId(id: number): Promise<_Product_visibilty | null>;
+    save(): Promise<{
+        status: true;
+        type: 'updated' | 'created';
+        id: number;
+    } | {
+        status: false;
+    }>;
 }

@@ -39,6 +39,7 @@ class _TVA_type {
         this._product = null;
         this._sub_order = null;
         this.slug = obj.slug;
+        Object.assign(this, obj);
     }
     get model() {
         return _TVA_type.model;
@@ -51,10 +52,43 @@ class _TVA_type {
         });
         if (dbModel === null)
             return null;
-        return new _TVA_type({
-            ...dbModel,
-            ...{ id: id },
-        });
+        return new _TVA_type(dbModel);
+    }
+    async save() {
+        if (this.id < 0) {
+            if (this.slug === void 0) {
+                return { status: false };
+            }
+            const data = {
+                slug: this.slug,
+            };
+            try {
+                const user = await this.model.create({
+                    data: data,
+                });
+                this.id = user.id;
+                return { status: true, id: user.id, type: 'created' };
+            }
+            catch (_) {
+                return { status: false };
+            }
+        }
+        try {
+            const data = {
+                id: this.id,
+                slug: this.slug,
+            };
+            const user = await this.model.update({
+                where: {
+                    id: this.id,
+                },
+                data: data,
+            });
+            return { status: true, id: user.id, type: 'updated' };
+        }
+        catch (_) {
+            return { status: false };
+        }
     }
 }
 exports._TVA_type = _TVA_type;
