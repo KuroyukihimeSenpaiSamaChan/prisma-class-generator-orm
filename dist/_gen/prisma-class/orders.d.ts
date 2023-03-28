@@ -28,7 +28,7 @@ export declare class _Orders {
         order_total?: number;
     });
     get model(): Prisma.OrdersDelegate<undefined>;
-    static fromId(id: number): Promise<_Orders | null>;
+    static fromId<T extends _Orders>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

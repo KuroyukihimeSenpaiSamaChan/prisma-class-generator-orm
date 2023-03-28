@@ -14,7 +14,7 @@ export declare class _Access_token {
         token?: string;
     });
     get model(): Prisma.Access_tokenDelegate<undefined>;
-    static fromId(id: number): Promise<_Access_token | null>;
+    static fromId<T extends _Access_token>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

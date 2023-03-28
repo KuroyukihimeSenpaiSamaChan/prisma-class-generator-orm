@@ -61,7 +61,7 @@ export declare class _Product {
         has_tva?: boolean;
     });
     get model(): Prisma.ProductDelegate<undefined>;
-    static fromId(id: number): Promise<_Product | null>;
+    static fromId<T extends _Product>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

@@ -10,7 +10,7 @@ export declare class _Product_visibilty {
         state?: string;
     });
     get model(): Prisma.Product_visibiltyDelegate<undefined>;
-    static fromId(id: number): Promise<_Product_visibilty | null>;
+    static fromId<T extends _Product_visibilty>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

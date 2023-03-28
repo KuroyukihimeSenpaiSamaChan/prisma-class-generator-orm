@@ -34,7 +34,7 @@ export declare class _Sub_order {
         taxe_id?: number;
     });
     get model(): Prisma.Sub_orderDelegate<undefined>;
-    static fromId(id: number): Promise<_Sub_order | null>;
+    static fromId<T extends _Sub_order>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

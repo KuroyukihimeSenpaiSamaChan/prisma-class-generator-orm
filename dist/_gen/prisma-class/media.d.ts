@@ -21,7 +21,7 @@ export declare class _Media {
         user_id?: number;
     });
     get model(): Prisma.MediaDelegate<undefined>;
-    static fromId(id: number): Promise<_Media | null>;
+    static fromId<T extends _Media>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

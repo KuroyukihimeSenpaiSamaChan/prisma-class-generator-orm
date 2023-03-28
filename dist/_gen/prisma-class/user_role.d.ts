@@ -12,7 +12,7 @@ export declare class _User_role {
     user(): Promise<_User | null>;
     constructor(obj: {});
     get model(): Prisma.User_roleDelegate<undefined>;
-    static fromId(id: number): Promise<_User_role | null>;
+    static fromId<T extends _User_role>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

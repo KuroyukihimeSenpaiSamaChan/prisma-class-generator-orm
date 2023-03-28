@@ -41,7 +41,7 @@ export declare class _User {
         token?: string;
     });
     get model(): Prisma.UserDelegate<undefined>;
-    static fromId(id: number): Promise<_User | null>;
+    static fromId<T extends _User>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

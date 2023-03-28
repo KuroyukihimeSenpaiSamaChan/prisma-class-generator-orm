@@ -24,7 +24,7 @@ export declare class _User_billing {
         phone_number?: string;
     });
     get model(): Prisma.User_billingDelegate<undefined>;
-    static fromId(id: number): Promise<_User_billing | null>;
+    static fromId<T extends _User_billing>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';

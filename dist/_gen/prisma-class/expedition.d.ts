@@ -16,7 +16,7 @@ export declare class _Expedition {
         price?: number;
     });
     get model(): Prisma.ExpeditionDelegate<undefined>;
-    static fromId(id: number): Promise<_Expedition | null>;
+    static fromId<T extends _Expedition>(id: number): Promise<T | null>;
     save(): Promise<{
         status: true;
         type: 'updated' | 'created';
