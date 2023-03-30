@@ -18,4 +18,5 @@ export declare class _Product_visibilty {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

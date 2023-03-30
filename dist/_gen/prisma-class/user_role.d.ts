@@ -1,23 +1,18 @@
+import { _Role } from './role';
 import { _User } from './user';
 import { Prisma } from '@prisma/client';
 export declare class _User_role {
     static model: Prisma.User_roleDelegate<undefined>;
-    user_id: number;
-    vendor_professional?: boolean;
-    vendor_private?: boolean;
-    buyer?: boolean;
-    searcher?: boolean;
-    admin?: boolean;
+    user_id?: number;
+    role_id?: number;
+    protected _role: _Role | null;
+    role(): Promise<_Role | null>;
     protected _user: _User | null;
     user(): Promise<_User | null>;
-    constructor(obj: {});
+    constructor(obj: {
+        user_id?: number;
+        role_id?: number;
+    });
     get model(): Prisma.User_roleDelegate<undefined>;
-    static fromId<T extends _User_role>(id: number): Promise<T | null>;
-    save(): Promise<{
-        status: true;
-        type: 'updated' | 'created';
-        id: number;
-    } | {
-        status: false;
-    }>;
+    loadAll(depth?: number): Promise<void>;
 }

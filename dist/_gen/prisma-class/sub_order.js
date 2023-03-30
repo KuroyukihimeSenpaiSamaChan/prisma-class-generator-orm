@@ -155,6 +155,25 @@ class _Sub_order {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.expedition();
+        if (this._expedition !== null)
+            this._expedition.loadAll(depth - 1);
+        await this.orders();
+        if (this._orders !== null)
+            this._orders.loadAll(depth - 1);
+        await this.product();
+        if (this._product !== null)
+            this._product.loadAll(depth - 1);
+        await this.user();
+        if (this._user !== null)
+            this._user.loadAll(depth - 1);
+        await this.tva_type();
+        if (this._tva_type !== null)
+            this._tva_type.loadAll(depth - 1);
+    }
 }
 exports._Sub_order = _Sub_order;
 //# sourceMappingURL=sub_order.js.map

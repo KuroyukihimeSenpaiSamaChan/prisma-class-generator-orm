@@ -14,4 +14,5 @@ export declare class _Product_category {
         category_id?: number;
     });
     get model(): Prisma.Product_categoryDelegate<undefined>;
+    loadAll(depth?: number): Promise<void>;
 }

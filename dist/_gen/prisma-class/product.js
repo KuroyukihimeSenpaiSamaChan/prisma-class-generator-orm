@@ -222,6 +222,30 @@ class _Product {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.media();
+        if (this._media !== null)
+            this._media.loadAll(depth - 1);
+        await this.product_visibilty();
+        if (this._product_visibilty !== null)
+            this._product_visibilty.loadAll(depth - 1);
+        await this.tva_type();
+        if (this._tva_type !== null)
+            this._tva_type.loadAll(depth - 1);
+        await this.user();
+        if (this._user !== null)
+            this._user.loadAll(depth - 1);
+        await this.product_category();
+        for (const role of this._product_category) {
+            await role.loadAll(depth - 1);
+        }
+        await this.sub_order();
+        for (const role of this._sub_order) {
+            await role.loadAll(depth - 1);
+        }
+    }
 }
 exports._Product = _Product;
 //# sourceMappingURL=product.js.map

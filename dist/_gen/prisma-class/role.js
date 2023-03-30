@@ -1,51 +1,49 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._Access_token = void 0;
-const user_1 = require("./user");
-class _Access_token {
-    async user() {
-        if (this._user === null) {
-            const dbModel = await user_1._User.model.findUnique({
+exports._Role = void 0;
+const user_role_1 = require("./user_role");
+class _Role {
+    async user_role() {
+        if (this._user_role === null) {
+            const dbModels = await user_role_1._User_role.model.findMany({
                 where: {
-                    id: this.user_id,
+                    role_id: this.id,
                 },
             });
-            if (dbModel !== null) {
-                this._user = new user_1._User(dbModel);
+            if (dbModels.length) {
+                this._user_role = [];
+                for (const dbModel of dbModels)
+                    this._user_role.push(new user_role_1._User_role(dbModel));
             }
         }
-        return this._user;
+        return this._user_role;
     }
     constructor(obj) {
         this.id = -1;
-        this._user = null;
-        this.user_id = obj.user_id;
-        this.token = obj.token;
+        this._user_role = null;
+        this.label = obj.label;
         Object.assign(this, obj);
     }
     get model() {
-        return _Access_token.model;
+        return _Role.model;
     }
     static async fromId(id) {
-        const dbModel = await _Access_token.model.findUnique({
+        const dbModel = await _Role.model.findUnique({
             where: {
                 id: id,
             },
         });
         if (dbModel === null)
             return null;
-        return new _Access_token(dbModel);
+        return new _Role(dbModel);
     }
     async save() {
         if (this.id < 0) {
-            if (this.user_id === void 0 || this.token === void 0) {
+            if (this.label === void 0) {
                 return { status: false };
             }
             const data = {
-                user_id: this.user_id,
-                token: this.token,
-                created_at: this.created_at,
-                expires_at: this.expires_at,
+                label: this.label,
             };
             try {
                 const user = await this.model.create({
@@ -61,10 +59,7 @@ class _Access_token {
         try {
             const data = {
                 id: this.id,
-                user_id: this.user_id,
-                token: this.token,
-                created_at: this.created_at,
-                expires_at: this.expires_at,
+                label: this.label,
             };
             const user = await this.model.update({
                 where: {
@@ -81,10 +76,11 @@ class _Access_token {
     async loadAll(depth = 1) {
         if (depth <= 0)
             return;
-        await this.user();
-        if (this._user !== null)
-            this._user.loadAll(depth - 1);
+        await this.user_role();
+        for (const role of this._user_role) {
+            await role.loadAll(depth - 1);
+        }
     }
 }
-exports._Access_token = _Access_token;
-//# sourceMappingURL=access_token.js.map
+exports._Role = _Role;
+//# sourceMappingURL=role.js.map

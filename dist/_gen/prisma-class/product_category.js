@@ -40,6 +40,16 @@ class _Product_category {
     get model() {
         return _Product_category.model;
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.product_categories();
+        if (this._product_categories !== null)
+            this._product_categories.loadAll(depth - 1);
+        await this.product();
+        if (this._product !== null)
+            this._product.loadAll(depth - 1);
+    }
 }
 exports._Product_category = _Product_category;
 //# sourceMappingURL=product_category.js.map

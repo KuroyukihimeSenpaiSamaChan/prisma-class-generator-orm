@@ -42,4 +42,5 @@ export declare class _Sub_order {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

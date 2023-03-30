@@ -3,6 +3,8 @@ import { FieldComponent } from './field.component'
 import { CLASS_TEMPLATE } from '../templates/class.template'
 import { IDMODEL_TEMPLATE } from '../templates/idmodel.template'
 import { BaseComponent } from './base.component'
+import { LOAD_ALL } from '../templates/loadall.template'
+import { FIELD_DEPTH_LOAD_ARRAY, FIELD_DEPTH_LOAD_SINGLE } from '../templates/field.template'
 
 export class ClassComponent extends BaseComponent implements Echoable {
 	name: string
@@ -96,6 +98,22 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				.replaceAll('#!{REQUIRED_FIELDS_UPDATE}', fieldsDataUpdate)
 				.replaceAll('#!{CHECK_REQUIRED}', trueCheckRequired)
 		}
+
+		// Creates the loadAll method
+		let fieldsLoaders = ``
+		for (const _field of this.fields) {
+			if (_field.relation === undefined) continue
+			let fieldRelation = ''
+			if (_field.relation.justLinkedToMany === _field) {
+				fieldRelation = FIELD_DEPTH_LOAD_ARRAY
+			} else {
+				fieldRelation = FIELD_DEPTH_LOAD_SINGLE
+			}
+			fieldsLoaders += fieldRelation.replaceAll(
+				'#!{NAME}', _field.name
+			)
+		}
+
 		const fieldContent = this.fields.map((_field) => _field.echo())
 		let str = CLASS_TEMPLATE.replace(
 			'#!{DECORATORS}',
@@ -107,8 +125,8 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			.replaceAll('#!{EXTRA}', this.extra)
 			.replaceAll('#!{CONSTRUCTOR}', constructor)
 			.replaceAll('#!{PRISMAMODEL_TYPE}', prismamodel_type)
-			// .replaceAll('#!{PRISMAMODEL_VALUE}', prismamodel_value)
 			.replaceAll('#!{MODEL_GETTER}', model_getter)
+			.replaceAll('#!{LOAD_ALL}', LOAD_ALL.replaceAll('#!{FIELDS_LOADERS}', fieldsLoaders))
 		return str
 	}
 

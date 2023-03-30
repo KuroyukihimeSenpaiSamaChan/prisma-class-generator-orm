@@ -36,4 +36,5 @@ export declare class _Orders {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

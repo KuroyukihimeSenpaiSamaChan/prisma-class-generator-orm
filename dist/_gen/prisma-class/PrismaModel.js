@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PrismaModel = exports._TVA_type = exports._Sub_order = exports._Product_visibilty = exports._Product_category = exports._Product_categories = exports._Product = exports._Orders = exports._Media = exports._Expedition = exports._User_role = exports._User_delivery = exports._User_billing = exports._User = exports._Access_token = void 0;
+exports.PrismaModel = exports._Role = exports._TVA_type = exports._Sub_order = exports._Product_visibilty = exports._Product_category = exports._Product_categories = exports._Product = exports._Orders = exports._Media = exports._Expedition = exports._User_role = exports._User_delivery = exports._User_billing = exports._User = exports._Access_token = void 0;
 const client_1 = require("@prisma/client");
 const access_token_1 = require("./access_token");
 var access_token_2 = require("./access_token");
@@ -44,6 +44,9 @@ Object.defineProperty(exports, "_Sub_order", { enumerable: true, get: function (
 const tva_type_1 = require("./tva_type");
 var tva_type_2 = require("./tva_type");
 Object.defineProperty(exports, "_TVA_type", { enumerable: true, get: function () { return tva_type_2._TVA_type; } });
+const role_1 = require("./role");
+var role_2 = require("./role");
+Object.defineProperty(exports, "_Role", { enumerable: true, get: function () { return role_2._Role; } });
 class PrismaModel {
     static async init() {
         BigInt.prototype.toJSON = () => {
@@ -66,6 +69,7 @@ class PrismaModel {
             product_visibilty_1._Product_visibilty.model = PrismaModel.prisma.product_visibilty;
             sub_order_1._Sub_order.model = PrismaModel.prisma.sub_order;
             tva_type_1._TVA_type.model = PrismaModel.prisma.tVA_type;
+            role_1._Role.model = PrismaModel.prisma.role;
         }
     }
     static async destroy() {

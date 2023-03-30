@@ -13,6 +13,7 @@ export { _Product_category } from './product_category';
 export { _Product_visibilty } from './product_visibilty';
 export { _Sub_order } from './sub_order';
 export { _TVA_type } from './tva_type';
+export { _Role } from './role';
 export declare abstract class PrismaModel {
     static prisma: PrismaClient;
     static init(): Promise<void>;

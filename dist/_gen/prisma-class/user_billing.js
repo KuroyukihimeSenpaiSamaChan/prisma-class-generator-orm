@@ -99,6 +99,13 @@ class _User_billing {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.user();
+        if (this._user !== null)
+            this._user.loadAll(depth - 1);
+    }
 }
 exports._User_billing = _User_billing;
 //# sourceMappingURL=user_billing.js.map

@@ -73,6 +73,14 @@ class _Product_visibilty {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.product();
+        for (const role of this._product) {
+            await role.loadAll(depth - 1);
+        }
+    }
 }
 exports._Product_visibilty = _Product_visibilty;
 //# sourceMappingURL=product_visibilty.js.map

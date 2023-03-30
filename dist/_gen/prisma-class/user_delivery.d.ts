@@ -32,4 +32,5 @@ export declare class _User_delivery {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

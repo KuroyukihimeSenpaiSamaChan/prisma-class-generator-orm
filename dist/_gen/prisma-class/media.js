@@ -104,6 +104,17 @@ class _Media {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.user();
+        if (this._user !== null)
+            this._user.loadAll(depth - 1);
+        await this.product();
+        for (const role of this._product) {
+            await role.loadAll(depth - 1);
+        }
+    }
 }
 exports._Media = _Media;
 //# sourceMappingURL=media.js.map

@@ -1,8 +1,3 @@
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-
 generator clent {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "rhel-openssl-1.0.x", "darwin"]
@@ -12,6 +7,11 @@ generator prismaClassGenerator {
   provider = "dist/bin.js"
   output   = "../src/_gen/prisma-class"
   dryRun   = "false"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Access_token {
@@ -27,7 +27,6 @@ model Access_token {
 
 model User {
   id              Int             @id @default(autoincrement())
-  user_login      String          @db.VarChar(64)
   user_pass       String          @db.VarChar(64)
   user_email      String          @unique @db.VarChar(64)
   user_registered Boolean         @default(false)
@@ -41,7 +40,7 @@ model User {
   sub_order       Sub_order[]
   user_billing    User_billing[]
   user_delivery   User_delivery[]
-  user_role       User_role?
+  user_role       User_role[]
 }
 
 model User_billing {
@@ -77,13 +76,13 @@ model User_delivery {
 }
 
 model User_role {
-  user_id             Int     @id
-  vendor_professional Boolean @default(false)
-  vendor_private      Boolean @default(false)
-  buyer               Boolean @default(false)
-  searcher            Boolean @default(false)
-  admin               Boolean @default(false)
-  user                User    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id_role")
+  user_id Int
+  role_id Int
+  role    Role @relation(fields: [role_id], references: [id], onDelete: Cascade, map: "fk_role_user_id")
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id_role")
+
+  @@id([user_id, role_id])
+  @@index([role_id], map: "fk_role_user_id")
 }
 
 model Expedition {
@@ -209,4 +208,10 @@ model TVA_type {
   slug      String      @db.VarChar(256)
   product   Product[]
   sub_order Sub_order[]
+}
+
+model Role {
+  id        Int         @id @default(autoincrement())
+  label     String      @db.VarChar(32)
+  user_role User_role[]
 }

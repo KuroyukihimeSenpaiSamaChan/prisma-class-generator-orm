@@ -9,7 +9,6 @@ import { Prisma } from '@prisma/client';
 export declare class _User {
     static model: Prisma.UserDelegate<undefined>;
     id: number;
-    user_login?: string;
     user_pass?: string;
     user_email?: string;
     user_registered?: boolean;
@@ -29,10 +28,9 @@ export declare class _User {
     user_billing(): Promise<_User_billing[] | null>;
     protected _user_delivery: _User_delivery[] | null;
     user_delivery(): Promise<_User_delivery[] | null>;
-    protected _user_role: _User_role | null;
-    user_role(): Promise<_User_role | null>;
+    protected _user_role: _User_role[] | null;
+    user_role(): Promise<_User_role[] | null>;
     constructor(obj: {
-        user_login?: string;
         user_pass?: string;
         user_email?: string;
         firstname?: string;
@@ -49,4 +47,5 @@ export declare class _User {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

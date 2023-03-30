@@ -13,6 +13,8 @@ export class _#!{NAME} {
 #!{MODEL_GETTER}
 
 #!{FROMID}
+
+#!{LOAD_ALL}
 }
 #!{EXTRA}
 `;

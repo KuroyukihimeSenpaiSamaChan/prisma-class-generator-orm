@@ -20,4 +20,5 @@ export declare class _Product_categories {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

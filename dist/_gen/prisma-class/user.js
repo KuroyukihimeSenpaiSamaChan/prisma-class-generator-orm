@@ -101,13 +101,15 @@ class _User {
     }
     async user_role() {
         if (this._user_role === null) {
-            const dbModel = await user_role_1._User_role.model.findUnique({
+            const dbModels = await user_role_1._User_role.model.findMany({
                 where: {
                     user_id: this.id,
                 },
             });
-            if (dbModel !== null) {
-                this._user_role = new user_role_1._User_role(dbModel);
+            if (dbModels.length) {
+                this._user_role = [];
+                for (const dbModel of dbModels)
+                    this._user_role.push(new user_role_1._User_role(dbModel));
             }
         }
         return this._user_role;
@@ -122,7 +124,6 @@ class _User {
         this._user_billing = null;
         this._user_delivery = null;
         this._user_role = null;
-        this.user_login = obj.user_login;
         this.user_pass = obj.user_pass;
         this.user_email = obj.user_email;
         this.firstname = obj.firstname;
@@ -146,8 +147,7 @@ class _User {
     }
     async save() {
         if (this.id < 0) {
-            if (this.user_login === void 0 ||
-                this.user_pass === void 0 ||
+            if (this.user_pass === void 0 ||
                 this.user_email === void 0 ||
                 this.firstname === void 0 ||
                 this.lastname === void 0 ||
@@ -156,7 +156,6 @@ class _User {
                 return { status: false };
             }
             const data = {
-                user_login: this.user_login,
                 user_pass: this.user_pass,
                 user_email: this.user_email,
                 user_registered: this.user_registered,
@@ -179,7 +178,6 @@ class _User {
         try {
             const data = {
                 id: this.id,
-                user_login: this.user_login,
                 user_pass: this.user_pass,
                 user_email: this.user_email,
                 user_registered: this.user_registered,
@@ -198,6 +196,38 @@ class _User {
         }
         catch (_) {
             return { status: false };
+        }
+    }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.access_token();
+        for (const role of this._access_token) {
+            await role.loadAll(depth - 1);
+        }
+        await this.media();
+        for (const role of this._media) {
+            await role.loadAll(depth - 1);
+        }
+        await this.product();
+        for (const role of this._product) {
+            await role.loadAll(depth - 1);
+        }
+        await this.sub_order();
+        for (const role of this._sub_order) {
+            await role.loadAll(depth - 1);
+        }
+        await this.user_billing();
+        for (const role of this._user_billing) {
+            await role.loadAll(depth - 1);
+        }
+        await this.user_delivery();
+        for (const role of this._user_delivery) {
+            await role.loadAll(depth - 1);
+        }
+        await this.user_role();
+        for (const role of this._user_role) {
+            await role.loadAll(depth - 1);
         }
     }
 }

@@ -32,4 +32,5 @@ export declare class _User_billing {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

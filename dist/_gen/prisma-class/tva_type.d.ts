@@ -21,4 +21,5 @@ export declare class _TVA_type {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

@@ -24,4 +24,5 @@ export declare class _Expedition {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

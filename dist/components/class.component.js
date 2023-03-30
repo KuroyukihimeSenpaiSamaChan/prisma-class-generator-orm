@@ -4,6 +4,8 @@ exports.ClassComponent = void 0;
 const class_template_1 = require("../templates/class.template");
 const idmodel_template_1 = require("../templates/idmodel.template");
 const base_component_1 = require("./base.component");
+const loadall_template_1 = require("../templates/loadall.template");
+const field_template_1 = require("../templates/field.template");
 class ClassComponent extends base_component_1.BaseComponent {
     constructor() {
         super(...arguments);
@@ -83,6 +85,19 @@ class ClassComponent extends base_component_1.BaseComponent {
                     .replaceAll('#!{REQUIRED_FIELDS_UPDATE}', fieldsDataUpdate)
                     .replaceAll('#!{CHECK_REQUIRED}', trueCheckRequired);
             }
+            let fieldsLoaders = ``;
+            for (const _field of this.fields) {
+                if (_field.relation === undefined)
+                    continue;
+                let fieldRelation = '';
+                if (_field.relation.justLinkedToMany === _field) {
+                    fieldRelation = field_template_1.FIELD_DEPTH_LOAD_ARRAY;
+                }
+                else {
+                    fieldRelation = field_template_1.FIELD_DEPTH_LOAD_SINGLE;
+                }
+                fieldsLoaders += fieldRelation.replaceAll('#!{NAME}', _field.name);
+            }
             const fieldContent = this.fields.map((_field) => _field.echo());
             let str = class_template_1.CLASS_TEMPLATE.replace('#!{DECORATORS}', this.echoDecorators())
                 .replaceAll('#!{FROMID}', `${fromId}`)
@@ -91,7 +106,8 @@ class ClassComponent extends base_component_1.BaseComponent {
                 .replaceAll('#!{EXTRA}', this.extra)
                 .replaceAll('#!{CONSTRUCTOR}', constructor)
                 .replaceAll('#!{PRISMAMODEL_TYPE}', prismamodel_type)
-                .replaceAll('#!{MODEL_GETTER}', model_getter);
+                .replaceAll('#!{MODEL_GETTER}', model_getter)
+                .replaceAll('#!{LOAD_ALL}', loadall_template_1.LOAD_ALL.replaceAll('#!{FIELDS_LOADERS}', fieldsLoaders));
             return str;
         };
         this.reExportPrefixed = (prefix) => {

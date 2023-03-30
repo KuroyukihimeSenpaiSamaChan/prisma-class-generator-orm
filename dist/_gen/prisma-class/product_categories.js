@@ -77,6 +77,14 @@ class _Product_categories {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.product_category();
+        for (const role of this._product_category) {
+            await role.loadAll(depth - 1);
+        }
+    }
 }
 exports._Product_categories = _Product_categories;
 //# sourceMappingURL=product_categories.js.map

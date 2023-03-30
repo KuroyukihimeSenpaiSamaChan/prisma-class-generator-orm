@@ -90,6 +90,18 @@ class _TVA_type {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.product();
+        for (const role of this._product) {
+            await role.loadAll(depth - 1);
+        }
+        await this.sub_order();
+        for (const role of this._sub_order) {
+            await role.loadAll(depth - 1);
+        }
+    }
 }
 exports._TVA_type = _TVA_type;
 //# sourceMappingURL=tva_type.js.map

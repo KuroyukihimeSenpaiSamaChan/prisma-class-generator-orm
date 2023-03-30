@@ -29,4 +29,5 @@ export declare class _Media {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

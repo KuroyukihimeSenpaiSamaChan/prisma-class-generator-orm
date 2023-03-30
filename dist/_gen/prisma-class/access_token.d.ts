@@ -22,4 +22,5 @@ export declare class _Access_token {
     } | {
         status: false;
     }>;
+    loadAll(depth?: number): Promise<void>;
 }

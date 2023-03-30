@@ -109,6 +109,14 @@ class _Orders {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.sub_order();
+        for (const role of this._sub_order) {
+            await role.loadAll(depth - 1);
+        }
+    }
 }
 exports._Orders = _Orders;
 //# sourceMappingURL=orders.js.map

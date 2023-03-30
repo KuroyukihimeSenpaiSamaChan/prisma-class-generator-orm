@@ -99,6 +99,13 @@ class _User_delivery {
             return { status: false };
         }
     }
+    async loadAll(depth = 1) {
+        if (depth <= 0)
+            return;
+        await this.user();
+        if (this._user !== null)
+            this._user.loadAll(depth - 1);
+    }
 }
 exports._User_delivery = _User_delivery;
 //# sourceMappingURL=user_delivery.js.map
