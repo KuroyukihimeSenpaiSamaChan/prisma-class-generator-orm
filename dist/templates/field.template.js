@@ -45,8 +45,10 @@ exports.FIELD_DEPTH_LOAD_SINGLE = `
 `;
 exports.FIELD_DEPTH_LOAD_ARRAY = `
 	await this.#!{NAME}()
-	for (const role of this._#!{NAME}) {
-		await role.loadAll(depth - 1)
+	if(this._#!{NAME} !== null){
+		for (const role of this._#!{NAME}) {
+			await role.loadAll(depth - 1)
+		}
 	}
 `;
 //# sourceMappingURL=field.template.js.map

@@ -202,32 +202,46 @@ class _User {
         if (depth <= 0)
             return;
         await this.access_token();
-        for (const role of this._access_token) {
-            await role.loadAll(depth - 1);
+        if (this._access_token !== null) {
+            for (const role of this._access_token) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.media();
-        for (const role of this._media) {
-            await role.loadAll(depth - 1);
+        if (this._media !== null) {
+            for (const role of this._media) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.product();
-        for (const role of this._product) {
-            await role.loadAll(depth - 1);
+        if (this._product !== null) {
+            for (const role of this._product) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.sub_order();
-        for (const role of this._sub_order) {
-            await role.loadAll(depth - 1);
+        if (this._sub_order !== null) {
+            for (const role of this._sub_order) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.user_billing();
-        for (const role of this._user_billing) {
-            await role.loadAll(depth - 1);
+        if (this._user_billing !== null) {
+            for (const role of this._user_billing) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.user_delivery();
-        for (const role of this._user_delivery) {
-            await role.loadAll(depth - 1);
+        if (this._user_delivery !== null) {
+            for (const role of this._user_delivery) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.user_role();
-        for (const role of this._user_role) {
-            await role.loadAll(depth - 1);
+        if (this._user_role !== null) {
+            for (const role of this._user_role) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }

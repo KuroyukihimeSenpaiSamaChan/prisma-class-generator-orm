@@ -81,8 +81,10 @@ class _Product_categories {
         if (depth <= 0)
             return;
         await this.product_category();
-        for (const role of this._product_category) {
-            await role.loadAll(depth - 1);
+        if (this._product_category !== null) {
+            for (const role of this._product_category) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }

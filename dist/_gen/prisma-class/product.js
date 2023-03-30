@@ -238,12 +238,16 @@ class _Product {
         if (this._user !== null)
             this._user.loadAll(depth - 1);
         await this.product_category();
-        for (const role of this._product_category) {
-            await role.loadAll(depth - 1);
+        if (this._product_category !== null) {
+            for (const role of this._product_category) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.sub_order();
-        for (const role of this._sub_order) {
-            await role.loadAll(depth - 1);
+        if (this._sub_order !== null) {
+            for (const role of this._sub_order) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }

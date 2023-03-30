@@ -77,8 +77,10 @@ class _Role {
         if (depth <= 0)
             return;
         await this.user_role();
-        for (const role of this._user_role) {
-            await role.loadAll(depth - 1);
+        if (this._user_role !== null) {
+            for (const role of this._user_role) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }

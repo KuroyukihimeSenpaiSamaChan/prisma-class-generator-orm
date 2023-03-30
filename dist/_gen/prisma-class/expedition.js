@@ -89,8 +89,10 @@ class _Expedition {
         if (depth <= 0)
             return;
         await this.sub_order();
-        for (const role of this._sub_order) {
-            await role.loadAll(depth - 1);
+        if (this._sub_order !== null) {
+            for (const role of this._sub_order) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }

@@ -111,8 +111,10 @@ class _Media {
         if (this._user !== null)
             this._user.loadAll(depth - 1);
         await this.product();
-        for (const role of this._product) {
-            await role.loadAll(depth - 1);
+        if (this._product !== null) {
+            for (const role of this._product) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }

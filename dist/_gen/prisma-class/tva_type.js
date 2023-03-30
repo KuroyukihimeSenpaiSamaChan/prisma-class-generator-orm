@@ -94,12 +94,16 @@ class _TVA_type {
         if (depth <= 0)
             return;
         await this.product();
-        for (const role of this._product) {
-            await role.loadAll(depth - 1);
+        if (this._product !== null) {
+            for (const role of this._product) {
+                await role.loadAll(depth - 1);
+            }
         }
         await this.sub_order();
-        for (const role of this._sub_order) {
-            await role.loadAll(depth - 1);
+        if (this._sub_order !== null) {
+            for (const role of this._sub_order) {
+                await role.loadAll(depth - 1);
+            }
         }
     }
 }
