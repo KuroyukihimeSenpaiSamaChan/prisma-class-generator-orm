@@ -11,14 +11,14 @@ exports.IDMODEL_TEMPLATE = `static async fromId<T extends _#!{NAME}>(id: number)
   return <T>(new _#!{NAME}(dbModel));
 }
 
-async save(): Promise<{
+async save(withId: boolean = false): Promise<{
   status: true,
   type: "updated" | "created"
   id: number
 } | {
   status: false
 }> {
-  if(this.#!{FIELD_NAME} < 0){
+  if(this.#!{FIELD_NAME} < 0 || withId){
     #!{CHECK_REQUIRED}
     
     const data = {
