@@ -14,16 +14,16 @@ export declare class _Sub_order {
     product_price?: number;
     quantity?: number;
     taxe_id?: number;
-    protected _expedition: _Expedition | null;
-    expedition(): Promise<_Expedition | null>;
-    protected _orders: _Orders | null;
-    orders(): Promise<_Orders | null>;
-    protected _product: _Product | null;
-    product(): Promise<_Product | null>;
-    protected _user: _User | null;
-    user(): Promise<_User | null>;
-    protected _tva_type: _TVA_type | null;
-    tva_type(): Promise<_TVA_type | null>;
+    private _expedition;
+    expedition(reload?: boolean): Promise<_Expedition | null>;
+    private _orders;
+    orders(reload?: boolean): Promise<_Orders | null>;
+    private _product;
+    product(reload?: boolean): Promise<_Product | null>;
+    private _user;
+    user(reload?: boolean): Promise<_User | null>;
+    private _tva_type;
+    tva_type(reload?: boolean): Promise<_TVA_type | null>;
     constructor(obj: {
         order_id?: number;
         vendor_id?: number;

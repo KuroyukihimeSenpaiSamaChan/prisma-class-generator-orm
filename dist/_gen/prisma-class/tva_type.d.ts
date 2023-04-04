@@ -5,10 +5,10 @@ export declare class _TVA_type {
     static model: Prisma.TVA_typeDelegate<undefined>;
     id: number;
     slug?: string;
-    protected _product: _Product[] | null;
-    product(): Promise<_Product[] | null>;
-    protected _sub_order: _Sub_order[] | null;
-    sub_order(): Promise<_Sub_order[] | null>;
+    private _product;
+    product(reload?: boolean): Promise<_Product[] | null>;
+    private _sub_order;
+    sub_order(reload?: boolean): Promise<_Sub_order[] | null>;
     constructor(obj: {
         slug?: string;
     });

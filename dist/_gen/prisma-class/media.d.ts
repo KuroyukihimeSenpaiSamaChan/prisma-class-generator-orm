@@ -9,10 +9,10 @@ export declare class _Media {
     creation_date?: number;
     modification_date?: number;
     user_id?: number;
-    protected _user: _User | null;
-    user(): Promise<_User | null>;
-    protected _product: _Product[] | null;
-    product(): Promise<_Product[] | null>;
+    private _user;
+    user(reload?: boolean): Promise<_User | null>;
+    private _product;
+    product(reload?: boolean): Promise<_Product[] | null>;
     constructor(obj: {
         slug?: string;
         url?: string;

@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports._User_delivery = void 0;
 const user_1 = require("./user");
 class _User_delivery {
-    async user() {
-        if (this._user === null) {
+    async user(reload = false) {
+        if ((this._user === null || reload) && this.user_id !== undefined) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
                     id: +this.user_id,

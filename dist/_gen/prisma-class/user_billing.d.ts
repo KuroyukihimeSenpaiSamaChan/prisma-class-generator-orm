@@ -12,8 +12,8 @@ export declare class _User_billing {
     region?: string;
     phone_number?: string;
     company_name?: string;
-    protected _user: _User | null;
-    user(): Promise<_User | null>;
+    private _user;
+    user(reload?: boolean): Promise<_User | null>;
     constructor(obj: {
         user_id?: number;
         address?: string;

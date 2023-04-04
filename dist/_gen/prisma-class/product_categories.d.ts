@@ -5,8 +5,8 @@ export declare class _Product_categories {
     id: number;
     category_name?: string;
     category_slug?: string;
-    protected _product_category: _Product_category[] | null;
-    product_category(): Promise<_Product_category[] | null>;
+    private _product_category;
+    product_category(reload?: boolean): Promise<_Product_category[] | null>;
     constructor(obj: {
         category_name?: string;
         category_slug?: string;

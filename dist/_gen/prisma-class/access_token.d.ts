@@ -7,8 +7,8 @@ export declare class _Access_token {
     token?: string;
     created_at?: number;
     expires_at?: number;
-    protected _user: _User | null;
-    user(): Promise<_User | null>;
+    private _user;
+    user(reload?: boolean): Promise<_User | null>;
     constructor(obj: {
         user_id?: number;
         token?: string;

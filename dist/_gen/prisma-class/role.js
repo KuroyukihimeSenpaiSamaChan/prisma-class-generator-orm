@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports._Role = void 0;
 const user_role_1 = require("./user_role");
 class _Role {
-    async user_role() {
-        if (this._user_role === null) {
+    async user_role(reload = false) {
+        if ((this._user_role === null || reload) && this.id !== undefined) {
             const dbModels = await user_role_1._User_role.model.findMany({
                 where: {
                     role_id: +this.id,

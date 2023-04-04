@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports._Expedition = void 0;
 const sub_order_1 = require("./sub_order");
 class _Expedition {
-    async sub_order() {
-        if (this._sub_order === null) {
+    async sub_order(reload = false) {
+        if ((this._sub_order === null || reload) && this.id !== undefined) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
                     expedition_id: +this.id,

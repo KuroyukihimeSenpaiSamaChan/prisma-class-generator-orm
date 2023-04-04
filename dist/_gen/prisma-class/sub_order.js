@@ -7,8 +7,9 @@ const product_1 = require("./product");
 const user_1 = require("./user");
 const tva_type_1 = require("./tva_type");
 class _Sub_order {
-    async expedition() {
-        if (this._expedition === null) {
+    async expedition(reload = false) {
+        if ((this._expedition === null || reload) &&
+            this.expedition_id !== undefined) {
             const dbModel = await expedition_1._Expedition.model.findUnique({
                 where: {
                     id: +this.expedition_id,
@@ -20,8 +21,8 @@ class _Sub_order {
         }
         return this._expedition;
     }
-    async orders() {
-        if (this._orders === null) {
+    async orders(reload = false) {
+        if ((this._orders === null || reload) && this.order_id !== undefined) {
             const dbModel = await orders_1._Orders.model.findUnique({
                 where: {
                     id: +this.order_id,
@@ -33,8 +34,9 @@ class _Sub_order {
         }
         return this._orders;
     }
-    async product() {
-        if (this._product === null) {
+    async product(reload = false) {
+        if ((this._product === null || reload) &&
+            this.product_id !== undefined) {
             const dbModel = await product_1._Product.model.findUnique({
                 where: {
                     id: +this.product_id,
@@ -46,8 +48,8 @@ class _Sub_order {
         }
         return this._product;
     }
-    async user() {
-        if (this._user === null) {
+    async user(reload = false) {
+        if ((this._user === null || reload) && this.vendor_id !== undefined) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
                     id: +this.vendor_id,
@@ -59,8 +61,8 @@ class _Sub_order {
         }
         return this._user;
     }
-    async tva_type() {
-        if (this._tva_type === null) {
+    async tva_type(reload = false) {
+        if ((this._tva_type === null || reload) && this.taxe_id !== undefined) {
             const dbModel = await tva_type_1._TVA_type.model.findUnique({
                 where: {
                     id: +this.taxe_id,

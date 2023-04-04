@@ -4,8 +4,8 @@ exports._User_role = void 0;
 const role_1 = require("./role");
 const user_1 = require("./user");
 class _User_role {
-    async role() {
-        if (this._role === null) {
+    async role(reload = false) {
+        if ((this._role === null || reload) && this.role_id !== undefined) {
             const dbModel = await role_1._Role.model.findUnique({
                 where: {
                     id: +this.role_id,
@@ -17,8 +17,8 @@ class _User_role {
         }
         return this._role;
     }
-    async user() {
-        if (this._user === null) {
+    async user(reload = false) {
+        if ((this._user === null || reload) && this.user_id !== undefined) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
                     id: +this.user_id,

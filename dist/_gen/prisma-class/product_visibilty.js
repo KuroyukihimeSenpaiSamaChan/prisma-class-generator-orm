@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports._Product_visibilty = void 0;
 const product_1 = require("./product");
 class _Product_visibilty {
-    async product() {
-        if (this._product === null) {
+    async product(reload = false) {
+        if ((this._product === null || reload) && this.id !== undefined) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
                     state: +this.id,

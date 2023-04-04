@@ -13,8 +13,8 @@ export declare class _Orders {
     buyer_delivery_id?: number;
     expedition_id?: number;
     order_total?: number;
-    protected _sub_order: _Sub_order[] | null;
-    sub_order(): Promise<_Sub_order[] | null>;
+    private _sub_order;
+    sub_order(reload?: boolean): Promise<_Sub_order[] | null>;
     constructor(obj: {
         order_client_id?: number;
         creation_date?: number;

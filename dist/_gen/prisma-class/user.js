@@ -9,8 +9,8 @@ const user_billing_1 = require("./user_billing");
 const user_delivery_1 = require("./user_delivery");
 const user_role_1 = require("./user_role");
 class _User {
-    async access_token() {
-        if (this._access_token === null) {
+    async access_token(reload = false) {
+        if ((this._access_token === null || reload) && this.id !== undefined) {
             const dbModels = await access_token_1._Access_token.model.findMany({
                 where: {
                     user_id: +this.id,
@@ -24,8 +24,8 @@ class _User {
         }
         return this._access_token;
     }
-    async media() {
-        if (this._media === null) {
+    async media(reload = false) {
+        if ((this._media === null || reload) && this.id !== undefined) {
             const dbModels = await media_1._Media.model.findMany({
                 where: {
                     user_id: +this.id,
@@ -39,8 +39,8 @@ class _User {
         }
         return this._media;
     }
-    async product() {
-        if (this._product === null) {
+    async product(reload = false) {
+        if ((this._product === null || reload) && this.id !== undefined) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
                     vendor_id: +this.id,
@@ -54,8 +54,8 @@ class _User {
         }
         return this._product;
     }
-    async sub_order() {
-        if (this._sub_order === null) {
+    async sub_order(reload = false) {
+        if ((this._sub_order === null || reload) && this.id !== undefined) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
                     vendor_id: +this.id,
@@ -69,8 +69,8 @@ class _User {
         }
         return this._sub_order;
     }
-    async user_billing() {
-        if (this._user_billing === null) {
+    async user_billing(reload = false) {
+        if ((this._user_billing === null || reload) && this.id !== undefined) {
             const dbModels = await user_billing_1._User_billing.model.findMany({
                 where: {
                     user_id: +this.id,
@@ -84,8 +84,8 @@ class _User {
         }
         return this._user_billing;
     }
-    async user_delivery() {
-        if (this._user_delivery === null) {
+    async user_delivery(reload = false) {
+        if ((this._user_delivery === null || reload) && this.id !== undefined) {
             const dbModels = await user_delivery_1._User_delivery.model.findMany({
                 where: {
                     user_id: +this.id,
@@ -99,8 +99,8 @@ class _User {
         }
         return this._user_delivery;
     }
-    async user_role() {
-        if (this._user_role === null) {
+    async user_role(reload = false) {
+        if ((this._user_role === null || reload) && this.id !== undefined) {
             const dbModels = await user_role_1._User_role.model.findMany({
                 where: {
                     user_id: +this.id,

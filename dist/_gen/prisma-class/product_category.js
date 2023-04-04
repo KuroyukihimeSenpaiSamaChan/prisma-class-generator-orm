@@ -4,8 +4,9 @@ exports._Product_category = void 0;
 const product_categories_1 = require("./product_categories");
 const product_1 = require("./product");
 class _Product_category {
-    async product_categories() {
-        if (this._product_categories === null) {
+    async product_categories(reload = false) {
+        if ((this._product_categories === null || reload) &&
+            this.category_id !== undefined) {
             const dbModel = await product_categories_1._Product_categories.model.findUnique({
                 where: {
                     id: +this.category_id,
@@ -17,8 +18,9 @@ class _Product_category {
         }
         return this._product_categories;
     }
-    async product() {
-        if (this._product === null) {
+    async product(reload = false) {
+        if ((this._product === null || reload) &&
+            this.product_id !== undefined) {
             const dbModel = await product_1._Product.model.findUnique({
                 where: {
                     id: +this.product_id,

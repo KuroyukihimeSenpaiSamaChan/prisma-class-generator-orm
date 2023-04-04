@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports._Product_categories = void 0;
 const product_category_1 = require("./product_category");
 class _Product_categories {
-    async product_category() {
-        if (this._product_category === null) {
+    async product_category(reload = false) {
+        if ((this._product_category === null || reload) &&
+            this.id !== undefined) {
             const dbModels = await product_category_1._Product_category.model.findMany({
                 where: {
                     category_id: +this.id,

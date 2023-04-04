@@ -4,8 +4,8 @@ export declare class _Product_visibilty {
     static model: Prisma.Product_visibiltyDelegate<undefined>;
     id: number;
     state?: string;
-    protected _product: _Product[] | null;
-    product(): Promise<_Product[] | null>;
+    private _product;
+    product(reload?: boolean): Promise<_Product[] | null>;
     constructor(obj: {
         state?: string;
     });

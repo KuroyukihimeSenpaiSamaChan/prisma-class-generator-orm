@@ -4,8 +4,8 @@ exports._Media = void 0;
 const user_1 = require("./user");
 const product_1 = require("./product");
 class _Media {
-    async user() {
-        if (this._user === null) {
+    async user(reload = false) {
+        if ((this._user === null || reload) && this.user_id !== undefined) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
                     id: +this.user_id,
@@ -17,8 +17,8 @@ class _Media {
         }
         return this._user;
     }
-    async product() {
-        if (this._product === null) {
+    async product(reload = false) {
+        if ((this._product === null || reload) && this.id !== undefined) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
                     product_image: +this.id,

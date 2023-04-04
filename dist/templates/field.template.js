@@ -5,9 +5,9 @@ exports.FIELD_TEMPLATE = `	#!{DECORATORS}
 	#!{NAME}: #!{TYPE} #!{DEFAULT}
 `;
 exports.FIELD_GETTER_ONE_TEMPLATE = `
-  protected _#!{NAME}: #!{TYPE} | null = null
-	async #!{NAME}(): Promise<#!{TYPE} | null> {
-		if(this._#!{NAME} === null){
+	private _#!{NAME}: #!{TYPE} | null = null
+	async #!{NAME}(reload: boolean = false): Promise<#!{TYPE} | null> {
+		if((this._#!{NAME} === null || reload) && this.#!{RELATION_FROM} !== undefined){
 			const dbModel = await #!{TYPE}.model.findUnique({
 				where: {
 					#!{RELATION_TO}: +this.#!{RELATION_FROM}
@@ -21,9 +21,9 @@ exports.FIELD_GETTER_ONE_TEMPLATE = `
   }
 `;
 exports.FIELD_GETTER_MANY_TEMPLATE = `
-  protected _#!{NAME}: #!{TYPE} | null = null
-  async #!{NAME}(): Promise<#!{TYPE} | null> {
-    if(this._#!{NAME} === null){
+  private _#!{NAME}: #!{TYPE} | null = null
+  async #!{NAME}(reload: boolean = false): Promise<#!{TYPE} | null> {
+    if((this._#!{NAME} === null || reload) && this.#!{RELATION_FROM}!== undefined){
       const dbModels = await #!{TYPE_BASE}.model.findMany({
 				where: {
 					#!{RELATION_TO}: +this.#!{RELATION_FROM}

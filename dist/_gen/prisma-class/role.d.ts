@@ -4,8 +4,8 @@ export declare class _Role {
     static model: Prisma.RoleDelegate<undefined>;
     id: number;
     label?: string;
-    protected _user_role: _User_role[] | null;
-    user_role(): Promise<_User_role[] | null>;
+    private _user_role;
+    user_role(reload?: boolean): Promise<_User_role[] | null>;
     constructor(obj: {
         label?: string;
     });

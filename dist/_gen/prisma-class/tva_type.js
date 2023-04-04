@@ -4,8 +4,8 @@ exports._TVA_type = void 0;
 const product_1 = require("./product");
 const sub_order_1 = require("./sub_order");
 class _TVA_type {
-    async product() {
-        if (this._product === null) {
+    async product(reload = false) {
+        if ((this._product === null || reload) && this.id !== undefined) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
                     tva: +this.id,
@@ -19,8 +19,8 @@ class _TVA_type {
         }
         return this._product;
     }
-    async sub_order() {
-        if (this._sub_order === null) {
+    async sub_order(reload = false) {
+        if ((this._sub_order === null || reload) && this.id !== undefined) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
                     taxe_id: +this.id,
