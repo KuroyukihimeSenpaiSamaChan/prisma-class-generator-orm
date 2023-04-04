@@ -7,7 +7,7 @@ class _User_delivery {
         if (this._user === null) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
-                    id: this.user_id,
+                    id: +this.user_id,
                 },
             });
             if (dbModel !== null) {
@@ -34,15 +34,15 @@ class _User_delivery {
     static async fromId(id) {
         const dbModel = await _User_delivery.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _User_delivery(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.user_id === void 0 ||
                 this.address === void 0 ||
                 this.zipcode === void 0 ||
@@ -50,7 +50,7 @@ class _User_delivery {
                 this.country === void 0 ||
                 this.region === void 0 ||
                 this.phone_number === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 user_id: this.user_id,
@@ -64,14 +64,14 @@ class _User_delivery {
                 company_name: this.company_name,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -87,16 +87,16 @@ class _User_delivery {
                 phone_number: this.phone_number,
                 company_name: this.company_name,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

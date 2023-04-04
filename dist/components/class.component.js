@@ -64,7 +64,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 let trueCheckRequired = `if(
 				#!{TRUE_CHECK_REQUIRED}
 			){
-				return {status: false}
+				return {status: false, err: "Bad required fields"}
 			}`;
                 let checkRequired = '';
                 for (const _field of fieldsNonNullable) {

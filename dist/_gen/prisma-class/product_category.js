@@ -8,7 +8,7 @@ class _Product_category {
         if (this._product_categories === null) {
             const dbModel = await product_categories_1._Product_categories.model.findUnique({
                 where: {
-                    id: this.category_id,
+                    id: +this.category_id,
                 },
             });
             if (dbModel !== null) {
@@ -21,7 +21,7 @@ class _Product_category {
         if (this._product === null) {
             const dbModel = await product_1._Product.model.findUnique({
                 where: {
-                    id: this.product_id,
+                    id: +this.product_id,
                 },
             });
             if (dbModel !== null) {

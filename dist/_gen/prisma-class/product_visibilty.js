@@ -7,7 +7,7 @@ class _Product_visibilty {
         if (this._product === null) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
-                    state: this.id,
+                    state: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -30,30 +30,30 @@ class _Product_visibilty {
     static async fromId(id) {
         const dbModel = await _Product_visibilty.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _Product_visibilty(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.state === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 state: this.state,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -61,16 +61,16 @@ class _Product_visibilty {
                 id: this.id,
                 state: this.state,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

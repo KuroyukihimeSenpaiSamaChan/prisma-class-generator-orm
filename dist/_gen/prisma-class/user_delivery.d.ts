@@ -24,13 +24,14 @@ export declare class _User_delivery {
         phone_number?: string;
     });
     get model(): Prisma.User_deliveryDelegate<undefined>;
-    static fromId<T extends _User_delivery>(id: number): Promise<T | null>;
-    save(): Promise<{
+    static fromId(id: number): Promise<_User_delivery | null>;
+    save(withId?: boolean): Promise<{
         status: true;
         type: 'updated' | 'created';
         id: number;
     } | {
         status: false;
+        err: any;
     }>;
     loadAll(depth?: number): Promise<void>;
 }

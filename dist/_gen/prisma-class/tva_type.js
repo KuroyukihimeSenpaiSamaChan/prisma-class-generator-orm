@@ -8,7 +8,7 @@ class _TVA_type {
         if (this._product === null) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
-                    tva: this.id,
+                    tva: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -23,7 +23,7 @@ class _TVA_type {
         if (this._sub_order === null) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
-                    taxe_id: this.id,
+                    taxe_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -47,30 +47,30 @@ class _TVA_type {
     static async fromId(id) {
         const dbModel = await _TVA_type.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _TVA_type(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.slug === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 slug: this.slug,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -78,16 +78,16 @@ class _TVA_type {
                 id: this.id,
                 slug: this.slug,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

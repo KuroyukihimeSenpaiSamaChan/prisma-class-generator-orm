@@ -10,13 +10,14 @@ export declare class _Role {
         label?: string;
     });
     get model(): Prisma.RoleDelegate<undefined>;
-    static fromId<T extends _Role>(id: number): Promise<T | null>;
-    save(): Promise<{
+    static fromId(id: number): Promise<_Role | null>;
+    save(withId?: boolean): Promise<{
         status: true;
         type: 'updated' | 'created';
         id: number;
     } | {
         status: false;
+        err: any;
     }>;
     loadAll(depth?: number): Promise<void>;
 }

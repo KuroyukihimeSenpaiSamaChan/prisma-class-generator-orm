@@ -7,7 +7,7 @@ class _Role {
         if (this._user_role === null) {
             const dbModels = await user_role_1._User_role.model.findMany({
                 where: {
-                    role_id: this.id,
+                    role_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -30,30 +30,30 @@ class _Role {
     static async fromId(id) {
         const dbModel = await _Role.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _Role(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.label === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 label: this.label,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -61,16 +61,16 @@ class _Role {
                 id: this.id,
                 label: this.label,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

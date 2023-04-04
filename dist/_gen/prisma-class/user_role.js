@@ -8,7 +8,7 @@ class _User_role {
         if (this._role === null) {
             const dbModel = await role_1._Role.model.findUnique({
                 where: {
-                    id: this.role_id,
+                    id: +this.role_id,
                 },
             });
             if (dbModel !== null) {
@@ -21,7 +21,7 @@ class _User_role {
         if (this._user === null) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
-                    id: this.user_id,
+                    id: +this.user_id,
                 },
             });
             if (dbModel !== null) {

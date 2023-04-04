@@ -7,7 +7,7 @@ class _Orders {
         if (this._sub_order === null) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
-                    order_id: this.id,
+                    order_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -39,15 +39,15 @@ class _Orders {
     static async fromId(id) {
         const dbModel = await _Orders.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _Orders(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.order_client_id === void 0 ||
                 this.creation_date === void 0 ||
                 this.modification_date === void 0 ||
@@ -58,7 +58,7 @@ class _Orders {
                 this.buyer_delivery_id === void 0 ||
                 this.expedition_id === void 0 ||
                 this.order_total === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 order_client_id: this.order_client_id,
@@ -73,14 +73,14 @@ class _Orders {
                 order_total: this.order_total,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -97,16 +97,16 @@ class _Orders {
                 expedition_id: this.expedition_id,
                 order_total: this.order_total,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IDMODEL_TEMPLATE = void 0;
-exports.IDMODEL_TEMPLATE = `static async fromId<T extends _#!{NAME}>(id: number): Promise<T | null> {
+exports.IDMODEL_TEMPLATE = `static async fromId(id: number): Promise<_#!{NAME} | null> {
   const dbModel = await _#!{NAME}.model.findUnique({
     where:{
       #!{FIELD_NAME}: +id
     }
   });
   if(dbModel === null) return null
-  return <T>(new _#!{NAME}(dbModel));
+  return new _#!{NAME}(dbModel);
 }
 
 async save(withId: boolean = false): Promise<{
@@ -16,7 +16,8 @@ async save(withId: boolean = false): Promise<{
   type: "updated" | "created"
   id: number
 } | {
-  status: false
+  status: false,
+  err: any
 }> {
   if(this.#!{FIELD_NAME} < 0 || withId){
     #!{CHECK_REQUIRED}
@@ -26,13 +27,13 @@ async save(withId: boolean = false): Promise<{
     }
 
     try {
-      const user = await this.model.create({
+      const dbModel = await this.model.create({
         data: data
       })
-      this.#!{FIELD_NAME} = user.#!{FIELD_NAME}
-      return {status: true, id: user.#!{FIELD_NAME}, type: "created"}
-    } catch (_) {
-      return {status: false}
+      this.#!{FIELD_NAME} = dbModel.#!{FIELD_NAME}
+      return {status: true, id: dbModel.#!{FIELD_NAME}, type: "created"}
+    } catch (err) {
+      return {status: false, err: err}
     }
   }
 
@@ -41,16 +42,16 @@ async save(withId: boolean = false): Promise<{
       #!{REQUIRED_FIELDS_UPDATE}
     }
 
-    const user = await this.model.update({
+    const dbModel = await this.model.update({
       where:{
-        #!{FIELD_NAME}: this.#!{FIELD_NAME}
+        #!{FIELD_NAME}: +this.#!{FIELD_NAME}
       },
       data: data
     })
 
-    return {status: true, id: user.#!{FIELD_NAME}, type: "updated"}
-  } catch (_){
-    return {status: false}
+    return {status: true, id: dbModel.#!{FIELD_NAME}, type: "updated"}
+  } catch (err){
+    return {status: false, err: err}
   }
 
 

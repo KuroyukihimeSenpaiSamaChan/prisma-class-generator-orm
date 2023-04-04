@@ -11,7 +11,7 @@ class _Sub_order {
         if (this._expedition === null) {
             const dbModel = await expedition_1._Expedition.model.findUnique({
                 where: {
-                    id: this.expedition_id,
+                    id: +this.expedition_id,
                 },
             });
             if (dbModel !== null) {
@@ -24,7 +24,7 @@ class _Sub_order {
         if (this._orders === null) {
             const dbModel = await orders_1._Orders.model.findUnique({
                 where: {
-                    id: this.order_id,
+                    id: +this.order_id,
                 },
             });
             if (dbModel !== null) {
@@ -37,7 +37,7 @@ class _Sub_order {
         if (this._product === null) {
             const dbModel = await product_1._Product.model.findUnique({
                 where: {
-                    id: this.product_id,
+                    id: +this.product_id,
                 },
             });
             if (dbModel !== null) {
@@ -50,7 +50,7 @@ class _Sub_order {
         if (this._user === null) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
-                    id: this.vendor_id,
+                    id: +this.vendor_id,
                 },
             });
             if (dbModel !== null) {
@@ -63,7 +63,7 @@ class _Sub_order {
         if (this._tva_type === null) {
             const dbModel = await tva_type_1._TVA_type.model.findUnique({
                 where: {
-                    id: this.taxe_id,
+                    id: +this.taxe_id,
                 },
             });
             if (dbModel !== null) {
@@ -94,15 +94,15 @@ class _Sub_order {
     static async fromId(id) {
         const dbModel = await _Sub_order.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _Sub_order(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.order_id === void 0 ||
                 this.vendor_id === void 0 ||
                 this.expedition_id === void 0 ||
@@ -110,7 +110,7 @@ class _Sub_order {
                 this.product_price === void 0 ||
                 this.quantity === void 0 ||
                 this.taxe_id === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 order_id: this.order_id,
@@ -122,14 +122,14 @@ class _Sub_order {
                 taxe_id: this.taxe_id,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -143,16 +143,16 @@ class _Sub_order {
                 quantity: this.quantity,
                 taxe_id: this.taxe_id,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

@@ -13,7 +13,7 @@ class _User {
         if (this._access_token === null) {
             const dbModels = await access_token_1._Access_token.model.findMany({
                 where: {
-                    user_id: this.id,
+                    user_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -28,7 +28,7 @@ class _User {
         if (this._media === null) {
             const dbModels = await media_1._Media.model.findMany({
                 where: {
-                    user_id: this.id,
+                    user_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -43,7 +43,7 @@ class _User {
         if (this._product === null) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
-                    vendor_id: this.id,
+                    vendor_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -58,7 +58,7 @@ class _User {
         if (this._sub_order === null) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
-                    vendor_id: this.id,
+                    vendor_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -73,7 +73,7 @@ class _User {
         if (this._user_billing === null) {
             const dbModels = await user_billing_1._User_billing.model.findMany({
                 where: {
-                    user_id: this.id,
+                    user_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -88,7 +88,7 @@ class _User {
         if (this._user_delivery === null) {
             const dbModels = await user_delivery_1._User_delivery.model.findMany({
                 where: {
-                    user_id: this.id,
+                    user_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -103,7 +103,7 @@ class _User {
         if (this._user_role === null) {
             const dbModels = await user_role_1._User_role.model.findMany({
                 where: {
-                    user_id: this.id,
+                    user_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -138,22 +138,22 @@ class _User {
     static async fromId(id) {
         const dbModel = await _User.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _User(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.user_pass === void 0 ||
                 this.user_email === void 0 ||
                 this.firstname === void 0 ||
                 this.lastname === void 0 ||
                 this.birthdate === void 0 ||
                 this.token === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 user_pass: this.user_pass,
@@ -165,14 +165,14 @@ class _User {
                 token: this.token,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -186,16 +186,16 @@ class _User {
                 birthdate: this.birthdate,
                 token: this.token,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

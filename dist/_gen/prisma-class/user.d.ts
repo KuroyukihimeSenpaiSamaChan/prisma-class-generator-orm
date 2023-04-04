@@ -39,13 +39,14 @@ export declare class _User {
         token?: string;
     });
     get model(): Prisma.UserDelegate<undefined>;
-    static fromId<T extends _User>(id: number): Promise<T | null>;
-    save(): Promise<{
+    static fromId(id: number): Promise<_User | null>;
+    save(withId?: boolean): Promise<{
         status: true;
         type: 'updated' | 'created';
         id: number;
     } | {
         status: false;
+        err: any;
     }>;
     loadAll(depth?: number): Promise<void>;
 }

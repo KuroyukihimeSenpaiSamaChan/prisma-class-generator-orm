@@ -8,7 +8,7 @@ class _Media {
         if (this._user === null) {
             const dbModel = await user_1._User.model.findUnique({
                 where: {
-                    id: this.user_id,
+                    id: +this.user_id,
                 },
             });
             if (dbModel !== null) {
@@ -21,7 +21,7 @@ class _Media {
         if (this._product === null) {
             const dbModels = await product_1._Product.model.findMany({
                 where: {
-                    product_image: this.id,
+                    product_image: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -49,21 +49,21 @@ class _Media {
     static async fromId(id) {
         const dbModel = await _Media.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _Media(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.slug === void 0 ||
                 this.url === void 0 ||
                 this.creation_date === void 0 ||
                 this.modification_date === void 0 ||
                 this.user_id === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 slug: this.slug,
@@ -73,14 +73,14 @@ class _Media {
                 user_id: this.user_id,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -92,16 +92,16 @@ class _Media {
                 modification_date: this.modification_date,
                 user_id: this.user_id,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

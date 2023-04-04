@@ -34,13 +34,14 @@ export declare class _Sub_order {
         taxe_id?: number;
     });
     get model(): Prisma.Sub_orderDelegate<undefined>;
-    static fromId<T extends _Sub_order>(id: number): Promise<T | null>;
-    save(): Promise<{
+    static fromId(id: number): Promise<_Sub_order | null>;
+    save(withId?: boolean): Promise<{
         status: true;
         type: 'updated' | 'created';
         id: number;
     } | {
         status: false;
+        err: any;
     }>;
     loadAll(depth?: number): Promise<void>;
 }

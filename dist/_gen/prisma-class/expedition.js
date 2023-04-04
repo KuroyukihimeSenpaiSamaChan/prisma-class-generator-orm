@@ -7,7 +7,7 @@ class _Expedition {
         if (this._sub_order === null) {
             const dbModels = await sub_order_1._Sub_order.model.findMany({
                 where: {
-                    expedition_id: this.id,
+                    expedition_id: +this.id,
                 },
             });
             if (dbModels.length) {
@@ -33,20 +33,20 @@ class _Expedition {
     static async fromId(id) {
         const dbModel = await _Expedition.model.findUnique({
             where: {
-                id: id,
+                id: +id,
             },
         });
         if (dbModel === null)
             return null;
         return new _Expedition(dbModel);
     }
-    async save() {
-        if (this.id < 0) {
+    async save(withId = false) {
+        if (this.id < 0 || withId) {
             if (this.name === void 0 ||
                 this.slug === void 0 ||
                 this.max_weight === void 0 ||
                 this.price === void 0) {
-                return { status: false };
+                return { status: false, err: 'Bad required fields' };
             }
             const data = {
                 name: this.name,
@@ -55,14 +55,14 @@ class _Expedition {
                 price: this.price,
             };
             try {
-                const user = await this.model.create({
+                const dbModel = await this.model.create({
                     data: data,
                 });
-                this.id = user.id;
-                return { status: true, id: user.id, type: 'created' };
+                this.id = dbModel.id;
+                return { status: true, id: dbModel.id, type: 'created' };
             }
-            catch (_) {
-                return { status: false };
+            catch (err) {
+                return { status: false, err: err };
             }
         }
         try {
@@ -73,16 +73,16 @@ class _Expedition {
                 max_weight: this.max_weight,
                 price: this.price,
             };
-            const user = await this.model.update({
+            const dbModel = await this.model.update({
                 where: {
-                    id: this.id,
+                    id: +this.id,
                 },
                 data: data,
             });
-            return { status: true, id: user.id, type: 'updated' };
+            return { status: true, id: dbModel.id, type: 'updated' };
         }
-        catch (_) {
-            return { status: false };
+        catch (err) {
+            return { status: false, err: err };
         }
     }
     async loadAll(depth = 1) {

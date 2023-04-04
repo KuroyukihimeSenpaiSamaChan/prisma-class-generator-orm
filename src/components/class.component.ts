@@ -76,7 +76,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			let trueCheckRequired = `if(
 				#!{TRUE_CHECK_REQUIRED}
 			){
-				return {status: false}
+				return {status: false, err: "Bad required fields"}
 			}`
 			let checkRequired = ''
 			for (const _field of fieldsNonNullable) {

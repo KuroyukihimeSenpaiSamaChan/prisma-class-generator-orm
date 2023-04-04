@@ -16,13 +16,14 @@ export declare class _Expedition {
         price?: number;
     });
     get model(): Prisma.ExpeditionDelegate<undefined>;
-    static fromId<T extends _Expedition>(id: number): Promise<T | null>;
-    save(): Promise<{
+    static fromId(id: number): Promise<_Expedition | null>;
+    save(withId?: boolean): Promise<{
         status: true;
         type: 'updated' | 'created';
         id: number;
     } | {
         status: false;
+        err: any;
     }>;
     loadAll(depth?: number): Promise<void>;
 }

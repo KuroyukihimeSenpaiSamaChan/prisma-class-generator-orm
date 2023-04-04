@@ -7,7 +7,7 @@ export const FIELD_GETTER_ONE_TEMPLATE = `
 		if(this._#!{NAME} === null){
 			const dbModel = await #!{TYPE}.model.findUnique({
 				where: {
-					#!{RELATION_TO}: this.#!{RELATION_FROM}
+					#!{RELATION_TO}: +this.#!{RELATION_FROM}
 				}
 			})
 			if(dbModel !== null){
@@ -24,7 +24,7 @@ export const FIELD_GETTER_MANY_TEMPLATE = `
     if(this._#!{NAME} === null){
       const dbModels = await #!{TYPE_BASE}.model.findMany({
 				where: {
-					#!{RELATION_TO}: this.#!{RELATION_FROM}
+					#!{RELATION_TO}: +this.#!{RELATION_FROM}
 				}
       })
 			if(dbModels.length){
