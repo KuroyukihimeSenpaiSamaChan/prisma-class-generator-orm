@@ -1,7 +1,7 @@
 export const IDMODEL_TEMPLATE = `static async fromId<T extends _#!{NAME}>(id: number): Promise<T | null> {
   const dbModel = await _#!{NAME}.model.findUnique({
     where:{
-      #!{FIELD_NAME}: id
+      #!{FIELD_NAME}: +id
     }
   });
   if(dbModel === null) return null
