@@ -20,7 +20,7 @@ export declare class _Product_categories {
         category_slug?: string;
     });
     get db(): Prisma.Product_categoriesDelegate<undefined>;
-    static all(where?: _Product_categoriesFields): Promise<_Product_categories[]>;
+    static all(where?: Partial<_Product_categoriesFields>): Promise<_Product_categories[]>;
     static fromId(id: number): Promise<_Product_categories | null>;
     save(withId?: boolean): Promise<{
         status: true;

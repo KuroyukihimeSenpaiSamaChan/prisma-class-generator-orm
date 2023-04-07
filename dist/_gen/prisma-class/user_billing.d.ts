@@ -37,7 +37,7 @@ export declare class _User_billing {
         phone_number?: string;
     });
     get db(): Prisma.User_billingDelegate<undefined>;
-    static all(where?: _User_billingFields): Promise<_User_billing[]>;
+    static all(where?: Partial<_User_billingFields>): Promise<_User_billing[]>;
     static fromId(id: number): Promise<_User_billing | null>;
     save(withId?: boolean): Promise<{
         status: true;

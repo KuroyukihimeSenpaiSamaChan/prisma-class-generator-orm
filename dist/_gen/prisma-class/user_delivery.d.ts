@@ -37,7 +37,7 @@ export declare class _User_delivery {
         phone_number?: string;
     });
     get db(): Prisma.User_deliveryDelegate<undefined>;
-    static all(where?: _User_deliveryFields): Promise<_User_delivery[]>;
+    static all(where?: Partial<_User_deliveryFields>): Promise<_User_delivery[]>;
     static fromId(id: number): Promise<_User_delivery | null>;
     save(withId?: boolean): Promise<{
         status: true;

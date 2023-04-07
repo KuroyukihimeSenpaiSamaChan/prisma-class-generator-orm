@@ -19,6 +19,6 @@ export declare class _Product_category {
         category_id?: number;
     });
     get db(): Prisma.Product_categoryDelegate<undefined>;
-    static all(where?: _Product_categoryFields): Promise<_Product_category[]>;
+    static all(where?: Partial<_Product_categoryFields>): Promise<_Product_category[]>;
     loadAll(depth?: number): Promise<void>;
 }

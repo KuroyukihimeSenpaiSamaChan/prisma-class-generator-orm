@@ -47,7 +47,7 @@ export declare class _Sub_order {
         taxe_id?: number;
     });
     get db(): Prisma.Sub_orderDelegate<undefined>;
-    static all(where?: _Sub_orderFields): Promise<_Sub_order[]>;
+    static all(where?: Partial<_Sub_orderFields>): Promise<_Sub_order[]>;
     static fromId(id: number): Promise<_Sub_order | null>;
     save(withId?: boolean): Promise<{
         status: true;

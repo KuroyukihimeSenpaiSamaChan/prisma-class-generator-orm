@@ -20,7 +20,7 @@ export declare class _TVA_type {
         slug?: string;
     });
     get db(): Prisma.TVA_typeDelegate<undefined>;
-    static all(where?: _TVA_typeFields): Promise<_TVA_type[]>;
+    static all(where?: Partial<_TVA_typeFields>): Promise<_TVA_type[]>;
     static fromId(id: number): Promise<_TVA_type | null>;
     save(withId?: boolean): Promise<{
         status: true;

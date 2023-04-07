@@ -53,7 +53,7 @@ export declare class _User {
         token?: string;
     });
     get db(): Prisma.UserDelegate<undefined>;
-    static all(where?: _UserFields): Promise<_User[]>;
+    static all(where?: Partial<_UserFields>): Promise<_User[]>;
     static fromId(id: number): Promise<_User | null>;
     save(withId?: boolean): Promise<{
         status: true;

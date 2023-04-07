@@ -17,7 +17,7 @@ export declare class _Product_visibilty {
         state?: string;
     });
     get db(): Prisma.Product_visibiltyDelegate<undefined>;
-    static all(where?: _Product_visibiltyFields): Promise<_Product_visibilty[]>;
+    static all(where?: Partial<_Product_visibiltyFields>): Promise<_Product_visibilty[]>;
     static fromId(id: number): Promise<_Product_visibilty | null>;
     save(withId?: boolean): Promise<{
         status: true;

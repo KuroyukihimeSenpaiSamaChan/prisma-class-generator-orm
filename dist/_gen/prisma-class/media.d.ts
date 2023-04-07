@@ -32,7 +32,7 @@ export declare class _Media {
         user_id?: number;
     });
     get db(): Prisma.MediaDelegate<undefined>;
-    static all(where?: _MediaFields): Promise<_Media[]>;
+    static all(where?: Partial<_MediaFields>): Promise<_Media[]>;
     static fromId(id: number): Promise<_Media | null>;
     save(withId?: boolean): Promise<{
         status: true;

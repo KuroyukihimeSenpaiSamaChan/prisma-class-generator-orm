@@ -85,7 +85,7 @@ export declare class _Product {
         has_tva?: boolean;
     });
     get db(): Prisma.ProductDelegate<undefined>;
-    static all(where?: _ProductFields): Promise<_Product[]>;
+    static all(where?: Partial<_ProductFields>): Promise<_Product[]>;
     static fromId(id: number): Promise<_Product | null>;
     save(withId?: boolean): Promise<{
         status: true;

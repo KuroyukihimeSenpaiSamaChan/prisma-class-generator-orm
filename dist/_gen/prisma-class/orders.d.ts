@@ -44,7 +44,7 @@ export declare class _Orders {
         order_total?: number;
     });
     get db(): Prisma.OrdersDelegate<undefined>;
-    static all(where?: _OrdersFields): Promise<_Orders[]>;
+    static all(where?: Partial<_OrdersFields>): Promise<_Orders[]>;
     static fromId(id: number): Promise<_Orders | null>;
     save(withId?: boolean): Promise<{
         status: true;

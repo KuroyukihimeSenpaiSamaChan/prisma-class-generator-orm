@@ -1,5 +1,5 @@
 export const ALL_TEMPLATE = `
-  async static all(where?: _#!{NAME}Fields): Promise<_#!{NAME}[]> {
+  async static all(where?: Partial<_#!{NAME}Fields>): Promise<_#!{NAME}[]> {
     const models = await _#!{NAME}.db.findMany({where: where})
     return models.reduce((acc, m) => {
       acc.push(new _#!{NAME}(m))

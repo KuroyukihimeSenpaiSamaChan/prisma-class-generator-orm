@@ -26,7 +26,7 @@ export declare class _Expedition {
         price?: number;
     });
     get db(): Prisma.ExpeditionDelegate<undefined>;
-    static all(where?: _ExpeditionFields): Promise<_Expedition[]>;
+    static all(where?: Partial<_ExpeditionFields>): Promise<_Expedition[]>;
     static fromId(id: number): Promise<_Expedition | null>;
     save(withId?: boolean): Promise<{
         status: true;

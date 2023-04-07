@@ -19,6 +19,6 @@ export declare class _User_role {
         role_id?: number;
     });
     get db(): Prisma.User_roleDelegate<undefined>;
-    static all(where?: _User_roleFields): Promise<_User_role[]>;
+    static all(where?: Partial<_User_roleFields>): Promise<_User_role[]>;
     loadAll(depth?: number): Promise<void>;
 }

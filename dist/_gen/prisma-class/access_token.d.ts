@@ -22,7 +22,7 @@ export declare class _Access_token {
         token?: string;
     });
     get db(): Prisma.Access_tokenDelegate<undefined>;
-    static all(where?: _Access_tokenFields): Promise<_Access_token[]>;
+    static all(where?: Partial<_Access_tokenFields>): Promise<_Access_token[]>;
     static fromId(id: number): Promise<_Access_token | null>;
     save(withId?: boolean): Promise<{
         status: true;
