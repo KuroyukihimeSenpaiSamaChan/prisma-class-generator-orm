@@ -5,7 +5,7 @@ const user_role_1 = require("./user_role");
 class _Role {
     async user_role(reload = false) {
         if ((this._user_role === null || reload) && this.id !== undefined) {
-            const dbModels = await user_role_1._User_role.model.findMany({
+            const dbModels = await user_role_1._User_role.db.findMany({
                 where: {
                     role_id: +this.id,
                 },
@@ -24,11 +24,18 @@ class _Role {
         this.label = obj.label;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Role.model;
+    get db() {
+        return _Role.db;
+    }
+    static async all(where) {
+        const models = await _Role.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Role(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Role.model.findUnique({
+        const dbModel = await _Role.db.findUnique({
             where: {
                 id: +id,
             },
@@ -46,7 +53,7 @@ class _Role {
                 label: this.label,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -61,7 +68,7 @@ class _Role {
                 id: this.id,
                 label: this.label,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

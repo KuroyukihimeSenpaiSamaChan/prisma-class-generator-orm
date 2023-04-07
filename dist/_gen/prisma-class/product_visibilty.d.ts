@@ -1,7 +1,14 @@
 import { _Product } from './product';
 import { Prisma } from '@prisma/client';
+export type _Product_visibiltyFields = {
+    id: number;
+    state: string;
+};
+export type _Product_visibiltyUniqueFields = {
+    id: number;
+};
 export declare class _Product_visibilty {
-    static model: Prisma.Product_visibiltyDelegate<undefined>;
+    static db: Prisma.Product_visibiltyDelegate<undefined>;
     id: number;
     state?: string;
     private _product;
@@ -9,7 +16,8 @@ export declare class _Product_visibilty {
     constructor(obj: {
         state?: string;
     });
-    get model(): Prisma.Product_visibiltyDelegate<undefined>;
+    get db(): Prisma.Product_visibiltyDelegate<undefined>;
+    static all(where?: _Product_visibiltyFields): Promise<_Product_visibilty[]>;
     static fromId(id: number): Promise<_Product_visibilty | null>;
     save(withId?: boolean): Promise<{
         status: true;

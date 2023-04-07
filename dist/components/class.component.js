@@ -6,6 +6,8 @@ const idmodel_template_1 = require("../templates/idmodel.template");
 const base_component_1 = require("./base.component");
 const loadall_template_1 = require("../templates/loadall.template");
 const field_template_1 = require("../templates/field.template");
+const all_template_1 = require("../templates/all.template");
+const all_template_2 = require("../templates/all.template");
 class ClassComponent extends base_component_1.BaseComponent {
     constructor() {
         super(...arguments);
@@ -40,8 +42,8 @@ class ClassComponent extends base_component_1.BaseComponent {
 			`;
             }
             const prismamodel_type = `Prisma.${this.name}Delegate<undefined>`;
-            const model_getter = `get model(): ${prismamodel_type} {
-			return _${this.name}.model
+            const model_getter = `get db(): ${prismamodel_type} {
+			return _${this.name}.db
 		}`;
             let fromId = '';
             const fieldId = this.fields.filter((_field) => _field.isId);
@@ -98,9 +100,25 @@ class ClassComponent extends base_component_1.BaseComponent {
                 }
                 fieldsLoaders += fieldRelation.replaceAll('#!{NAME}', _field.name);
             }
+            let fields = '';
+            let fieldsUnique = '';
+            for (const _field of this.fields) {
+                if (_field.relation !== void 0)
+                    continue;
+                if (_field.unique || _field.isId) {
+                    fieldsUnique += `${_field.name}: ${_field.type},`;
+                }
+                if (!_field.nullable) {
+                    fields += `${_field.name}: ${_field.type},`;
+                }
+            }
+            let fieldsType = all_template_2.FIELDS_TYPE_TEMPLATE.replaceAll('#!{FIELDS}', fields)
+                .replaceAll('#!{FIELDS_UNIQUE}', fieldsUnique);
             const fieldContent = this.fields.map((_field) => _field.echo());
             let str = class_template_1.CLASS_TEMPLATE.replace('#!{DECORATORS}', this.echoDecorators())
                 .replaceAll('#!{FROMID}', `${fromId}`)
+                .replaceAll('#!{ALL}', all_template_1.ALL_TEMPLATE)
+                .replaceAll('#!{FIELDS_TYPE}', fieldsType)
                 .replaceAll('#!{NAME}', `${this.name}`)
                 .replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
                 .replaceAll('#!{EXTRA}', this.extra)

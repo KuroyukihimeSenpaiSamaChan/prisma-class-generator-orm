@@ -5,8 +5,32 @@ import { _User } from './user';
 import { _Product_category } from './product_category';
 import { _Sub_order } from './sub_order';
 import { Prisma } from '@prisma/client';
+export type _ProductFields = {
+    id: number;
+    vendor_id: number;
+    state: number;
+    tva: number;
+    product_name: string;
+    vendor_sku: string;
+    product_sku: string;
+    price: number;
+    price_promo: number;
+    description: string;
+    backorder: boolean;
+    unique_product: boolean;
+    linked_products: string;
+    product_image: number;
+    product_state: number;
+    product_keywords: string;
+    creation_date: number;
+    modification_date: number;
+    has_tva: boolean;
+};
+export type _ProductUniqueFields = {
+    id: number;
+};
 export declare class _Product {
-    static model: Prisma.ProductDelegate<undefined>;
+    static db: Prisma.ProductDelegate<undefined>;
     id: number;
     vendor_id?: number;
     state?: number;
@@ -60,7 +84,8 @@ export declare class _Product {
         modification_date?: number;
         has_tva?: boolean;
     });
-    get model(): Prisma.ProductDelegate<undefined>;
+    get db(): Prisma.ProductDelegate<undefined>;
+    static all(where?: _ProductFields): Promise<_Product[]>;
     static fromId(id: number): Promise<_Product | null>;
     save(withId?: boolean): Promise<{
         status: true;

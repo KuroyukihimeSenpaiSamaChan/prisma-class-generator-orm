@@ -5,7 +5,7 @@ export const FIELD_GETTER_ONE_TEMPLATE = `
 	private _#!{NAME}: #!{TYPE} | null = null
 	async #!{NAME}(reload: boolean = false): Promise<#!{TYPE} | null> {
 		if((this._#!{NAME} === null || reload) && this.#!{RELATION_FROM} !== undefined){
-			const dbModel = await #!{TYPE}.model.findUnique({
+			const dbModel = await #!{TYPE}.db.findUnique({
 				where: {
 					#!{RELATION_TO}: +this.#!{RELATION_FROM}
 				}
@@ -22,7 +22,7 @@ export const FIELD_GETTER_MANY_TEMPLATE = `
   private _#!{NAME}: #!{TYPE} | null = null
   async #!{NAME}(reload: boolean = false): Promise<#!{TYPE} | null> {
     if((this._#!{NAME} === null || reload) && this.#!{RELATION_FROM}!== undefined){
-      const dbModels = await #!{TYPE_BASE}.model.findMany({
+      const dbModels = await #!{TYPE_BASE}.db.findMany({
 				where: {
 					#!{RELATION_TO}: +this.#!{RELATION_FROM}
 				}

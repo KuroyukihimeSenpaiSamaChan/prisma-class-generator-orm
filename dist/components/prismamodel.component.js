@@ -37,7 +37,7 @@ class PrismaModelComponent extends file_component_1.FileComponent {
                 classesImports += `import { _${classComp.name} } from './${classComp.name.toLowerCase()}'
 			export { _${classComp.name} } from './${classComp.name.toLowerCase()}'
 			`;
-                classesInit += `_${classComp.name}.model = PrismaModel.prisma.${classComp.name
+                classesInit += `_${classComp.name}.db = PrismaModel.prisma.${classComp.name
                     .toLowerCase()
                     .substring(0, 1)}${classComp.name.substring(1)};
 			`;

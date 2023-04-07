@@ -7,7 +7,7 @@ class _Product_category {
     async product_categories(reload = false) {
         if ((this._product_categories === null || reload) &&
             this.category_id !== undefined) {
-            const dbModel = await product_categories_1._Product_categories.model.findUnique({
+            const dbModel = await product_categories_1._Product_categories.db.findUnique({
                 where: {
                     id: +this.category_id,
                 },
@@ -21,7 +21,7 @@ class _Product_category {
     async product(reload = false) {
         if ((this._product === null || reload) &&
             this.product_id !== undefined) {
-            const dbModel = await product_1._Product.model.findUnique({
+            const dbModel = await product_1._Product.db.findUnique({
                 where: {
                     id: +this.product_id,
                 },
@@ -39,8 +39,15 @@ class _Product_category {
         this.category_id = obj.category_id;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Product_category.model;
+    get db() {
+        return _Product_category.db;
+    }
+    static async all(where) {
+        const models = await _Product_category.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Product_category(m));
+            return acc;
+        }, []);
     }
     async loadAll(depth = 1) {
         if (depth <= 0)

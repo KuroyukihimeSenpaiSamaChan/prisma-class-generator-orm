@@ -5,7 +5,7 @@ const sub_order_1 = require("./sub_order");
 class _Orders {
     async sub_order(reload = false) {
         if ((this._sub_order === null || reload) && this.id !== undefined) {
-            const dbModels = await sub_order_1._Sub_order.model.findMany({
+            const dbModels = await sub_order_1._Sub_order.db.findMany({
                 where: {
                     order_id: +this.id,
                 },
@@ -33,11 +33,18 @@ class _Orders {
         this.order_total = obj.order_total;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Orders.model;
+    get db() {
+        return _Orders.db;
+    }
+    static async all(where) {
+        const models = await _Orders.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Orders(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Orders.model.findUnique({
+        const dbModel = await _Orders.db.findUnique({
             where: {
                 id: +id,
             },
@@ -73,7 +80,7 @@ class _Orders {
                 order_total: this.order_total,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -97,7 +104,7 @@ class _Orders {
                 expedition_id: this.expedition_id,
                 order_total: this.order_total,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

@@ -5,7 +5,7 @@ const sub_order_1 = require("./sub_order");
 class _Expedition {
     async sub_order(reload = false) {
         if ((this._sub_order === null || reload) && this.id !== undefined) {
-            const dbModels = await sub_order_1._Sub_order.model.findMany({
+            const dbModels = await sub_order_1._Sub_order.db.findMany({
                 where: {
                     expedition_id: +this.id,
                 },
@@ -27,11 +27,18 @@ class _Expedition {
         this.price = obj.price;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Expedition.model;
+    get db() {
+        return _Expedition.db;
+    }
+    static async all(where) {
+        const models = await _Expedition.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Expedition(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Expedition.model.findUnique({
+        const dbModel = await _Expedition.db.findUnique({
             where: {
                 id: +id,
             },
@@ -55,7 +62,7 @@ class _Expedition {
                 price: this.price,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -73,7 +80,7 @@ class _Expedition {
                 max_weight: this.max_weight,
                 price: this.price,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

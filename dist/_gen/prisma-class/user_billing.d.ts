@@ -1,7 +1,20 @@
 import { _User } from './user';
 import { Prisma } from '@prisma/client';
+export type _User_billingFields = {
+    id: number;
+    user_id: number;
+    address: string;
+    zipcode: string;
+    city: string;
+    country: string;
+    region: string;
+    phone_number: string;
+};
+export type _User_billingUniqueFields = {
+    id: number;
+};
 export declare class _User_billing {
-    static model: Prisma.User_billingDelegate<undefined>;
+    static db: Prisma.User_billingDelegate<undefined>;
     id: number;
     user_id?: number;
     address?: string;
@@ -23,7 +36,8 @@ export declare class _User_billing {
         region?: string;
         phone_number?: string;
     });
-    get model(): Prisma.User_billingDelegate<undefined>;
+    get db(): Prisma.User_billingDelegate<undefined>;
+    static all(where?: _User_billingFields): Promise<_User_billing[]>;
     static fromId(id: number): Promise<_User_billing | null>;
     save(withId?: boolean): Promise<{
         status: true;

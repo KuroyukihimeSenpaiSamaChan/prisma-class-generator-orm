@@ -11,7 +11,7 @@ const user_role_1 = require("./user_role");
 class _User {
     async access_token(reload = false) {
         if ((this._access_token === null || reload) && this.id !== undefined) {
-            const dbModels = await access_token_1._Access_token.model.findMany({
+            const dbModels = await access_token_1._Access_token.db.findMany({
                 where: {
                     user_id: +this.id,
                 },
@@ -26,7 +26,7 @@ class _User {
     }
     async media(reload = false) {
         if ((this._media === null || reload) && this.id !== undefined) {
-            const dbModels = await media_1._Media.model.findMany({
+            const dbModels = await media_1._Media.db.findMany({
                 where: {
                     user_id: +this.id,
                 },
@@ -41,7 +41,7 @@ class _User {
     }
     async product(reload = false) {
         if ((this._product === null || reload) && this.id !== undefined) {
-            const dbModels = await product_1._Product.model.findMany({
+            const dbModels = await product_1._Product.db.findMany({
                 where: {
                     vendor_id: +this.id,
                 },
@@ -56,7 +56,7 @@ class _User {
     }
     async sub_order(reload = false) {
         if ((this._sub_order === null || reload) && this.id !== undefined) {
-            const dbModels = await sub_order_1._Sub_order.model.findMany({
+            const dbModels = await sub_order_1._Sub_order.db.findMany({
                 where: {
                     vendor_id: +this.id,
                 },
@@ -71,7 +71,7 @@ class _User {
     }
     async user_billing(reload = false) {
         if ((this._user_billing === null || reload) && this.id !== undefined) {
-            const dbModels = await user_billing_1._User_billing.model.findMany({
+            const dbModels = await user_billing_1._User_billing.db.findMany({
                 where: {
                     user_id: +this.id,
                 },
@@ -86,7 +86,7 @@ class _User {
     }
     async user_delivery(reload = false) {
         if ((this._user_delivery === null || reload) && this.id !== undefined) {
-            const dbModels = await user_delivery_1._User_delivery.model.findMany({
+            const dbModels = await user_delivery_1._User_delivery.db.findMany({
                 where: {
                     user_id: +this.id,
                 },
@@ -101,7 +101,7 @@ class _User {
     }
     async user_role(reload = false) {
         if ((this._user_role === null || reload) && this.id !== undefined) {
-            const dbModels = await user_role_1._User_role.model.findMany({
+            const dbModels = await user_role_1._User_role.db.findMany({
                 where: {
                     user_id: +this.id,
                 },
@@ -132,11 +132,18 @@ class _User {
         this.token = obj.token;
         Object.assign(this, obj);
     }
-    get model() {
-        return _User.model;
+    get db() {
+        return _User.db;
+    }
+    static async all(where) {
+        const models = await _User.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _User(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _User.model.findUnique({
+        const dbModel = await _User.db.findUnique({
             where: {
                 id: +id,
             },
@@ -165,7 +172,7 @@ class _User {
                 token: this.token,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -186,7 +193,7 @@ class _User {
                 birthdate: this.birthdate,
                 token: this.token,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

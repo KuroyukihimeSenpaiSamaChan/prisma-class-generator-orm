@@ -10,7 +10,7 @@ class _Sub_order {
     async expedition(reload = false) {
         if ((this._expedition === null || reload) &&
             this.expedition_id !== undefined) {
-            const dbModel = await expedition_1._Expedition.model.findUnique({
+            const dbModel = await expedition_1._Expedition.db.findUnique({
                 where: {
                     id: +this.expedition_id,
                 },
@@ -23,7 +23,7 @@ class _Sub_order {
     }
     async orders(reload = false) {
         if ((this._orders === null || reload) && this.order_id !== undefined) {
-            const dbModel = await orders_1._Orders.model.findUnique({
+            const dbModel = await orders_1._Orders.db.findUnique({
                 where: {
                     id: +this.order_id,
                 },
@@ -37,7 +37,7 @@ class _Sub_order {
     async product(reload = false) {
         if ((this._product === null || reload) &&
             this.product_id !== undefined) {
-            const dbModel = await product_1._Product.model.findUnique({
+            const dbModel = await product_1._Product.db.findUnique({
                 where: {
                     id: +this.product_id,
                 },
@@ -50,7 +50,7 @@ class _Sub_order {
     }
     async user(reload = false) {
         if ((this._user === null || reload) && this.vendor_id !== undefined) {
-            const dbModel = await user_1._User.model.findUnique({
+            const dbModel = await user_1._User.db.findUnique({
                 where: {
                     id: +this.vendor_id,
                 },
@@ -63,7 +63,7 @@ class _Sub_order {
     }
     async tva_type(reload = false) {
         if ((this._tva_type === null || reload) && this.taxe_id !== undefined) {
-            const dbModel = await tva_type_1._TVA_type.model.findUnique({
+            const dbModel = await tva_type_1._TVA_type.db.findUnique({
                 where: {
                     id: +this.taxe_id,
                 },
@@ -90,11 +90,18 @@ class _Sub_order {
         this.taxe_id = obj.taxe_id;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Sub_order.model;
+    get db() {
+        return _Sub_order.db;
+    }
+    static async all(where) {
+        const models = await _Sub_order.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Sub_order(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Sub_order.model.findUnique({
+        const dbModel = await _Sub_order.db.findUnique({
             where: {
                 id: +id,
             },
@@ -124,7 +131,7 @@ class _Sub_order {
                 taxe_id: this.taxe_id,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -145,7 +152,7 @@ class _Sub_order {
                 quantity: this.quantity,
                 taxe_id: this.taxe_id,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

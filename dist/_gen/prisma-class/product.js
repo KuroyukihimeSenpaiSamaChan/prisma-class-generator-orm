@@ -11,7 +11,7 @@ class _Product {
     async media(reload = false) {
         if ((this._media === null || reload) &&
             this.product_image !== undefined) {
-            const dbModel = await media_1._Media.model.findUnique({
+            const dbModel = await media_1._Media.db.findUnique({
                 where: {
                     id: +this.product_image,
                 },
@@ -25,7 +25,7 @@ class _Product {
     async product_visibilty(reload = false) {
         if ((this._product_visibilty === null || reload) &&
             this.state !== undefined) {
-            const dbModel = await product_visibilty_1._Product_visibilty.model.findUnique({
+            const dbModel = await product_visibilty_1._Product_visibilty.db.findUnique({
                 where: {
                     id: +this.state,
                 },
@@ -38,7 +38,7 @@ class _Product {
     }
     async tva_type(reload = false) {
         if ((this._tva_type === null || reload) && this.tva !== undefined) {
-            const dbModel = await tva_type_1._TVA_type.model.findUnique({
+            const dbModel = await tva_type_1._TVA_type.db.findUnique({
                 where: {
                     id: +this.tva,
                 },
@@ -51,7 +51,7 @@ class _Product {
     }
     async user(reload = false) {
         if ((this._user === null || reload) && this.vendor_id !== undefined) {
-            const dbModel = await user_1._User.model.findUnique({
+            const dbModel = await user_1._User.db.findUnique({
                 where: {
                     id: +this.vendor_id,
                 },
@@ -65,7 +65,7 @@ class _Product {
     async product_category(reload = false) {
         if ((this._product_category === null || reload) &&
             this.id !== undefined) {
-            const dbModels = await product_category_1._Product_category.model.findMany({
+            const dbModels = await product_category_1._Product_category.db.findMany({
                 where: {
                     product_id: +this.id,
                 },
@@ -80,7 +80,7 @@ class _Product {
     }
     async sub_order(reload = false) {
         if ((this._sub_order === null || reload) && this.id !== undefined) {
-            const dbModels = await sub_order_1._Sub_order.model.findMany({
+            const dbModels = await sub_order_1._Sub_order.db.findMany({
                 where: {
                     product_id: +this.id,
                 },
@@ -121,11 +121,18 @@ class _Product {
         this.has_tva = obj.has_tva;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Product.model;
+    get db() {
+        return _Product.db;
+    }
+    static async all(where) {
+        const models = await _Product.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Product(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Product.model.findUnique({
+        const dbModel = await _Product.db.findUnique({
             where: {
                 id: +id,
             },
@@ -179,7 +186,7 @@ class _Product {
                 has_tva: this.has_tva,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -213,7 +220,7 @@ class _Product {
                 modification_date: this.modification_date,
                 has_tva: this.has_tva,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

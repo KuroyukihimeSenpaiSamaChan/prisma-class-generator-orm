@@ -1,8 +1,19 @@
 import { _User } from './user';
 import { _Product } from './product';
 import { Prisma } from '@prisma/client';
+export type _MediaFields = {
+    id: number;
+    slug: string;
+    url: string;
+    creation_date: number;
+    modification_date: number;
+    user_id: number;
+};
+export type _MediaUniqueFields = {
+    id: number;
+};
 export declare class _Media {
-    static model: Prisma.MediaDelegate<undefined>;
+    static db: Prisma.MediaDelegate<undefined>;
     id: number;
     slug?: string;
     url?: string;
@@ -20,7 +31,8 @@ export declare class _Media {
         modification_date?: number;
         user_id?: number;
     });
-    get model(): Prisma.MediaDelegate<undefined>;
+    get db(): Prisma.MediaDelegate<undefined>;
+    static all(where?: _MediaFields): Promise<_Media[]>;
     static fromId(id: number): Promise<_Media | null>;
     save(withId?: boolean): Promise<{
         status: true;

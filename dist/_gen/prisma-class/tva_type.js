@@ -6,7 +6,7 @@ const sub_order_1 = require("./sub_order");
 class _TVA_type {
     async product(reload = false) {
         if ((this._product === null || reload) && this.id !== undefined) {
-            const dbModels = await product_1._Product.model.findMany({
+            const dbModels = await product_1._Product.db.findMany({
                 where: {
                     tva: +this.id,
                 },
@@ -21,7 +21,7 @@ class _TVA_type {
     }
     async sub_order(reload = false) {
         if ((this._sub_order === null || reload) && this.id !== undefined) {
-            const dbModels = await sub_order_1._Sub_order.model.findMany({
+            const dbModels = await sub_order_1._Sub_order.db.findMany({
                 where: {
                     taxe_id: +this.id,
                 },
@@ -41,11 +41,18 @@ class _TVA_type {
         this.slug = obj.slug;
         Object.assign(this, obj);
     }
-    get model() {
-        return _TVA_type.model;
+    get db() {
+        return _TVA_type.db;
+    }
+    static async all(where) {
+        const models = await _TVA_type.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _TVA_type(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _TVA_type.model.findUnique({
+        const dbModel = await _TVA_type.db.findUnique({
             where: {
                 id: +id,
             },
@@ -63,7 +70,7 @@ class _TVA_type {
                 slug: this.slug,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -78,7 +85,7 @@ class _TVA_type {
                 id: this.id,
                 slug: this.slug,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

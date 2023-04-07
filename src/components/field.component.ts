@@ -21,6 +21,7 @@ export class FieldComponent extends BaseComponent implements Echoable {
 	}
 	default?: string
 	type?: string
+	unique?: boolean
 
 	echo = () => {
 		let name = this.name
@@ -31,11 +32,12 @@ export class FieldComponent extends BaseComponent implements Echoable {
 		let decorators = ''
 		if (this.isId) {
 			this.default = '-1'
+			decorators = '// ID'
 			// decorators = '@PrismaDecorators.id'
 		}
-		// else if (!this.nullable) {
-		// 	decorators = '@PrismaDecorators.required'
-		// }
+		else if (this.unique) {
+			decorators = '// UNIQUE'
+		}
 
 		let defaultValue = ''
 		if (this.default) {

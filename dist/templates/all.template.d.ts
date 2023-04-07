@@ -1,0 +1,2 @@
+export declare const ALL_TEMPLATE = "\n  async static all(where?: _#!{NAME}Fields): Promise<_#!{NAME}[]> {\n    const models = await _#!{NAME}.db.findMany({where: where})\n    return models.reduce((acc, m) => {\n      acc.push(new _#!{NAME}(m))\n      return acc;\n    }, [] as _#!{NAME}[])\n  }\n";
+export declare const FIELDS_TYPE_TEMPLATE = "\nexport type _#!{NAME}Fields = {\n  #!{FIELDS}\n}\n\nexport type _#!{NAME}UniqueFields = {\n  #!{FIELDS_UNIQUE}\n}\n";

@@ -5,6 +5,8 @@ import { IDMODEL_TEMPLATE } from '../templates/idmodel.template'
 import { BaseComponent } from './base.component'
 import { LOAD_ALL } from '../templates/loadall.template'
 import { FIELD_DEPTH_LOAD_ARRAY, FIELD_DEPTH_LOAD_SINGLE } from '../templates/field.template'
+import { ALL_TEMPLATE } from '../templates/all.template'
+import { FIELDS_TYPE_TEMPLATE } from '../templates/all.template'
 
 export class ClassComponent extends BaseComponent implements Echoable {
 	name: string
@@ -47,11 +49,10 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 		// Generate the 'static model' field
 		const prismamodel_type = `Prisma.${this.name}Delegate<undefined>`
-		// const prismamodel_value = `PrismaModel.prisma.${this.name.toLowerCase().substring(0,1)}${this.name.substring(1)}`;
 
 		// Generate the 'model' getter
-		const model_getter = `get model(): ${prismamodel_type} {
-			return _${this.name}.model
+		const model_getter = `get db(): ${prismamodel_type} {
+			return _${this.name}.db
 		}`
 
 		// Generate the fromId method
@@ -114,12 +115,33 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			)
 		}
 
+		// Creates the fields, fieldsUnique, and all()
+		let fields = '';
+		let fieldsUnique = ''
+		for (const _field of this.fields) {
+			if (_field.relation !== void 0) continue
+			if (_field.unique || _field.isId) {
+				fieldsUnique += `${_field.name}: ${_field.type},`
+			}
+			if (!_field.nullable) {
+				fields += `${_field.name}: ${_field.type},`
+			}
+		}
+
+		let fieldsType = FIELDS_TYPE_TEMPLATE.replaceAll(
+			'#!{FIELDS}',
+			fields
+		)
+			.replaceAll('#!{FIELDS_UNIQUE}', fieldsUnique)
+
 		const fieldContent = this.fields.map((_field) => _field.echo())
 		let str = CLASS_TEMPLATE.replace(
 			'#!{DECORATORS}',
 			this.echoDecorators(),
 		)
 			.replaceAll('#!{FROMID}', `${fromId}`)
+			.replaceAll('#!{ALL}', ALL_TEMPLATE)
+			.replaceAll('#!{FIELDS_TYPE}', fieldsType)
 			.replaceAll('#!{NAME}', `${this.name}`)
 			.replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
 			.replaceAll('#!{EXTRA}', this.extra)

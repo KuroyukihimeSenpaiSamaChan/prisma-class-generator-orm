@@ -5,7 +5,7 @@ const user_1 = require("./user");
 class _Access_token {
     async user(reload = false) {
         if ((this._user === null || reload) && this.user_id !== undefined) {
-            const dbModel = await user_1._User.model.findUnique({
+            const dbModel = await user_1._User.db.findUnique({
                 where: {
                     id: +this.user_id,
                 },
@@ -23,11 +23,18 @@ class _Access_token {
         this.token = obj.token;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Access_token.model;
+    get db() {
+        return _Access_token.db;
+    }
+    static async all(where) {
+        const models = await _Access_token.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Access_token(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Access_token.model.findUnique({
+        const dbModel = await _Access_token.db.findUnique({
             where: {
                 id: +id,
             },
@@ -48,7 +55,7 @@ class _Access_token {
                 expires_at: this.expires_at,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -66,7 +73,7 @@ class _Access_token {
                 created_at: this.created_at,
                 expires_at: this.expires_at,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

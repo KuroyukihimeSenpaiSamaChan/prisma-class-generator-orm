@@ -6,8 +6,22 @@ import { _User_billing } from './user_billing';
 import { _User_delivery } from './user_delivery';
 import { _User_role } from './user_role';
 import { Prisma } from '@prisma/client';
+export type _UserFields = {
+    id: number;
+    user_pass: string;
+    user_email: string;
+    user_registered: boolean;
+    firstname: string;
+    lastname: string;
+    birthdate: number;
+    token: string;
+};
+export type _UserUniqueFields = {
+    id: number;
+    user_email: string;
+};
 export declare class _User {
-    static model: Prisma.UserDelegate<undefined>;
+    static db: Prisma.UserDelegate<undefined>;
     id: number;
     user_pass?: string;
     user_email?: string;
@@ -38,7 +52,8 @@ export declare class _User {
         birthdate?: number;
         token?: string;
     });
-    get model(): Prisma.UserDelegate<undefined>;
+    get db(): Prisma.UserDelegate<undefined>;
+    static all(where?: _UserFields): Promise<_User[]>;
     static fromId(id: number): Promise<_User | null>;
     save(withId?: boolean): Promise<{
         status: true;

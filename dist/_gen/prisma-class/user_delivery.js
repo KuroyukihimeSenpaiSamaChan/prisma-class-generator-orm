@@ -5,7 +5,7 @@ const user_1 = require("./user");
 class _User_delivery {
     async user(reload = false) {
         if ((this._user === null || reload) && this.user_id !== undefined) {
-            const dbModel = await user_1._User.model.findUnique({
+            const dbModel = await user_1._User.db.findUnique({
                 where: {
                     id: +this.user_id,
                 },
@@ -28,11 +28,18 @@ class _User_delivery {
         this.phone_number = obj.phone_number;
         Object.assign(this, obj);
     }
-    get model() {
-        return _User_delivery.model;
+    get db() {
+        return _User_delivery.db;
+    }
+    static async all(where) {
+        const models = await _User_delivery.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _User_delivery(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _User_delivery.model.findUnique({
+        const dbModel = await _User_delivery.db.findUnique({
             where: {
                 id: +id,
             },
@@ -64,7 +71,7 @@ class _User_delivery {
                 company_name: this.company_name,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -87,7 +94,7 @@ class _User_delivery {
                 phone_number: this.phone_number,
                 company_name: this.company_name,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

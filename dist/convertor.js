@@ -104,6 +104,7 @@ class PrismaConvertor {
                 }
                 field.relation = relation;
             }
+            field.unique = dmmfField.isUnique;
             let type = this.getPrimitiveMapTypeFromDMMF(dmmfField);
             if (dmmfField.isRequired === false) {
                 field.nullable = true;

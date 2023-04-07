@@ -2,12 +2,16 @@ export const CLASS_TEMPLATE = `#!{IMPORTS}
 import { Prisma } from "@prisma/client";
 // import { PrismaDecorators } from './PrismaDecorators'
 
+#!{FIELDS_TYPE}
+
 #!{DECORATORS}
 export class _#!{NAME} {
-  static model: #!{PRISMAMODEL_TYPE}
+  static db: #!{PRISMAMODEL_TYPE}
 #!{FIELDS}
 #!{CONSTRUCTOR}
 #!{MODEL_GETTER}
+
+#!{ALL}
 
 #!{FROMID}
 

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IDMODEL_TEMPLATE = void 0;
 exports.IDMODEL_TEMPLATE = `static async fromId(id: number): Promise<_#!{NAME} | null> {
-  const dbModel = await _#!{NAME}.model.findUnique({
+  const dbModel = await _#!{NAME}.db.findUnique({
     where:{
       #!{FIELD_NAME}: +id
     }
@@ -27,7 +27,7 @@ async save(withId: boolean = false): Promise<{
     }
 
     try {
-      const dbModel = await this.model.create({
+      const dbModel = await this.db.create({
         data: data
       })
       this.#!{FIELD_NAME} = dbModel.#!{FIELD_NAME}
@@ -42,7 +42,7 @@ async save(withId: boolean = false): Promise<{
       #!{REQUIRED_FIELDS_UPDATE}
     }
 
-    const dbModel = await this.model.update({
+    const dbModel = await this.db.update({
       where:{
         #!{FIELD_NAME}: +this.#!{FIELD_NAME}
       },

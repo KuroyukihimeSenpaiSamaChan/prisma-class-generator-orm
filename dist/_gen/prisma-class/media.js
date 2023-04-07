@@ -6,7 +6,7 @@ const product_1 = require("./product");
 class _Media {
     async user(reload = false) {
         if ((this._user === null || reload) && this.user_id !== undefined) {
-            const dbModel = await user_1._User.model.findUnique({
+            const dbModel = await user_1._User.db.findUnique({
                 where: {
                     id: +this.user_id,
                 },
@@ -19,7 +19,7 @@ class _Media {
     }
     async product(reload = false) {
         if ((this._product === null || reload) && this.id !== undefined) {
-            const dbModels = await product_1._Product.model.findMany({
+            const dbModels = await product_1._Product.db.findMany({
                 where: {
                     product_image: +this.id,
                 },
@@ -43,11 +43,18 @@ class _Media {
         this.user_id = obj.user_id;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Media.model;
+    get db() {
+        return _Media.db;
+    }
+    static async all(where) {
+        const models = await _Media.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Media(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Media.model.findUnique({
+        const dbModel = await _Media.db.findUnique({
             where: {
                 id: +id,
             },
@@ -73,7 +80,7 @@ class _Media {
                 user_id: this.user_id,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -92,7 +99,7 @@ class _Media {
                 modification_date: this.modification_date,
                 user_id: this.user_id,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

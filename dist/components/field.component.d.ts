@@ -15,6 +15,7 @@ export declare class FieldComponent extends BaseComponent implements Echoable {
     };
     default?: string;
     type?: string;
+    unique?: boolean;
     echo: () => string;
     constructor(obj: {
         name: string;

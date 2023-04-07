@@ -6,7 +6,7 @@ class _Product_categories {
     async product_category(reload = false) {
         if ((this._product_category === null || reload) &&
             this.id !== undefined) {
-            const dbModels = await product_category_1._Product_category.model.findMany({
+            const dbModels = await product_category_1._Product_category.db.findMany({
                 where: {
                     category_id: +this.id,
                 },
@@ -26,11 +26,18 @@ class _Product_categories {
         this.category_slug = obj.category_slug;
         Object.assign(this, obj);
     }
-    get model() {
-        return _Product_categories.model;
+    get db() {
+        return _Product_categories.db;
+    }
+    static async all(where) {
+        const models = await _Product_categories.db.findMany({ where: where });
+        return models.reduce((acc, m) => {
+            acc.push(new _Product_categories(m));
+            return acc;
+        }, []);
     }
     static async fromId(id) {
-        const dbModel = await _Product_categories.model.findUnique({
+        const dbModel = await _Product_categories.db.findUnique({
             where: {
                 id: +id,
             },
@@ -50,7 +57,7 @@ class _Product_categories {
                 category_slug: this.category_slug,
             };
             try {
-                const dbModel = await this.model.create({
+                const dbModel = await this.db.create({
                     data: data,
                 });
                 this.id = dbModel.id;
@@ -66,7 +73,7 @@ class _Product_categories {
                 category_name: this.category_name,
                 category_slug: this.category_slug,
             };
-            const dbModel = await this.model.update({
+            const dbModel = await this.db.update({
                 where: {
                     id: +this.id,
                 },

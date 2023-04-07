@@ -55,21 +55,21 @@ class PrismaModel {
         if (PrismaModel.prisma === undefined) {
             PrismaModel.prisma = new client_1.PrismaClient();
             await PrismaModel.prisma.$connect();
-            access_token_1._Access_token.model = PrismaModel.prisma.access_token;
-            user_1._User.model = PrismaModel.prisma.user;
-            user_billing_1._User_billing.model = PrismaModel.prisma.user_billing;
-            user_delivery_1._User_delivery.model = PrismaModel.prisma.user_delivery;
-            user_role_1._User_role.model = PrismaModel.prisma.user_role;
-            expedition_1._Expedition.model = PrismaModel.prisma.expedition;
-            media_1._Media.model = PrismaModel.prisma.media;
-            orders_1._Orders.model = PrismaModel.prisma.orders;
-            product_1._Product.model = PrismaModel.prisma.product;
-            product_categories_1._Product_categories.model = PrismaModel.prisma.product_categories;
-            product_category_1._Product_category.model = PrismaModel.prisma.product_category;
-            product_visibilty_1._Product_visibilty.model = PrismaModel.prisma.product_visibilty;
-            sub_order_1._Sub_order.model = PrismaModel.prisma.sub_order;
-            tva_type_1._TVA_type.model = PrismaModel.prisma.tVA_type;
-            role_1._Role.model = PrismaModel.prisma.role;
+            access_token_1._Access_token.db = PrismaModel.prisma.access_token;
+            user_1._User.db = PrismaModel.prisma.user;
+            user_billing_1._User_billing.db = PrismaModel.prisma.user_billing;
+            user_delivery_1._User_delivery.db = PrismaModel.prisma.user_delivery;
+            user_role_1._User_role.db = PrismaModel.prisma.user_role;
+            expedition_1._Expedition.db = PrismaModel.prisma.expedition;
+            media_1._Media.db = PrismaModel.prisma.media;
+            orders_1._Orders.db = PrismaModel.prisma.orders;
+            product_1._Product.db = PrismaModel.prisma.product;
+            product_categories_1._Product_categories.db = PrismaModel.prisma.product_categories;
+            product_category_1._Product_category.db = PrismaModel.prisma.product_category;
+            product_visibilty_1._Product_visibilty.db = PrismaModel.prisma.product_visibilty;
+            sub_order_1._Sub_order.db = PrismaModel.prisma.sub_order;
+            tva_type_1._TVA_type.db = PrismaModel.prisma.tVA_type;
+            role_1._Role.db = PrismaModel.prisma.role;
         }
     }
     static async destroy() {

@@ -1,7 +1,20 @@
 import { _User } from './user';
 import { Prisma } from '@prisma/client';
+export type _User_deliveryFields = {
+    id: number;
+    user_id: number;
+    address: string;
+    zipcode: string;
+    city: string;
+    country: string;
+    region: string;
+    phone_number: string;
+};
+export type _User_deliveryUniqueFields = {
+    id: number;
+};
 export declare class _User_delivery {
-    static model: Prisma.User_deliveryDelegate<undefined>;
+    static db: Prisma.User_deliveryDelegate<undefined>;
     id: number;
     user_id?: number;
     address?: string;
@@ -23,7 +36,8 @@ export declare class _User_delivery {
         region?: string;
         phone_number?: string;
     });
-    get model(): Prisma.User_deliveryDelegate<undefined>;
+    get db(): Prisma.User_deliveryDelegate<undefined>;
+    static all(where?: _User_deliveryFields): Promise<_User_delivery[]>;
     static fromId(id: number): Promise<_User_delivery | null>;
     save(withId?: boolean): Promise<{
         status: true;

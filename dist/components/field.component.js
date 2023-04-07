@@ -14,6 +14,10 @@ class FieldComponent extends base_component_1.BaseComponent {
             let decorators = '';
             if (this.isId) {
                 this.default = '-1';
+                decorators = '// ID';
+            }
+            else if (this.unique) {
+                decorators = '// UNIQUE';
             }
             let defaultValue = '';
             if (this.default) {
