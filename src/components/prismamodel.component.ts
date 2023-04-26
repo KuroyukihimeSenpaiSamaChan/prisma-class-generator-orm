@@ -9,7 +9,7 @@ export class PrismaModelComponent extends FileComponent {
 	constructor(output: string, classes: ClassComponent[]) {
 		super()
 		this.dir = path.resolve(output)
-		this.filename = 'PrismaModel.ts'
+		this.filename = 'prisma-model.ts'
 		this.classes = classes
 	}
 
@@ -18,12 +18,11 @@ export class PrismaModelComponent extends FileComponent {
 		let classesInit = ''
 		for (const classComp of this.classes) {
 			classesImports += `import { _${classComp.name
-				} } from './${classComp.name.toLowerCase()}'
-			export { _${classComp.name} } from './${classComp.name.toLowerCase()}'
+				} } from './classes/${classComp.name}'
 			`
 
 			classesInit += `_${classComp.name
-				}.db = PrismaModel.prisma.${classComp.name
+				}.prisma = PrismaModel.prismaClient.${classComp.name
 					.toLowerCase()
 					.substring(0, 1)}${classComp.name.substring(1)};
 			`

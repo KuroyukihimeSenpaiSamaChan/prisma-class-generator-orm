@@ -3,21 +3,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FieldComponent = void 0;
 const field_template_1 = require("../templates/field.template");
 const base_component_1 = require("./base.component");
+const convertor_1 = require("../convertor");
 class FieldComponent extends base_component_1.BaseComponent {
     constructor(obj) {
         super(obj);
+        this.privateFromRelation = false;
         this.echo = () => {
             let name = this.name;
-            if (!this.relation && !this.isId) {
+            if (!this.relation && !this.isId && !this.privateFromRelation) {
                 name += '?';
+            }
+            let type = this.type;
+            if (this.privateFromRelation) {
+                name = `private ${name}`;
+                type = 'ForeignKey';
             }
             let decorators = '';
             if (this.isId) {
-                this.default = '-1';
-                decorators = '// ID';
+                return field_template_1.FIELD_ID_TEMPLATE.replaceAll('#!{DECORATORS}', '// ID')
+                    .replaceAll('#!{NAME}', this.name)
+                    .replaceAll('#!{TYPE}', this.type);
             }
             else if (this.unique) {
-                decorators = '// UNIQUE';
+                decorators = '// UNIQUE ';
+            }
+            if ((0, convertor_1.isRelationMany)(this.relation)) {
+                decorators += 'ManyToMany';
             }
             let defaultValue = '';
             if (this.default) {
@@ -28,33 +39,32 @@ class FieldComponent extends base_component_1.BaseComponent {
                     defaultValue = `= undefined`;
                 }
             }
+            let template = '';
+            let foreignKey = '';
             if (!this.relation) {
-                return field_template_1.FIELD_TEMPLATE.replaceAll('#!{NAME}', name)
-                    .replaceAll('#!{TYPE}', this.type)
-                    .replaceAll('#!{DECORATORS}', decorators)
-                    .replaceAll('#!{DEFAULT}', defaultValue);
+                template = field_template_1.FIELD_TEMPLATE;
             }
             else {
-                if (this.relation.hasFieldForOne === this) {
-                    return field_template_1.FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
-                        .replaceAll('#!{TYPE}', `_${this.type}`)
-                        .replaceAll('#!{RELATION_FROM}', this.relation.relationFromFields[0])
-                        .replaceAll('#!{RELATION_TO}', this.relation.relationToFields[0]);
-                }
-                else if (this.relation.alsoHasFieldForOne === this) {
-                    return field_template_1.FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
-                        .replaceAll('#!{TYPE}', `_${this.type}`)
-                        .replaceAll('#!{RELATION_TO}', this.relation.relationFromFields[0])
-                        .replaceAll('#!{RELATION_FROM}', this.relation.relationToFields[0]);
+                if (!(0, convertor_1.isRelationMany)(this.relation)) {
+                    if (this.relation.hasOne === this) {
+                        template = field_template_1.FIELD_TO_ONE_TEMPLATE;
+                        foreignKey = this.relation.fromField[0];
+                    }
+                    else {
+                        template = field_template_1.FIELD_TO_MANY_TEMPLATE;
+                        type = this.type.substring(0, this.type.length - 2);
+                    }
                 }
                 else {
-                    return field_template_1.FIELD_GETTER_MANY_TEMPLATE.replaceAll('#!{NAME}', name)
-                        .replaceAll('#!{TYPE}', `_${this.type}`)
-                        .replaceAll('#!{TYPE_BASE}', `_${this.type.substring(0, this.type.length - 2)}`)
-                        .replaceAll('#!{RELATION_TO}', this.relation.relationFromFields[0])
-                        .replaceAll('#!{RELATION_FROM}', this.relation.relationToFields[0]);
+                    template = field_template_1.FIELD_TO_MANY_TEMPLATE;
+                    type = this.type.substring(0, this.type.length - 2);
                 }
             }
+            return template.replaceAll('#!{NAME}', name)
+                .replaceAll('#!{TYPE}', type)
+                .replaceAll('#!{DECORATORS}', decorators)
+                .replaceAll('#!{DEFAULT}', defaultValue)
+                .replaceAll('#!{FOREIGNKEY}', foreignKey);
         };
     }
 }

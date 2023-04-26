@@ -7,7 +7,7 @@ import { parseBoolean, parseNumber } from './util'
 import * as prettier from 'prettier'
 import { FileComponent } from './components/file.component'
 import { PrismaModelComponent } from './components/prismamodel.component'
-import { PrismaDecoComponent } from './components/prismadeco.component'
+import { ConstComponent } from './components/const.component'
 
 export const GENERATOR_NAME = 'Prisma Class Generator'
 
@@ -102,17 +102,17 @@ export class PrismaClassGenerator {
 
 	run = async (): Promise<void> => {
 		const { generator, dmmf } = this.options
-		const output = parseEnvValue(generator.output!)
+		const output = parseEnvValue(generator.output!);
 		const config = this.getConfig()
 		this.setPrismaClientPath()
 
 		const convertor = PrismaConvertor.getInstance()
 		convertor.dmmf = dmmf
 		convertor.config = config
-
 		const classes = convertor.getClasses()
+		const classesOutput = `${output}/classes/`
 		const files = classes.map(
-			(classComponent) => new FileComponent({ classComponent, output }),
+			(classComponent) => new FileComponent({ classComponent, output: classesOutput }),
 		)
 
 		const classToPath = files.reduce((result, fileRow) => {
@@ -132,7 +132,9 @@ export class PrismaClassGenerator {
 		})
 
 		files.push(new PrismaModelComponent(output, classes));
-		// files.push(new PrismaDecoComponent(output));
+
+		files.push(new ConstComponent(output, 'prisma-relation.ts', "RELATION_MANY"))
+		files.push(new ConstComponent(output, 'prisma-class.ts', "PRISMA_CLASS"))
 
 		files.forEach((fileRow) => {
 			fileRow.write(config.dryRun)

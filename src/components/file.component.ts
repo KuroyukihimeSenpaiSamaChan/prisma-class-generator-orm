@@ -1,4 +1,3 @@
-import { snakeCase } from 'change-case'
 import { ClassComponent } from './class.component'
 import * as path from 'path'
 import { getRelativeTSPath, prettierFormat, writeTSFile } from '../util'
@@ -53,7 +52,7 @@ export class FileComponent implements Echoable {
 		const { classComponent, output } = input
 		this._prismaClass = classComponent
 		this.dir = path.resolve(output)
-		this.filename = `${snakeCase(classComponent.name)}.ts`
+		this.filename = `${classComponent.name}.ts`
 		this.resolveImports()
 	}
 
@@ -72,7 +71,7 @@ export class FileComponent implements Echoable {
 			.replace('#!{IMPORTS}', this.echoImports())
 	}
 
-	registerImport(item: string, from: string) {
+	registerImport(item: string | string[], from: string) {
 		const oldIndex = this.imports.findIndex(
 			(_import) => _import.from === from,
 		)
@@ -87,7 +86,7 @@ export class FileComponent implements Echoable {
 		const generator = PrismaClassGenerator.getInstance()
 		this.prismaClass.relationTypes.forEach((relationClassName) => {
 			this.registerImport(
-				`${relationClassName}`,
+				[`${relationClassName}`],
 				FileComponent.TEMP_PREFIX + relationClassName,
 			)
 		})

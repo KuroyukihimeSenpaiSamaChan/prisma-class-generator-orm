@@ -8,5 +8,4 @@ export declare class ClassComponent extends BaseComponent implements Echoable {
     enumTypes?: string[];
     extra?: string;
     echo: () => string;
-    reExportPrefixed: (prefix: string) => string;
 }

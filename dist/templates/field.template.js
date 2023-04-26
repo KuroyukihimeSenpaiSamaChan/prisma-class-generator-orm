@@ -1,54 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FIELD_DEPTH_LOAD_ARRAY = exports.FIELD_DEPTH_LOAD_SINGLE = exports.FIELD_GETTER_MANY_TEMPLATE = exports.FIELD_GETTER_ONE_TEMPLATE = exports.FIELD_TEMPLATE = void 0;
+exports.FIELD_TO_MANY_TEMPLATE = exports.FIELD_TO_ONE_TEMPLATE = exports.FIELD_ID_TEMPLATE = exports.FIELD_TEMPLATE = void 0;
 exports.FIELD_TEMPLATE = `	#!{DECORATORS}
 	#!{NAME}: #!{TYPE} #!{DEFAULT}
 `;
-exports.FIELD_GETTER_ONE_TEMPLATE = `
-	private _#!{NAME}: #!{TYPE} | null = null
-	async #!{NAME}(reload: boolean = false): Promise<#!{TYPE} | null> {
-		if((this._#!{NAME} === null || reload) && this.#!{RELATION_FROM} !== undefined){
-			const dbModel = await #!{TYPE}.db.findUnique({
-				where: {
-					#!{RELATION_TO}: +this.#!{RELATION_FROM}
-				}
-			})
-			if(dbModel !== null){
-				this._#!{NAME} = new #!{TYPE}(dbModel)
-			}
-		}	
+exports.FIELD_ID_TEMPLATE = ` #!{DECORATORS}
+	private _#!{NAME}: #!{TYPE}
+	get #!{NAME}(): #!{TYPE} {
 		return this._#!{NAME}
-  }
-`;
-exports.FIELD_GETTER_MANY_TEMPLATE = `
-  private _#!{NAME}: #!{TYPE} | null = null
-  async #!{NAME}(reload: boolean = false): Promise<#!{TYPE} | null> {
-    if((this._#!{NAME} === null || reload) && this.#!{RELATION_FROM}!== undefined){
-      const dbModels = await #!{TYPE_BASE}.db.findMany({
-				where: {
-					#!{RELATION_TO}: +this.#!{RELATION_FROM}
-				}
-      })
-			if(dbModels.length){
-				this._#!{NAME} = []
-				for(const dbModel of dbModels)
-					this._#!{NAME}.push(new #!{TYPE_BASE}(dbModel))
-			}
-    }
-		return this._#!{NAME}
-  }
-`;
-exports.FIELD_DEPTH_LOAD_SINGLE = `
-	await this.#!{NAME}()
-	if(this._#!{NAME} !== null)
-		this._#!{NAME}.loadAll(depth - 1)
-`;
-exports.FIELD_DEPTH_LOAD_ARRAY = `
-	await this.#!{NAME}()
-	if(this._#!{NAME} !== null){
-		for (const role of this._#!{NAME}) {
-			await role.loadAll(depth - 1)
-		}
 	}
+	get primaryKey(): #!{TYPE} {
+		return this._#!{NAME}
+	}
+`;
+exports.FIELD_TO_ONE_TEMPLATE = `
+private _#!{NAME}: _#!{TYPE} | null
+get #!{NAME}(): _#!{TYPE} | ForeignKey {
+	return this._#!{NAME} ? this._#!{NAME} : this.#!{FOREIGNKEY}
+}
+set #!{NAME}(value: _#!{TYPE} | ForeignKey) {
+	if (value instanceof _#!{TYPE}) {
+		this._#!{NAME} = value
+		this.#!{FOREIGNKEY} = value.id
+	} else {
+		this._#!{NAME} = null
+		this.#!{FOREIGNKEY} = value
+	}
+}
+`;
+exports.FIELD_TO_MANY_TEMPLATE = `
+private _#!{NAME}: RelationMany<_#!{TYPE}>
+public get #!{NAME}(): RelationMany<_#!{TYPE}> {
+	return this._#!{NAME}
+}
+private set #!{NAME}(value: RelationMany<_#!{TYPE}>) {
+	this._#!{NAME} = value
+}
 `;
 //# sourceMappingURL=field.template.js.map

@@ -1,12 +1,11 @@
 import { Echoable } from '../interfaces/echoable'
 import { FieldComponent } from './field.component'
-import { CLASS_TEMPLATE } from '../templates/class.template'
-import { IDMODEL_TEMPLATE } from '../templates/idmodel.template'
 import { BaseComponent } from './base.component'
-import { LOAD_ALL } from '../templates/loadall.template'
-import { FIELD_DEPTH_LOAD_ARRAY, FIELD_DEPTH_LOAD_SINGLE } from '../templates/field.template'
-import { ALL_TEMPLATE } from '../templates/all.template'
-import { FIELDS_TYPE_TEMPLATE } from '../templates/all.template'
+import { CLASS_TEMPLATE } from '../templates/class.template'
+import { ALL_TEMPLATE, FROM_TEMPLATE } from '../templates/all.template'
+import { GET_INCLUDES_TEMPLATE } from '../templates/includes.template'
+import { isRelationMany } from '../convertor'
+import { LOAD_TEMPLATE, SAVE_TEMPLATE } from '../templates/load-save.template'
 
 export class ClassComponent extends BaseComponent implements Echoable {
 	name: string
@@ -17,142 +16,176 @@ export class ClassComponent extends BaseComponent implements Echoable {
 	extra?: string = ''
 
 	echo = () => {
-		// Generate the constructor foe non-noullable fields
-		const fieldsNonNullable = this.fields.reduce((acc, _field) => {
-			if (
-				_field.nullable ||
-				_field.relation ||
-				_field.default !== undefined
-			) {
-				return acc
-			}
-			acc.push(_field)
-			return acc
-		}, [] as FieldComponent[])
+		// Generate the constructor for non-nullable fields
 		let constructor = ''
-		if (fieldsNonNullable.length > 0) {
-			let declaration = ''
-			let initialization = ''
-			for (const _field of fieldsNonNullable) {
-				if (_field.isId) continue
-				declaration += `${_field.name}?: ${_field.type}, `
-				initialization += `this.${_field.name} = obj.${_field.name}
-				`
+		{
+			let parameters = {
+				normal: '',
+				toOne: '',
+				toMany: '',
+			}
+			let initialiazers = {
+				normal: '',
+				toOne: '',
+				toMany: ''
+			}
+			let toJSON = ''
+			for (const _field of this.fields) {
+				toJSON += `${_field.name}: this.${_field.name},`
+				// If field is normal
+				if (_field.relation === undefined) {
+					if (_field.isId) {
+						parameters.normal = `${_field.name}?: ${_field.type},` + parameters.normal;
+						initialiazers.normal = `
+						if(obj.${_field.name} !== undefined){
+							this._${_field.name} = obj.${_field.name}
+						}
+						` + initialiazers.normal
+					}
+					else if (!_field.privateFromRelation) {
+						let opt = { parameter: '', initializer: '' }
+						if (_field.nullable) {
+							opt.parameter = ' | null'
+							opt.initializer = ` !== null ? obj.${_field.name}: undefined`
+						}
+						parameters.normal += `${_field.name}?: ${_field.type} ${opt.parameter},`
+						initialiazers.normal += `this.${_field.name} =  obj.${_field.name} ${opt.initializer};`
+					} else {
+						parameters.normal += `${_field.name}?: ForeignKey,`
+					}
+				}
+				// If it is a relation toOne
+				else if (!isRelationMany(_field.relation) && _field.relation.hasOne === _field) {
+					parameters.toOne += `${_field.name}?: _${_field.type} | ${_field.type} | ForeignKey,`
+					initialiazers.toOne += `
+					if(!obj.${_field.name}){
+						if (obj.${_field.relation.fromField} === undefined){
+							this.${_field.name} = null
+						}else{
+							this.${_field.name} = obj.${_field.relation.fromField}
+						}
+					} else if(obj.${_field.name} instanceof _${_field.type}) {
+						this.${_field.name} = obj.${_field.name}
+					} else if (typeof obj.${_field.name} === 'number') {
+						this.${_field.name} = obj.${_field.name}
+					} else {
+						this.${_field.name} = new _${_field.type}(obj.${_field.name})
+					}
+					`
+				}
+				// If it is a relation toMany
+				else {
+					const typeSingle = _field.type.substring(0, _field.type.length - 2)
+					parameters.toMany += `${_field.name}?: _${_field.type} | ${_field.type} | RelationMany<_${typeSingle}>,`
+					initialiazers.toMany += `
+					if (!obj.${_field.name} || obj.${_field.name}.length === 0) {
+						this.${_field.name} = new RelationMany<_${typeSingle}>([])
+					} else if (obj.${_field.name} instanceof RelationMany) {
+						this.${_field.name} = obj.${_field.name}
+					} else if (obj.${_field.name}[0] instanceof _${typeSingle}) {
+						this.${_field.name} = new RelationMany<_${typeSingle}>(obj.${_field.name} as _${_field.type})
+					} else {
+						const ${_field.name}Array: _${_field.type} = []
+						for (const value of obj.${_field.name} as ${_field.type}) {
+							${_field.name}Array.push(new _${typeSingle}(value))
+						}
+						this.${_field.name} = new RelationMany<_${typeSingle}>(${_field.name}Array)
+					}
+					`
+				}
 			}
 			constructor = `
-			constructor(obj: {${declaration}}){
-				${initialization}
-				Object.assign(this, obj)
+			constructor(obj:{
+				${parameters.normal}
+				${parameters.toOne}
+				${parameters.toMany}
+			}){
+				super()
+				this.init(obj)
 			}
+
+			private init(obj: ConstructorParameters<typeof _${this.name}>[0]){
+				${initialiazers.normal}
+				${initialiazers.toOne}
+				${initialiazers.toMany}
+			}
+
+			toJSON() { return {${toJSON}} }
 			`
 		}
 
-		// Generate the 'static model' field
-		const prismamodel_type = `Prisma.${this.name}Delegate<undefined>`
-
-		// Generate the 'model' getter
-		const model_getter = `get db(): ${prismamodel_type} {
-			return _${this.name}.db
-		}`
-
-		// Generate the fromId method
-		let fromId = ''
-		const fieldId = this.fields.filter((_field) => _field.isId)
-		if (fieldId.length === 1) {
-			// To redo completely, just a quick temp fix
-			const relationFields = this.fields.reduce((acc, _field) => {
-				if (_field.relation) acc.push(_field.relation.relationFromFields[0])
-				return acc
-			}, [] as string[])
-
-			let fieldsDataCreate = ''
-			let fieldsDataUpdate = ''
-			for (const _field of this.fields) {
-				if (_field.relation !== void 0) continue;
-				fieldsDataUpdate += `${_field.name}: this.${_field.name},`
-				if (_field.isId && !relationFields.includes(_field.name)) continue
-				fieldsDataCreate += `${_field.name}: this.${_field.name},`
-			}
-
-			let trueCheckRequired = `if(
-				#!{TRUE_CHECK_REQUIRED}
-			){
-				return {status: false, err: "Bad required fields"}
-			}`
-			let checkRequired = ''
-			for (const _field of fieldsNonNullable) {
-				if (_field.isId) continue
-				checkRequired += `this.${_field.name} === void 0
-				|| `
-			}
-			if (checkRequired.length > 0) {
-				checkRequired = checkRequired.substring(0, checkRequired.length - 3)
-				trueCheckRequired = trueCheckRequired.replace('#!{TRUE_CHECK_REQUIRED}', checkRequired)
-			} else {
-				trueCheckRequired = ''
-			}
-
-			fromId = IDMODEL_TEMPLATE.replaceAll(
-				'#!{FIELD_NAME}',
-				`${fieldId[0].name}`,)
-				.replaceAll('#!{REQUIRED_FIELDS_CREATE}', fieldsDataCreate)
-				.replaceAll('#!{REQUIRED_FIELDS_UPDATE}', fieldsDataUpdate)
-				.replaceAll('#!{CHECK_REQUIRED}', trueCheckRequired)
+		// Generate the save method
+		let loadMethod = ''
+		{
+			loadMethod = LOAD_TEMPLATE
 		}
 
-		// Creates the loadAll method
-		let fieldsLoaders = ``
-		for (const _field of this.fields) {
-			if (_field.relation === undefined) continue
-			let fieldRelation = ''
-			if (_field.relation.justLinkedToMany === _field) {
-				fieldRelation = FIELD_DEPTH_LOAD_ARRAY
-			} else {
-				fieldRelation = FIELD_DEPTH_LOAD_SINGLE
+		// Generate the load method
+		let saveMethod = ''
+		{
+			let requireds = ''
+			for (const _field of this.fields.filter((elem) => !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
+				requireds += `
+				if(this.${_field.name} === undefined){
+					throw new Error("Invalid field on _${this.name}.save(): ${_field.name}")
+				}
+				`
 			}
-			fieldsLoaders += fieldRelation.replaceAll(
-				'#!{NAME}', _field.name
-			)
+
+			// CHANGE THIS ON TO THE TO_MANY, CHECK FOR EACH TO_MANY, IF IT IS SET
+			if (this.fields.filter((elem) => isRelationMany(elem.relation) || elem.relation?.hasMany === elem).length > 0) {
+				requireds += `
+				if(this.primaryKey === -1){
+					throw new Error("Can't save toMany fields on _${this.name}. Save it first, then add the toMany fields")
+				}
+				`
+			}
+
+			saveMethod = SAVE_TEMPLATE.replaceAll(
+				'#!{REQUIREDS}', requireds)
+				.replaceAll('#!{TO_ONE}', '')
+				.replaceAll('#!{TO_MANY}', '')
 		}
 
-		// Creates the fields, fieldsUnique, and all()
-		let fields = '';
-		let fieldsUnique = ''
-		for (const _field of this.fields) {
-			if (_field.relation !== void 0) continue
-			if (_field.unique || _field.isId) {
-				fieldsUnique += `${_field.name}: ${_field.type},`
+		// Generate the getClassIncludes
+		const importTypes = new Set<string>();
+		let relationFields = this.fields.filter((_field) => _field.relation)
+		let includeFields = ''
+		let includeDeep = ''
+		for (const _field of relationFields) {
+			includeFields += `${_field.name}: true,`
+			let relationName = _field.type
+			if (relationName.includes('[]')) {
+				relationName = relationName.substring(0, relationName.length - 2)
 			}
-			if (!_field.nullable) {
-				fields += `${_field.name}: ${_field.type},`
-			}
+			importTypes.add(relationName)
+			includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(deep-1)},`
 		}
-
-		let fieldsType = FIELDS_TYPE_TEMPLATE.replaceAll(
-			'#!{FIELDS}',
-			fields
-		)
-			.replaceAll('#!{FIELDS_UNIQUE}', fieldsUnique)
+		let getIncludes = includeFields !== '' ? GET_INCLUDES_TEMPLATE.replaceAll(
+			'#!{INCLUDE_FIELDS}',
+			includeFields
+		).replaceAll('#!{INCLUDE_DEEP}', includeDeep) : ''
 
 		const fieldContent = this.fields.map((_field) => _field.echo())
-		let str = CLASS_TEMPLATE.replace(
-			'#!{DECORATORS}',
-			this.echoDecorators(),
+
+		let importPrisma = ''
+		for (const _import of importTypes.values()) {
+			importPrisma += `, ${_import}`
+		}
+
+		let str = CLASS_TEMPLATE.replaceAll(
+			'#!{FROM}', FROM_TEMPLATE
 		)
-			.replaceAll('#!{FROMID}', `${fromId}`)
 			.replaceAll('#!{ALL}', ALL_TEMPLATE)
-			.replaceAll('#!{FIELDS_TYPE}', fieldsType)
+			.replaceAll('#!{LOAD}', loadMethod)
+			.replaceAll('#!{SAVE}', saveMethod)
+			.replaceAll('#!{GET_INCLUDES}', getIncludes)
 			.replaceAll('#!{NAME}', `${this.name}`)
 			.replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
 			.replaceAll('#!{EXTRA}', this.extra)
 			.replaceAll('#!{CONSTRUCTOR}', constructor)
-			.replaceAll('#!{PRISMAMODEL_TYPE}', prismamodel_type)
-			.replaceAll('#!{MODEL_GETTER}', model_getter)
-			.replaceAll('#!{LOAD_ALL}', LOAD_ALL.replaceAll('#!{FIELDS_LOADERS}', fieldsLoaders))
-		return str
-	}
+			.replaceAll('#!{IMPORTS_PRISMA}', importPrisma)
 
-	reExportPrefixed = (prefix: string) => {
-		return `export class _${this.name} extends ${prefix}${this.name} {}`
+		return str
 	}
 }

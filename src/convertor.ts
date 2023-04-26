@@ -1,14 +1,10 @@
 import { DMMF } from '@prisma/generator-helper'
 import { ClassComponent } from './components/class.component'
-import { DecoratorComponent } from './components/decorator.component'
 import { FieldComponent } from './components/field.component'
 import { PrismaClassGeneratorConfig } from './generator'
 import {
 	arrayify,
-	capitalizeFirst,
-	uniquify,
-	wrapArrowFunction,
-	wrapQuote,
+	uniquify
 } from './util'
 
 /** BigInt, Boolean, Bytes, DateTime, Decimal, Float, Int, JSON, String, $ModelName */
@@ -39,6 +35,27 @@ export type PrimitiveMapTypeKeys = keyof typeof primitiveMapType
 export type PrimitiveMapTypeValues =
 	typeof primitiveMapType[PrimitiveMapTypeKeys]
 
+export type FieldRelationNormal = {
+	hasMany?: FieldComponent,
+	hasOne?: FieldComponent,
+	fromField?: string[],
+	toId?: string[]
+}
+
+export type FieldRelationMany = {
+	A?: FieldComponent,
+	B?: FieldComponent,
+	name: string
+}
+
+export const isRelationNormal = (obj?: FieldRelationNormal | FieldRelationMany | {}): obj is FieldRelationNormal => {
+	return obj !== undefined && Object.keys(obj).includes("hasMany")
+}
+
+export const isRelationMany = (obj?: FieldRelationNormal | FieldRelationMany | {}): obj is FieldRelationMany => {
+	return obj !== undefined && Object.keys(obj).includes("A")
+}
+
 export interface ConvertModelInput {
 	model: DMMF.Model
 	extractRelationFields?: boolean
@@ -53,14 +70,7 @@ export class PrismaConvertor {
 	private _dmmf: DMMF.Document
 
 	_classesRelations: {
-		[key: string]: {
-			relationFromFields?: string[]
-			relationToFields?: string[]
-			hasFieldForOne?: FieldComponent
-			justLinkedToMany?: FieldComponent
-			alsoHasFieldForOne?: FieldComponent
-			name?: string
-		}
+		[key: string]: FieldRelationNormal | FieldRelationMany
 	}
 
 	public get dmmf() {
@@ -128,7 +138,7 @@ export class PrismaConvertor {
 		)
 
 		const enums = model.fields.filter((field) => field.kind === 'enum')
-
+		const fields = {}
 		classComponent.fields = model.fields
 			.filter((field) => {
 				if (extractRelationFields === true) {
@@ -139,7 +149,7 @@ export class PrismaConvertor {
 				}
 				return true
 			})
-			.map((field) => this.convertField(field))
+			.map((field) => this.convertField(field, fields))
 		classComponent.relationTypes =
 			extractRelationFields === false ? [] : relationTypes
 
@@ -183,42 +193,72 @@ export class PrismaConvertor {
 		return models.map((model) => this.getClass({ model }))
 	}
 
-	convertField = (dmmfField: DMMF.Field): FieldComponent => {
+	convertField = (dmmfField: DMMF.Field, fields: { [key: string]: FieldComponent | boolean }): FieldComponent => {
 		const field = new FieldComponent({
 			name: dmmfField.name,
 			useUndefinedDefault: this._config.useUndefinedDefault,
 			isId: dmmfField.isId,
 		})
 
+		fields[field.name] = field
+
+		// If the field is a relation
 		if (dmmfField.relationName !== undefined) {
-			if (
-				!Object.keys(this._classesRelations).includes(
-					dmmfField.relationName,
-				)
-			) {
-				this._classesRelations[dmmfField.relationName] = { name: '' }
+			// If the field is Many to Many
+			if (dmmfField.relationName.startsWith("_MtM_")) {
+				// If it is the first in the MtM relation
+				if (
+					!Object.keys(this._classesRelations).includes(
+						dmmfField.relationName,
+					)
+				) {
+					this._classesRelations[dmmfField.relationName] = {
+						A: field,
+						name: dmmfField.relationName
+					}
+				}
+				// Or the second 
+				else {
+					this._classesRelations[dmmfField.relationName] = {
+						...this._classesRelations[dmmfField.relationName],
+						B: field
+					}
+				}
 			}
-			const relation = this._classesRelations[dmmfField.relationName]
-			// hasFieldForOne
-			if (dmmfField.relationFromFields.length > 0) {
-				relation.relationFromFields = dmmfField.relationFromFields
-				relation.relationToFields = dmmfField.relationToFields
-				relation.name = field.name
-				relation.hasFieldForOne = field
-			}
-			// OneToOne
-			else if (!dmmfField.isList) {
-				relation.relationFromFields = dmmfField.relationFromFields
-				relation.relationToFields = dmmfField.relationToFields
-				relation.name += `_${field.name}_`
-				relation.alsoHasFieldForOne = field
-			}
-			// OneToMany
+			// If it's One to Many or Many to One
 			else {
-				relation.justLinkedToMany = field
+				if (
+					!Object.keys(this._classesRelations).includes(
+						dmmfField.relationName,
+					)
+				) {
+					this._classesRelations[dmmfField.relationName] = {}
+				}
+				// If it's One to Many
+				if (dmmfField.relationFromFields.length === 0) {
+					this._classesRelations[dmmfField.relationName] = {
+						...this._classesRelations[dmmfField.relationName],
+						hasMany: field
+					}
+				}
+				// Or Many to One
+				else {
+					this._classesRelations[dmmfField.relationName] = {
+						...this._classesRelations[dmmfField.relationName],
+						hasOne: field,
+						fromField: dmmfField.relationFromFields,
+						toId: dmmfField.relationToFields
+					}
+					const fieldPrivate = fields[dmmfField.relationFromFields[0]]
+					if (fieldPrivate === undefined) {
+						fields[dmmfField.relationFromFields[0]] = true
+					} else if (typeof fieldPrivate === 'object') {
+						fieldPrivate.privateFromRelation = true
+					}
+				}
 			}
 
-			field.relation = relation
+			field.relation = this._classesRelations[dmmfField.relationName]
 		}
 
 		field.unique = dmmfField.isUnique

@@ -5,6 +5,19 @@ type DefaultPrismaFieldType = 'BigInt' | 'Boolean' | 'Bytes' | 'DateTime' | 'Dec
 declare const primitiveMapType: Record<DefaultPrismaFieldType, string>;
 export type PrimitiveMapTypeKeys = keyof typeof primitiveMapType;
 export type PrimitiveMapTypeValues = typeof primitiveMapType[PrimitiveMapTypeKeys];
+export type FieldRelationNormal = {
+    hasMany?: FieldComponent;
+    hasOne?: FieldComponent;
+    fromField?: string[];
+    toId?: string[];
+};
+export type FieldRelationMany = {
+    A?: FieldComponent;
+    B?: FieldComponent;
+    name: string;
+};
+export declare const isRelationNormal: (obj?: FieldRelationNormal | FieldRelationMany | {}) => obj is FieldRelationNormal;
+export declare const isRelationMany: (obj?: FieldRelationNormal | FieldRelationMany | {}) => obj is FieldRelationMany;
 export interface ConvertModelInput {
     model: DMMF.Model;
     extractRelationFields?: boolean;
@@ -16,14 +29,7 @@ export declare class PrismaConvertor {
     private _config;
     private _dmmf;
     _classesRelations: {
-        [key: string]: {
-            relationFromFields?: string[];
-            relationToFields?: string[];
-            hasFieldForOne?: FieldComponent;
-            justLinkedToMany?: FieldComponent;
-            alsoHasFieldForOne?: FieldComponent;
-            name?: string;
-        };
+        [key: string]: FieldRelationNormal | FieldRelationMany;
     };
     get dmmf(): DMMF.Document;
     set dmmf(value: DMMF.Document);
@@ -33,6 +39,8 @@ export declare class PrismaConvertor {
     getPrimitiveMapTypeFromDMMF: (dmmfField: DMMF.Field) => PrimitiveMapTypeValues;
     getClass: (input: ConvertModelInput) => ClassComponent;
     getClasses: () => ClassComponent[];
-    convertField: (dmmfField: DMMF.Field) => FieldComponent;
+    convertField: (dmmfField: DMMF.Field, fields: {
+        [key: string]: boolean | FieldComponent;
+    }) => FieldComponent;
 }
 export {};

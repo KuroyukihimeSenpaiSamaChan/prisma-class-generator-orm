@@ -1,42 +1,49 @@
 import {
-	FIELD_TEMPLATE,
-	FIELD_GETTER_ONE_TEMPLATE,
-	FIELD_GETTER_MANY_TEMPLATE,
+	FIELD_ID_TEMPLATE,
+	FIELD_TEMPLATE, FIELD_TO_MANY_TEMPLATE, FIELD_TO_ONE_TEMPLATE
 } from '../templates/field.template'
 import { Echoable } from '../interfaces/echoable'
 import { BaseComponent } from './base.component'
+import { FieldRelationMany, FieldRelationNormal, isRelationMany } from '../convertor'
 
 export class FieldComponent extends BaseComponent implements Echoable {
 	name: string
 	nullable: boolean
 	useUndefinedDefault: boolean
 	isId: boolean
-	relation?: {
-		hasFieldForOne?: FieldComponent
-		justLinkedToMany?: FieldComponent
-		alsoHasFieldForOne?: FieldComponent
-		relationFromFields?: string[]
-		relationToFields?: string[]
-		name?: string
-	}
+	privateFromRelation: boolean = false
 	default?: string
 	type?: string
 	unique?: boolean
 
+	relation?: FieldRelationNormal | FieldRelationMany
+
 	echo = () => {
 		let name = this.name
-		if (!this.relation && !this.isId) {
+		if (!this.relation && !this.isId && !this.privateFromRelation) {
 			name += '?'
+		}
+
+		let type = this.type
+		if (this.privateFromRelation) {
+			name = `private ${name}`
+			type = 'ForeignKey'
 		}
 
 		let decorators = ''
 		if (this.isId) {
-			this.default = '-1'
-			decorators = '// ID'
-			// decorators = '@PrismaDecorators.id'
+			return FIELD_ID_TEMPLATE.replaceAll(
+				'#!{DECORATORS}', '// ID'
+			)
+				.replaceAll('#!{NAME}', this.name)
+				.replaceAll('#!{TYPE}', this.type)
 		}
 		else if (this.unique) {
-			decorators = '// UNIQUE'
+			decorators = '// UNIQUE '
+		}
+
+		if (isRelationMany(this.relation)) {
+			decorators += 'ManyToMany'
 		}
 
 		let defaultValue = ''
@@ -48,51 +55,31 @@ export class FieldComponent extends BaseComponent implements Echoable {
 			}
 		}
 
+		let template = ''
+		let foreignKey = ''
+
 		if (!this.relation) {
-			return FIELD_TEMPLATE.replaceAll('#!{NAME}', name)
-				.replaceAll('#!{TYPE}', this.type)
-				.replaceAll('#!{DECORATORS}', decorators)
-				.replaceAll('#!{DEFAULT}', defaultValue)
+			template = FIELD_TEMPLATE
 		} else {
-			if (this.relation.hasFieldForOne === this) {
-				return FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
-					.replaceAll('#!{TYPE}', `_${this.type}`)
-					.replaceAll(
-						'#!{RELATION_FROM}',
-						this.relation.relationFromFields[0],
-					)
-					.replaceAll(
-						'#!{RELATION_TO}',
-						this.relation.relationToFields[0],
-					)
-			} else if (this.relation.alsoHasFieldForOne === this) {
-				return FIELD_GETTER_ONE_TEMPLATE.replaceAll('#!{NAME}', name)
-					.replaceAll('#!{TYPE}', `_${this.type}`)
-					.replaceAll(
-						'#!{RELATION_TO}',
-						this.relation.relationFromFields[0],
-					)
-					.replaceAll(
-						'#!{RELATION_FROM}',
-						this.relation.relationToFields[0],
-					)
+			if (!isRelationMany(this.relation)) {
+				if (this.relation.hasOne === this) {
+					template = FIELD_TO_ONE_TEMPLATE
+					foreignKey = this.relation.fromField[0]
+				} else {
+					template = FIELD_TO_MANY_TEMPLATE
+					type = this.type.substring(0, this.type.length - 2)
+				}
 			} else {
-				return FIELD_GETTER_MANY_TEMPLATE.replaceAll('#!{NAME}', name)
-					.replaceAll('#!{TYPE}', `_${this.type}`)
-					.replaceAll(
-						'#!{TYPE_BASE}',
-						`_${this.type.substring(0, this.type.length - 2)}`,
-					)
-					.replaceAll(
-						'#!{RELATION_TO}',
-						this.relation.relationFromFields[0],
-					)
-					.replaceAll(
-						'#!{RELATION_FROM}',
-						this.relation.relationToFields[0],
-					)
+				template = FIELD_TO_MANY_TEMPLATE
+				type = this.type.substring(0, this.type.length - 2)
 			}
 		}
+
+		return template.replaceAll('#!{NAME}', name)
+			.replaceAll('#!{TYPE}', type)
+			.replaceAll('#!{DECORATORS}', decorators)
+			.replaceAll('#!{DEFAULT}', defaultValue)
+			.replaceAll('#!{FOREIGNKEY}', foreignKey)
 	}
 
 	constructor(obj: {

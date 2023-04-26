@@ -1,16 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IDMODEL_TEMPLATE = void 0;
-exports.IDMODEL_TEMPLATE = `static async fromId(id: number): Promise<_#!{NAME} | null> {
-  const dbModel = await _#!{NAME}.db.findUnique({
-    where:{
-      #!{FIELD_NAME}: +id
-    }
-  });
-  if(dbModel === null) return null
-  return new _#!{NAME}(dbModel);
-}
-
+exports.SAVE_TEMPLATE = void 0;
+exports.SAVE_TEMPLATE = `
 async save(withId: boolean = false): Promise<{
   status: true,
   type: "updated" | "created"

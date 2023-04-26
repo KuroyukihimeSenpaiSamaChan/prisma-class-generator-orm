@@ -24,7 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileComponent = void 0;
-const change_case_1 = require("change-case");
 const path = __importStar(require("path"));
 const util_1 = require("../util");
 const generator_1 = require("../generator");
@@ -75,7 +74,7 @@ class FileComponent {
         const { classComponent, output } = input;
         this._prismaClass = classComponent;
         this.dir = path.resolve(output);
-        this.filename = `${(0, change_case_1.snakeCase)(classComponent.name)}.ts`;
+        this.filename = `${classComponent.name}.ts`;
         this.resolveImports();
     }
     registerImport(item, from) {
@@ -89,7 +88,7 @@ class FileComponent {
     resolveImports() {
         const generator = generator_1.PrismaClassGenerator.getInstance();
         this.prismaClass.relationTypes.forEach((relationClassName) => {
-            this.registerImport(`${relationClassName}`, FileComponent.TEMP_PREFIX + relationClassName);
+            this.registerImport([`${relationClassName}`], FileComponent.TEMP_PREFIX + relationClassName);
         });
         this.prismaClass.enumTypes.forEach((enumName) => {
             this.registerImport(enumName, generator.getClientImportPath());

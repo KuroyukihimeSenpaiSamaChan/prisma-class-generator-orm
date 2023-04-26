@@ -1,21 +1,30 @@
 export const CLASS_TEMPLATE = `#!{IMPORTS}
-import { Prisma } from "@prisma/client";
-// import { PrismaDecorators } from './PrismaDecorators'
+import { Prisma #!{IMPORTS_PRISMA} } from "@prisma/client";
+import { RelationMany } from '../prisma-relation';
+import { PrismaClass, ForeignKey } from '../prisma-class';
+import { PrismaModel } from '../prisma-model';
 
-#!{FIELDS_TYPE}
+export class _#!{NAME} extends PrismaClass {
+  static prisma: Prisma.#!{NAME}Delegate<undefined>
+  get prisma(): Prisma.#!{NAME}Delegate<undefined> {
+    return _#!{NAME}.prisma
+  }
+  get prismaClient() { return PrismaModel.prismaClient }
 
-#!{DECORATORS}
-export class _#!{NAME} {
-  static db: #!{PRISMAMODEL_TYPE}
+#!{GET_INCLUDES}
+
 #!{FIELDS}
+
 #!{CONSTRUCTOR}
-#!{MODEL_GETTER}
 
 #!{ALL}
 
-#!{FROMID}
+#!{FROM}
 
-#!{LOAD_ALL}
+#!{LOAD}
+
+#!{SAVE}
+
 }
 #!{EXTRA}
 `

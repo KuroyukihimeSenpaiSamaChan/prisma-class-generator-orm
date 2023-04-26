@@ -1,0 +1,1 @@
+export declare const GET_INCLUDES_TEMPLATE = "\nstatic getIncludes(deep: number = 0): Prisma.#!{NAME}Include {\n  if(deep <= 0){\n    return {\n      #!{INCLUDE_FIELDS}\n    }\n  }\n\n  return {\n    #!{INCLUDE_DEEP}\n  }\n}\n";

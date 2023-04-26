@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PrismaConvertor = void 0;
+exports.PrismaConvertor = exports.isRelationMany = exports.isRelationNormal = void 0;
 const class_component_1 = require("./components/class.component");
 const field_component_1 = require("./components/field.component");
 const util_1 = require("./util");
@@ -15,6 +15,14 @@ const primitiveMapType = {
     Decimal: 'number',
     Bytes: 'Buffer',
 };
+const isRelationNormal = (obj) => {
+    return obj !== undefined && Object.keys(obj).includes("hasMany");
+};
+exports.isRelationNormal = isRelationNormal;
+const isRelationMany = (obj) => {
+    return obj !== undefined && Object.keys(obj).includes("A");
+};
+exports.isRelationMany = isRelationMany;
 class PrismaConvertor {
     constructor() {
         this.getPrimitiveMapTypeFromDMMF = (dmmfField) => {
@@ -38,6 +46,7 @@ class PrismaConvertor {
                 .filter((field) => field.relationName && model.name !== field.type)
                 .map((v) => v.type));
             const enums = model.fields.filter((field) => field.kind === 'enum');
+            const fields = {};
             classComponent.fields = model.fields
                 .filter((field) => {
                 if (extractRelationFields === true) {
@@ -48,7 +57,7 @@ class PrismaConvertor {
                 }
                 return true;
             })
-                .map((field) => this.convertField(field));
+                .map((field) => this.convertField(field, fields));
             classComponent.relationTypes =
                 extractRelationFields === false ? [] : relationTypes;
             classComponent.enumTypes =
@@ -75,34 +84,56 @@ class PrismaConvertor {
             }
             return models.map((model) => this.getClass({ model }));
         };
-        this.convertField = (dmmfField) => {
+        this.convertField = (dmmfField, fields) => {
             var _a;
             const field = new field_component_1.FieldComponent({
                 name: dmmfField.name,
                 useUndefinedDefault: this._config.useUndefinedDefault,
                 isId: dmmfField.isId,
             });
+            fields[field.name] = field;
             if (dmmfField.relationName !== undefined) {
-                if (!Object.keys(this._classesRelations).includes(dmmfField.relationName)) {
-                    this._classesRelations[dmmfField.relationName] = { name: '' };
-                }
-                const relation = this._classesRelations[dmmfField.relationName];
-                if (dmmfField.relationFromFields.length > 0) {
-                    relation.relationFromFields = dmmfField.relationFromFields;
-                    relation.relationToFields = dmmfField.relationToFields;
-                    relation.name = field.name;
-                    relation.hasFieldForOne = field;
-                }
-                else if (!dmmfField.isList) {
-                    relation.relationFromFields = dmmfField.relationFromFields;
-                    relation.relationToFields = dmmfField.relationToFields;
-                    relation.name += `_${field.name}_`;
-                    relation.alsoHasFieldForOne = field;
+                if (dmmfField.relationName.startsWith("_MtM_")) {
+                    if (!Object.keys(this._classesRelations).includes(dmmfField.relationName)) {
+                        this._classesRelations[dmmfField.relationName] = {
+                            A: field,
+                            name: dmmfField.relationName
+                        };
+                    }
+                    else {
+                        this._classesRelations[dmmfField.relationName] = {
+                            ...this._classesRelations[dmmfField.relationName],
+                            B: field
+                        };
+                    }
                 }
                 else {
-                    relation.justLinkedToMany = field;
+                    if (!Object.keys(this._classesRelations).includes(dmmfField.relationName)) {
+                        this._classesRelations[dmmfField.relationName] = {};
+                    }
+                    if (dmmfField.relationFromFields.length === 0) {
+                        this._classesRelations[dmmfField.relationName] = {
+                            ...this._classesRelations[dmmfField.relationName],
+                            hasMany: field
+                        };
+                    }
+                    else {
+                        this._classesRelations[dmmfField.relationName] = {
+                            ...this._classesRelations[dmmfField.relationName],
+                            hasOne: field,
+                            fromField: dmmfField.relationFromFields,
+                            toId: dmmfField.relationToFields
+                        };
+                        const fieldPrivate = fields[dmmfField.relationFromFields[0]];
+                        if (fieldPrivate === undefined) {
+                            fields[dmmfField.relationFromFields[0]] = true;
+                        }
+                        else if (typeof fieldPrivate === 'object') {
+                            fieldPrivate.privateFromRelation = true;
+                        }
+                    }
                 }
-                field.relation = relation;
+                field.relation = this._classesRelations[dmmfField.relationName];
             }
             field.unique = dmmfField.isUnique;
             let type = this.getPrimitiveMapTypeFromDMMF(dmmfField);

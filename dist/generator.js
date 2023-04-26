@@ -32,6 +32,7 @@ const util_1 = require("./util");
 const prettier = __importStar(require("prettier"));
 const file_component_1 = require("./components/file.component");
 const prismamodel_component_1 = require("./components/prismamodel.component");
+const const_component_1 = require("./components/const.component");
 exports.GENERATOR_NAME = 'Prisma Class Generator';
 exports.PrismaClassGeneratorOptions = {
     dryRun: {
@@ -58,7 +59,8 @@ class PrismaClassGenerator {
             convertor.dmmf = dmmf;
             convertor.config = config;
             const classes = convertor.getClasses();
-            const files = classes.map((classComponent) => new file_component_1.FileComponent({ classComponent, output }));
+            const classesOutput = `${output}/classes/`;
+            const files = classes.map((classComponent) => new file_component_1.FileComponent({ classComponent, output: classesOutput }));
             const classToPath = files.reduce((result, fileRow) => {
                 const fullPath = path.resolve(fileRow.dir, fileRow.filename);
                 result[fileRow.prismaClass.name] = fullPath;
@@ -74,6 +76,8 @@ class PrismaClassGenerator {
                 });
             });
             files.push(new prismamodel_component_1.PrismaModelComponent(output, classes));
+            files.push(new const_component_1.ConstComponent(output, 'prisma-relation.ts', "RELATION_MANY"));
+            files.push(new const_component_1.ConstComponent(output, 'prisma-class.ts', "PRISMA_CLASS"));
             files.forEach((fileRow) => {
                 fileRow.write(config.dryRun);
             });

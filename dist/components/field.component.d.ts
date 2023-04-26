@@ -1,21 +1,16 @@
 import { Echoable } from '../interfaces/echoable';
 import { BaseComponent } from './base.component';
+import { FieldRelationMany, FieldRelationNormal } from '../convertor';
 export declare class FieldComponent extends BaseComponent implements Echoable {
     name: string;
     nullable: boolean;
     useUndefinedDefault: boolean;
     isId: boolean;
-    relation?: {
-        hasFieldForOne?: FieldComponent;
-        justLinkedToMany?: FieldComponent;
-        alsoHasFieldForOne?: FieldComponent;
-        relationFromFields?: string[];
-        relationToFields?: string[];
-        name?: string;
-    };
+    privateFromRelation: boolean;
     default?: string;
     type?: string;
     unique?: boolean;
+    relation?: FieldRelationNormal | FieldRelationMany;
     echo: () => string;
     constructor(obj: {
         name: string;

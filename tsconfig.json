@@ -36,6 +36,7 @@
 		"files",
 		"logs/**",
 		"test",
-		"**/*spec.ts"
+		"**/*spec.ts",
+		"prisma"
 	]
 }

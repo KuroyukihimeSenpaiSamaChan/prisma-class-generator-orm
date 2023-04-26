@@ -21,7 +21,7 @@ export declare class FileComponent implements Echoable {
     });
     echoImports: () => string;
     echo: () => string;
-    registerImport(item: string, from: string): void;
+    registerImport(item: string | string[], from: string): void;
     resolveImports(): void;
     write(dryRun: boolean): void;
     getRelativePath(to: string): string;
