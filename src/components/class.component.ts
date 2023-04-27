@@ -16,6 +16,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 	extra?: string = ''
 
 	echo = () => {
+		let primaryKey = ''
 		// Generate the constructor for non-nullable fields
 		let constructor = ''
 		{
@@ -29,12 +30,15 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				toOne: '',
 				toMany: ''
 			}
+			let toJSONRelations = ''
 			let toJSON = ''
 			for (const _field of this.fields) {
-				toJSON += `${_field.name}: this.${_field.name},`
+				toJSONRelations += `${_field.name}: this.${_field.name},`
 				// If field is normal
 				if (_field.relation === undefined) {
+					toJSON += `${_field.name}: this.${_field.name}!,`
 					if (_field.isId) {
+						primaryKey = _field.name
 						parameters.normal = `${_field.name}?: ${_field.type},` + parameters.normal;
 						initialiazers.normal = `
 						if(obj.${_field.name} !== undefined){
@@ -110,7 +114,8 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				${initialiazers.toMany}
 			}
 
-			toJSON() { return {${toJSON}} }
+			toJSON() { return {${toJSONRelations}} }
+			nonRelationsToJSON() { return {${toJSON}} }
 			`
 		}
 
@@ -123,28 +128,53 @@ export class ClassComponent extends BaseComponent implements Echoable {
 		// Generate the load method
 		let saveMethod = ''
 		{
-			let requireds = ''
+			let checkRequireds = ''
 			for (const _field of this.fields.filter((elem) => !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
-				requireds += `
-				if(this.${_field.name} === undefined){
-					throw new Error("Invalid field on _${this.name}.save(): ${_field.name}")
+				checkRequireds += `if(this.${_field.name} === undefined){
+					throw new Error("Missing field on _${this.name}.save(): ${_field.name}")
+				}`
+			}
+
+			let checkToOne = ''
+			let toOne = ''
+			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasOne === elem)) {
+				if (!_field.nullable) {
+					checkToOne += `if(this.${_field.name} === undefined || this.${_field.name} === null){
+						throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
+					}
+					`
 				}
+				//this.${_field.name} !== undefined && this.${_field.name} !== null && 
+				toOne += `if(typeof this.${_field.name} !== 'number'){
+					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+					await ${_field.name}Yield.next()
+					saveYieldsArray.push(${_field.name}Yield)
+				}
+
 				`
 			}
 
-			// CHANGE THIS ON TO THE TO_MANY, CHECK FOR EACH TO_MANY, IF IT IS SET
-			if (this.fields.filter((elem) => isRelationMany(elem.relation) || elem.relation?.hasMany === elem).length > 0) {
-				requireds += `
-				if(this.primaryKey === -1){
-					throw new Error("Can't save toMany fields on _${this.name}. Save it first, then add the toMany fields")
+			let checkToMany = ''
+			let toMany = ''
+			for (const _field of this.fields.filter(elem => elem.relation && (isRelationMany(elem.relation) || elem.relation.hasMany === elem))) {
+				checkToMany += `if(this.${_field.name}.length() > 0 && this.primaryKey === -1){
+					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}
+				`
+				toMany += `const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+				await ${_field.name}Yield.next()
+				saveYieldsArray.push(${_field.name}Yield)
+				
 				`
 			}
 
 			saveMethod = SAVE_TEMPLATE.replaceAll(
-				'#!{REQUIREDS}', requireds)
-				.replaceAll('#!{TO_ONE}', '')
-				.replaceAll('#!{TO_MANY}', '')
+				'#!{CHECK_FIELDS}', checkRequireds)
+				.replaceAll('#!{CHECK_TO_ONE}', checkToOne)
+				.replaceAll('#!{CHECK_TO_MANY}', checkToMany)
+				.replaceAll('#!{TO_ONE}', toOne)
+				.replaceAll('#!{TO_MANY}', toMany)
+				.replaceAll('#!{ID}', primaryKey)
 		}
 
 		// Generate the getClassIncludes

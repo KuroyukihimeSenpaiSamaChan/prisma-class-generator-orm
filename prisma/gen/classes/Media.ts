@@ -165,6 +165,16 @@ export class _Media extends PrismaClass {
 			product_gallery: this.product_gallery,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			slug: this.slug!,
+			url: this.url!,
+			creation_date: this.creation_date!,
+			modification_date: this.modification_date!,
+			user_id: this.user_id!,
+		}
+	}
 
 	static async all(query: Prisma.MediaFindFirstArgsBase): Promise<_Media[]> {
 		const models = await _Media.prisma.findMany(query)
@@ -238,46 +248,25 @@ export class _Media extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _Media.save(): id')
-		}
-
-		if (this.slug === undefined) {
-			throw new Error('Invalid field on _Media.save(): slug')
-		}
-
-		if (this.url === undefined) {
-			throw new Error('Invalid field on _Media.save(): url')
-		}
-
-		if (this.creation_date === undefined) {
-			throw new Error('Invalid field on _Media.save(): creation_date')
-		}
-
-		if (this.modification_date === undefined) {
-			throw new Error('Invalid field on _Media.save(): modification_date')
-		}
-
-		if (this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on _Media. Save it first, then add the toMany fields",
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
+		const product_imageYield = this.product_image!.saveToTransaction(tx)
+		await product_imageYield.next()
+		saveYieldsArray.push(product_imageYield)
+
+		const product_galleryYield = this.product_gallery!.saveToTransaction(tx)
+		await product_galleryYield.next()
+		saveYieldsArray.push(product_galleryYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -285,6 +274,48 @@ export class _Media extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _Media.save(): id')
+		}
+		if (this.slug === undefined) {
+			throw new Error('Missing field on _Media.save(): slug')
+		}
+		if (this.url === undefined) {
+			throw new Error('Missing field on _Media.save(): url')
+		}
+		if (this.creation_date === undefined) {
+			throw new Error('Missing field on _Media.save(): creation_date')
+		}
+		if (this.modification_date === undefined) {
+			throw new Error('Missing field on _Media.save(): modification_date')
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _Media.")
+		}
+
+		if (this.product_image.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.product_gallery.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

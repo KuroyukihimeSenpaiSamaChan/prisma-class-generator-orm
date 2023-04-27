@@ -13,6 +13,7 @@ class ClassComponent extends base_component_1.BaseComponent {
         this.enumTypes = [];
         this.extra = '';
         this.echo = () => {
+            let primaryKey = '';
             let constructor = '';
             {
                 let parameters = {
@@ -25,11 +26,14 @@ class ClassComponent extends base_component_1.BaseComponent {
                     toOne: '',
                     toMany: ''
                 };
+                let toJSONRelations = '';
                 let toJSON = '';
                 for (const _field of this.fields) {
-                    toJSON += `${_field.name}: this.${_field.name},`;
+                    toJSONRelations += `${_field.name}: this.${_field.name},`;
                     if (_field.relation === undefined) {
+                        toJSON += `${_field.name}: this.${_field.name}!,`;
                         if (_field.isId) {
+                            primaryKey = _field.name;
                             parameters.normal = `${_field.name}?: ${_field.type},` + parameters.normal;
                             initialiazers.normal = `
 						if(obj.${_field.name} !== undefined){
@@ -104,7 +108,8 @@ class ClassComponent extends base_component_1.BaseComponent {
 				${initialiazers.toMany}
 			}
 
-			toJSON() { return {${toJSON}} }
+			toJSON() { return {${toJSONRelations}} }
+			nonRelationsToJSON() { return {${toJSON}} }
 			`;
             }
             let loadMethod = '';
@@ -113,24 +118,48 @@ class ClassComponent extends base_component_1.BaseComponent {
             }
             let saveMethod = '';
             {
-                let requireds = '';
+                let checkRequireds = '';
                 for (const _field of this.fields.filter((elem) => !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
-                    requireds += `
-				if(this.${_field.name} === undefined){
-					throw new Error("Invalid field on _${this.name}.save(): ${_field.name}")
+                    checkRequireds += `if(this.${_field.name} === undefined){
+					throw new Error("Missing field on _${this.name}.save(): ${_field.name}")
+				}`;
+                }
+                let checkToOne = '';
+                let toOne = '';
+                for (const _field of this.fields.filter(elem => elem.relation && !(0, convertor_1.isRelationMany)(elem.relation) && elem.relation.hasOne === elem)) {
+                    if (!_field.nullable) {
+                        checkToOne += `if(this.${_field.name} === undefined || this.${_field.name} === null){
+						throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
+					}
+					`;
+                    }
+                    toOne += `if(typeof this.${_field.name} !== 'number'){
+					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+					await ${_field.name}Yield.next()
+					saveYieldsArray.push(${_field.name}Yield)
 				}
+
 				`;
                 }
-                if (this.fields.filter((elem) => { var _a; return (0, convertor_1.isRelationMany)(elem.relation) || ((_a = elem.relation) === null || _a === void 0 ? void 0 : _a.hasMany) === elem; }).length > 0) {
-                    requireds += `
-				if(this.primaryKey === -1){
-					throw new Error("Can't save toMany fields on _${this.name}. Save it first, then add the toMany fields")
+                let checkToMany = '';
+                let toMany = '';
+                for (const _field of this.fields.filter(elem => elem.relation && ((0, convertor_1.isRelationMany)(elem.relation) || elem.relation.hasMany === elem))) {
+                    checkToMany += `if(this.${_field.name}.length() > 0 && this.primaryKey === -1){
+					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}
 				`;
+                    toMany += `const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+				await ${_field.name}Yield.next()
+				saveYieldsArray.push(${_field.name}Yield)
+				
+				`;
                 }
-                saveMethod = load_save_template_1.SAVE_TEMPLATE.replaceAll('#!{REQUIREDS}', requireds)
-                    .replaceAll('#!{TO_ONE}', '')
-                    .replaceAll('#!{TO_MANY}', '');
+                saveMethod = load_save_template_1.SAVE_TEMPLATE.replaceAll('#!{CHECK_FIELDS}', checkRequireds)
+                    .replaceAll('#!{CHECK_TO_ONE}', checkToOne)
+                    .replaceAll('#!{CHECK_TO_MANY}', checkToMany)
+                    .replaceAll('#!{TO_ONE}', toOne)
+                    .replaceAll('#!{TO_MANY}', toMany)
+                    .replaceAll('#!{ID}', primaryKey);
             }
             const importTypes = new Set();
             let relationFields = this.fields.filter((_field) => _field.relation);

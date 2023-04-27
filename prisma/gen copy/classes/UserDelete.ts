@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _UserDelete implements PrismaClass {
+export class _UserDelete extends PrismaClass {
 	static prisma: Prisma.UserDeleteDelegate<undefined>
 	get prisma(): Prisma.UserDeleteDelegate<undefined> {
 		return _UserDelete.prisma
@@ -26,7 +26,13 @@ export class _UserDelete implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	private user_id: ForeignKey
 
@@ -58,12 +64,13 @@ export class _UserDelete implements PrismaClass {
 		validated?: boolean
 		user?: _User | User | ForeignKey
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _UserDelete>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.token = obj.token
 		this.date = obj.date
@@ -84,14 +91,14 @@ export class _UserDelete implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			user_id: this.user_id,
 			token: this.token,
 			date: this.date,
 			validated: this.validated,
-			user: this.user,
+			user: ids ? undefined : this.user,
 		}
 	}
 
@@ -106,9 +113,9 @@ export class _UserDelete implements PrismaClass {
 		}, [] as _UserDelete[])
 	}
 
-	static async from<F extends Prisma.UserDeleteWhereInput>(
+	static async from<F extends Prisma.UserDeleteWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.UserDeleteFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.UserDeleteFindUniqueArgsBase, 'where'>,
 	): Promise<_UserDelete | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -116,7 +123,6 @@ export class _UserDelete implements PrismaClass {
 				include: _UserDelete.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -151,10 +157,63 @@ export class _UserDelete implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
+
+		// Relations toMany
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): id')
+		}
+		if (this.token === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): token')
+		}
+		if (this.date === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): date')
+		}
+		if (this.validated === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): validated')
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _UserDelete.")
+		}
 	}
 }

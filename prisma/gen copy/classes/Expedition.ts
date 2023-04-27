@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Expedition implements PrismaClass {
+export class _Expedition extends PrismaClass {
 	static prisma: Prisma.ExpeditionDelegate<undefined>
 	get prisma(): Prisma.ExpeditionDelegate<undefined> {
 		return _Expedition.prisma
@@ -26,7 +26,13 @@ export class _Expedition implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	name?: number
 
@@ -53,12 +59,13 @@ export class _Expedition implements PrismaClass {
 
 		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _Expedition>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.name = obj.name
 		this.slug = obj.slug
@@ -82,14 +89,14 @@ export class _Expedition implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			name: this.name,
 			slug: this.slug,
 			max_weight: this.max_weight,
 			price: this.price,
-			sub_orders: this.sub_orders,
+			sub_orders: ids ? undefined : this.sub_orders,
 		}
 	}
 
@@ -104,9 +111,9 @@ export class _Expedition implements PrismaClass {
 		}, [] as _Expedition[])
 	}
 
-	static async from<F extends Prisma.ExpeditionWhereInput>(
+	static async from<F extends Prisma.ExpeditionWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.ExpeditionFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.ExpeditionFindUniqueArgsBase, 'where'>,
 	): Promise<_Expedition | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -114,7 +121,6 @@ export class _Expedition implements PrismaClass {
 				include: _Expedition.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -149,10 +155,66 @@ export class _Expedition implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+
+		// Relations toMany
+		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		await sub_ordersYield.next()
+		saveYieldsArray.push(sub_ordersYield)
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _Expedition.save(): id')
+		}
+		if (this.name === undefined) {
+			throw new Error('Missing field on _Expedition.save(): name')
+		}
+		if (this.slug === undefined) {
+			throw new Error('Missing field on _Expedition.save(): slug')
+		}
+		if (this.max_weight === undefined) {
+			throw new Error('Missing field on _Expedition.save(): max_weight')
+		}
+		if (this.price === undefined) {
+			throw new Error('Missing field on _Expedition.save(): price')
+		}
+
+		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Expedition. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

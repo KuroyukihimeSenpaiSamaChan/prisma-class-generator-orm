@@ -2,8 +2,11 @@ import { PrismaClass } from './prisma-class'
 
 export class RelationMany<R extends PrismaClass>
 	extends PrismaClass
-	implements Iterable<R> {
-	constructor(private relations: R[]) { super() }
+	implements Iterable<R>
+{
+	constructor(private relations: R[]) {
+		super()
+	}
 
 	[Symbol.iterator](): RelationIterator<R> {
 		return new RelationIterator<R>(this.relations)
@@ -44,12 +47,12 @@ export class RelationMany<R extends PrismaClass>
 			}
 		} catch (err) {
 			console.log(err)
-			return false;
+			return false
 		}
 		return true
 	}
 
-	async* saveToTransaction(tx) {
+	async *saveToTransaction(tx) {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		for (const relation of this.relations) {
@@ -57,12 +60,12 @@ export class RelationMany<R extends PrismaClass>
 			await saveYield.next()
 			saveYieldsArray.push(saveYield)
 		}
-		yield new Promise<number>(resolve => resolve(0))
+		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
 			saveYield.next()
 		}
-		return new Promise<number>(resolve => resolve(1))
+		return new Promise<number>((resolve) => resolve(1))
 	}
 }
 

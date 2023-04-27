@@ -101,6 +101,15 @@ export class _UserDelete extends PrismaClass {
 			user: this.user,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			user_id: this.user_id!,
+			token: this.token!,
+			date: this.date!,
+			validated: this.validated!,
+		}
+	}
 
 	static async all(
 		query: Prisma.UserDeleteFindFirstArgsBase,
@@ -176,36 +185,18 @@ export class _UserDelete extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _UserDelete.save(): id')
-		}
-
-		if (this.token === undefined) {
-			throw new Error('Invalid field on _UserDelete.save(): token')
-		}
-
-		if (this.date === undefined) {
-			throw new Error('Invalid field on _UserDelete.save(): date')
-		}
-
-		if (this.validated === undefined) {
-			throw new Error('Invalid field on _UserDelete.save(): validated')
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -213,6 +204,34 @@ export class _UserDelete extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): id')
+		}
+		if (this.token === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): token')
+		}
+		if (this.date === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): date')
+		}
+		if (this.validated === undefined) {
+			throw new Error('Missing field on _UserDelete.save(): validated')
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _UserDelete.")
+		}
 	}
 }

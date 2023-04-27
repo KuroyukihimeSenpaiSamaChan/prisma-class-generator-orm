@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ProductVisibilty implements PrismaClass {
+export class _ProductVisibilty extends PrismaClass {
 	static prisma: Prisma.ProductVisibiltyDelegate<undefined>
 	get prisma(): Prisma.ProductVisibiltyDelegate<undefined> {
 		return _ProductVisibilty.prisma
@@ -26,7 +26,13 @@ export class _ProductVisibilty implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	visibility?: string = 'a'
 
@@ -44,12 +50,13 @@ export class _ProductVisibilty implements PrismaClass {
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _ProductVisibilty>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.visibility = obj.visibility
 
@@ -70,11 +77,11 @@ export class _ProductVisibilty implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			visibility: this.visibility,
-			products: this.products,
+			products: ids ? undefined : this.products,
 		}
 	}
 
@@ -89,9 +96,9 @@ export class _ProductVisibilty implements PrismaClass {
 		}, [] as _ProductVisibilty[])
 	}
 
-	static async from<F extends Prisma.ProductVisibiltyWhereInput>(
+	static async from<F extends Prisma.ProductVisibiltyWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.ProductVisibiltyFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.ProductVisibiltyFindUniqueArgsBase, 'where'>,
 	): Promise<_ProductVisibilty | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -99,7 +106,6 @@ export class _ProductVisibilty implements PrismaClass {
 				include: _ProductVisibilty.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -134,10 +140,59 @@ export class _ProductVisibilty implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+
+		// Relations toMany
+		const productsYield = this.products!.saveToTransaction(tx)
+		await productsYield.next()
+		saveYieldsArray.push(productsYield)
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _ProductVisibilty.save(): id')
+		}
+		if (this.visibility === undefined) {
+			throw new Error(
+				'Missing field on _ProductVisibilty.save(): visibility',
+			)
+		}
+
+		if (this.products.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _ProductVisibilty. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

@@ -111,7 +111,7 @@ model Media {
   user_id           Int
   user              User      @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user_id_")
   product_image     Product[]
-  product_gallery   Product[] @relation("MtM_ProductGallery")
+  product_gallery   Product[] @relation("_MtM_ProductGallery")
 
   @@index([user_id], map: "fk_user_id_")
 }
@@ -159,8 +159,8 @@ model Product {
   productVisibilty       ProductVisibilty  @relation(fields: [visibility], references: [id], onDelete: Cascade, map: "fk_visibility")
   sub_orders             SubOrder[]
   // Many-to-Many
-  product_categories     ProductCategory[] @relation("MtM_ProductCategory")
-  gallery                Media[]           @relation("MtM_ProductGallery")
+  product_categories     ProductCategory[] @relation("_MtM_ProductCategory")
+  gallery                Media[]           @relation("_MtM_ProductGallery")
 
   @@index([product_image], map: "fk_image_id")
   @@index([state], map: "fk_state")
@@ -174,7 +174,7 @@ model ProductCategory {
   category_name String    @db.VarChar(64)
   category_slug String    @db.VarChar(64)
   // Many-to-Many
-  products      Product[] @relation("MtM_ProductCategory")
+  products      Product[] @relation("_MtM_ProductCategory")
 }
 
 model ProductVisibilty {

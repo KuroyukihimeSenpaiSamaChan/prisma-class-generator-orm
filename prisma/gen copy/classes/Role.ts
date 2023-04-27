@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Role implements PrismaClass {
+export class _Role extends PrismaClass {
 	static prisma: Prisma.RoleDelegate<undefined>
 	get prisma(): Prisma.RoleDelegate<undefined> {
 		return _Role.prisma
@@ -26,7 +26,13 @@ export class _Role implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	label?: string
 
@@ -44,12 +50,13 @@ export class _Role implements PrismaClass {
 
 		users?: _User[] | User[] | RelationMany<_User>
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _Role>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.label = obj.label
 
@@ -68,8 +75,12 @@ export class _Role implements PrismaClass {
 		}
 	}
 
-	toJSON() {
-		return { id: this.id, label: this.label, users: this.users }
+	toJSON(ids: boolean = false) {
+		return {
+			id: this.id,
+			label: this.label,
+			users: ids ? undefined : this.users,
+		}
 	}
 
 	static async all(query: Prisma.RoleFindFirstArgsBase): Promise<_Role[]> {
@@ -81,9 +92,9 @@ export class _Role implements PrismaClass {
 		}, [] as _Role[])
 	}
 
-	static async from<F extends Prisma.RoleWhereInput>(
+	static async from<F extends Prisma.RoleWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.RoleFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.RoleFindUniqueArgsBase, 'where'>,
 	): Promise<_Role | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -91,7 +102,6 @@ export class _Role implements PrismaClass {
 				include: _Role.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -126,10 +136,57 @@ export class _Role implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+
+		// Relations toMany
+		const usersYield = this.users!.saveToTransaction(tx)
+		await usersYield.next()
+		saveYieldsArray.push(usersYield)
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _Role.save(): id')
+		}
+		if (this.label === undefined) {
+			throw new Error('Missing field on _Role.save(): label')
+		}
+
+		if (this.users.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Role. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

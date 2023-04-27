@@ -129,6 +129,21 @@ export class _Order extends PrismaClass {
 			sub_orders: this.sub_orders,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			order_client_id: this.order_client_id!,
+			creation_date: this.creation_date!,
+			modification_date: this.modification_date!,
+			order_state: this.order_state!,
+			type: this.type!,
+			buyer_id: this.buyer_id!,
+			buyer_billing_id: this.buyer_billing_id!,
+			buyer_delivery_id: this.buyer_delivery_id!,
+			expedition_id: this.expedition_id!,
+			order_total: this.order_total!,
+		}
+	}
 
 	static async all(query: Prisma.OrderFindFirstArgsBase): Promise<_Order[]> {
 		const models = await _Order.prisma.findMany(query)
@@ -202,70 +217,16 @@ export class _Order extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _Order.save(): id')
-		}
-
-		if (this.order_client_id === undefined) {
-			throw new Error('Invalid field on _Order.save(): order_client_id')
-		}
-
-		if (this.creation_date === undefined) {
-			throw new Error('Invalid field on _Order.save(): creation_date')
-		}
-
-		if (this.modification_date === undefined) {
-			throw new Error('Invalid field on _Order.save(): modification_date')
-		}
-
-		if (this.order_state === undefined) {
-			throw new Error('Invalid field on _Order.save(): order_state')
-		}
-
-		if (this.type === undefined) {
-			throw new Error('Invalid field on _Order.save(): type')
-		}
-
-		if (this.buyer_id === undefined) {
-			throw new Error('Invalid field on _Order.save(): buyer_id')
-		}
-
-		if (this.buyer_billing_id === undefined) {
-			throw new Error('Invalid field on _Order.save(): buyer_billing_id')
-		}
-
-		if (this.buyer_delivery_id === undefined) {
-			throw new Error('Invalid field on _Order.save(): buyer_delivery_id')
-		}
-
-		if (this.expedition_id === undefined) {
-			throw new Error('Invalid field on _Order.save(): expedition_id')
-		}
-
-		if (this.order_total === undefined) {
-			throw new Error('Invalid field on _Order.save(): order_total')
-		}
-
-		if (this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on _Order. Save it first, then add the toMany fields",
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
+		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		await sub_ordersYield.next()
+		saveYieldsArray.push(sub_ordersYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -273,6 +234,57 @@ export class _Order extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _Order.save(): id')
+		}
+		if (this.order_client_id === undefined) {
+			throw new Error('Missing field on _Order.save(): order_client_id')
+		}
+		if (this.creation_date === undefined) {
+			throw new Error('Missing field on _Order.save(): creation_date')
+		}
+		if (this.modification_date === undefined) {
+			throw new Error('Missing field on _Order.save(): modification_date')
+		}
+		if (this.order_state === undefined) {
+			throw new Error('Missing field on _Order.save(): order_state')
+		}
+		if (this.type === undefined) {
+			throw new Error('Missing field on _Order.save(): type')
+		}
+		if (this.buyer_id === undefined) {
+			throw new Error('Missing field on _Order.save(): buyer_id')
+		}
+		if (this.buyer_billing_id === undefined) {
+			throw new Error('Missing field on _Order.save(): buyer_billing_id')
+		}
+		if (this.buyer_delivery_id === undefined) {
+			throw new Error('Missing field on _Order.save(): buyer_delivery_id')
+		}
+		if (this.expedition_id === undefined) {
+			throw new Error('Missing field on _Order.save(): expedition_id')
+		}
+		if (this.order_total === undefined) {
+			throw new Error('Missing field on _Order.save(): order_total')
+		}
+
+		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Order. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

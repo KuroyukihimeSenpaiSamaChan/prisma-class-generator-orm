@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ProductState implements PrismaClass {
+export class _ProductState extends PrismaClass {
 	static prisma: Prisma.ProductStateDelegate<undefined>
 	get prisma(): Prisma.ProductStateDelegate<undefined> {
 		return _ProductState.prisma
@@ -26,7 +26,13 @@ export class _ProductState implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	state?: string
 
@@ -44,12 +50,13 @@ export class _ProductState implements PrismaClass {
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _ProductState>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.state = obj.state
 
@@ -70,8 +77,12 @@ export class _ProductState implements PrismaClass {
 		}
 	}
 
-	toJSON() {
-		return { id: this.id, state: this.state, products: this.products }
+	toJSON(ids: boolean = false) {
+		return {
+			id: this.id,
+			state: this.state,
+			products: ids ? undefined : this.products,
+		}
 	}
 
 	static async all(
@@ -85,9 +96,9 @@ export class _ProductState implements PrismaClass {
 		}, [] as _ProductState[])
 	}
 
-	static async from<F extends Prisma.ProductStateWhereInput>(
+	static async from<F extends Prisma.ProductStateWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.ProductStateFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.ProductStateFindUniqueArgsBase, 'where'>,
 	): Promise<_ProductState | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -95,7 +106,6 @@ export class _ProductState implements PrismaClass {
 				include: _ProductState.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -130,10 +140,57 @@ export class _ProductState implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+
+		// Relations toMany
+		const productsYield = this.products!.saveToTransaction(tx)
+		await productsYield.next()
+		saveYieldsArray.push(productsYield)
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _ProductState.save(): id')
+		}
+		if (this.state === undefined) {
+			throw new Error('Missing field on _ProductState.save(): state')
+		}
+
+		if (this.products.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _ProductState. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

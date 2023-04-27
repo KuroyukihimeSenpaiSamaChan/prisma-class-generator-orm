@@ -251,6 +251,18 @@ export class _SubOrder extends PrismaClass {
 			tva_type: this.tva_type,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			order_id: this.order_id!,
+			vendor_id: this.vendor_id!,
+			expedition_id: this.expedition_id!,
+			product_id: this.product_id!,
+			product_price: this.product_price!,
+			quantity: this.quantity!,
+			taxe_id: this.taxe_id!,
+		}
+	}
 
 	static async all(
 		query: Prisma.SubOrderFindFirstArgsBase,
@@ -326,32 +338,42 @@ export class _SubOrder extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _SubOrder.save(): id')
-		}
-
-		if (this.product_price === undefined) {
-			throw new Error('Invalid field on _SubOrder.save(): product_price')
-		}
-
-		if (this.quantity === undefined) {
-			throw new Error('Invalid field on _SubOrder.save(): quantity')
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
+		if (typeof this.expedition !== 'number') {
+			const expeditionYield = this.expedition!.saveToTransaction(tx)
+			await expeditionYield.next()
+			saveYieldsArray.push(expeditionYield)
+		}
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		if (typeof this.order !== 'number') {
+			const orderYield = this.order!.saveToTransaction(tx)
+			await orderYield.next()
+			saveYieldsArray.push(orderYield)
+		}
+
+		if (typeof this.product !== 'number') {
+			const productYield = this.product!.saveToTransaction(tx)
+			await productYield.next()
+			saveYieldsArray.push(productYield)
+		}
+
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
+
+		if (typeof this.tva_type !== 'number') {
+			const tva_typeYield = this.tva_type!.saveToTransaction(tx)
+			await tva_typeYield.next()
+			saveYieldsArray.push(tva_typeYield)
+		}
+
+		// Relations toMany
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -359,6 +381,45 @@ export class _SubOrder extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _SubOrder.save(): id')
+		}
+		if (this.product_price === undefined) {
+			throw new Error('Missing field on _SubOrder.save(): product_price')
+		}
+		if (this.quantity === undefined) {
+			throw new Error('Missing field on _SubOrder.save(): quantity')
+		}
+
+		if (this.expedition === undefined || this.expedition === null) {
+			throw new Error(
+				"expedition can't be null or undefined in _SubOrder.",
+			)
+		}
+		if (this.order === undefined || this.order === null) {
+			throw new Error("order can't be null or undefined in _SubOrder.")
+		}
+		if (this.product === undefined || this.product === null) {
+			throw new Error("product can't be null or undefined in _SubOrder.")
+		}
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _SubOrder.")
+		}
+		if (this.tva_type === undefined || this.tva_type === null) {
+			throw new Error("tva_type can't be null or undefined in _SubOrder.")
+		}
 	}
 }

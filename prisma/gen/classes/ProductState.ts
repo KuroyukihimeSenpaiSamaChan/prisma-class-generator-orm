@@ -80,6 +80,9 @@ export class _ProductState extends PrismaClass {
 	toJSON() {
 		return { id: this.id, state: this.state, products: this.products }
 	}
+	nonRelationsToJSON() {
+		return { id: this.id!, state: this.state! }
+	}
 
 	static async all(
 		query: Prisma.ProductStateFindFirstArgsBase,
@@ -155,34 +158,16 @@ export class _ProductState extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _ProductState.save(): id')
-		}
-
-		if (this.state === undefined) {
-			throw new Error('Invalid field on _ProductState.save(): state')
-		}
-
-		if (this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on _ProductState. Save it first, then add the toMany fields",
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
+		const productsYield = this.products!.saveToTransaction(tx)
+		await productsYield.next()
+		saveYieldsArray.push(productsYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -190,6 +175,30 @@ export class _ProductState extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _ProductState.save(): id')
+		}
+		if (this.state === undefined) {
+			throw new Error('Missing field on _ProductState.save(): state')
+		}
+
+		if (this.products.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _ProductState. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

@@ -21,7 +21,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _User implements PrismaClass {
+export class _User extends PrismaClass {
 	static prisma: Prisma.UserDelegate<undefined>
 	get prisma(): Prisma.UserDelegate<undefined> {
 		return _User.prisma
@@ -57,7 +57,13 @@ export class _User implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	user_pass?: string
 
@@ -169,12 +175,13 @@ export class _User implements PrismaClass {
 			| RelationMany<_UserDelivery>
 		roles?: _Role[] | Role[] | RelationMany<_Role>
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _User>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.user_pass = obj.user_pass
 		this.user_email = obj.user_email
@@ -314,7 +321,7 @@ export class _User implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			user_pass: this.user_pass,
@@ -325,14 +332,14 @@ export class _User implements PrismaClass {
 			birthdate: this.birthdate,
 			token: this.token,
 			deleting: this.deleting,
-			access_token: this.access_token,
-			media: this.media,
-			product: this.product,
-			sub_order: this.sub_order,
-			user_billing: this.user_billing,
-			user_delete: this.user_delete,
-			user_delivery: this.user_delivery,
-			roles: this.roles,
+			access_token: ids ? undefined : this.access_token,
+			media: ids ? undefined : this.media,
+			product: ids ? undefined : this.product,
+			sub_order: ids ? undefined : this.sub_order,
+			user_billing: ids ? undefined : this.user_billing,
+			user_delete: ids ? undefined : this.user_delete,
+			user_delivery: ids ? undefined : this.user_delivery,
+			roles: ids ? undefined : this.roles,
 		}
 	}
 
@@ -345,9 +352,9 @@ export class _User implements PrismaClass {
 		}, [] as _User[])
 	}
 
-	static async from<F extends Prisma.UserWhereInput>(
+	static async from<F extends Prisma.UserWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.UserFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.UserFindUniqueArgsBase, 'where'>,
 	): Promise<_User | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -355,7 +362,6 @@ export class _User implements PrismaClass {
 				include: _User.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -390,10 +396,138 @@ export class _User implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+
+		// Relations toMany
+		const access_tokenYield = this.access_token!.saveToTransaction(tx)
+		await access_tokenYield.next()
+		saveYieldsArray.push(access_tokenYield)
+
+		const mediaYield = this.media!.saveToTransaction(tx)
+		await mediaYield.next()
+		saveYieldsArray.push(mediaYield)
+
+		const productYield = this.product!.saveToTransaction(tx)
+		await productYield.next()
+		saveYieldsArray.push(productYield)
+
+		const sub_orderYield = this.sub_order!.saveToTransaction(tx)
+		await sub_orderYield.next()
+		saveYieldsArray.push(sub_orderYield)
+
+		const user_billingYield = this.user_billing!.saveToTransaction(tx)
+		await user_billingYield.next()
+		saveYieldsArray.push(user_billingYield)
+
+		const user_deleteYield = this.user_delete!.saveToTransaction(tx)
+		await user_deleteYield.next()
+		saveYieldsArray.push(user_deleteYield)
+
+		const user_deliveryYield = this.user_delivery!.saveToTransaction(tx)
+		await user_deliveryYield.next()
+		saveYieldsArray.push(user_deliveryYield)
+
+		const rolesYield = this.roles!.saveToTransaction(tx)
+		await rolesYield.next()
+		saveYieldsArray.push(rolesYield)
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _User.save(): id')
+		}
+		if (this.user_pass === undefined) {
+			throw new Error('Missing field on _User.save(): user_pass')
+		}
+		if (this.user_email === undefined) {
+			throw new Error('Missing field on _User.save(): user_email')
+		}
+		if (this.user_registered === undefined) {
+			throw new Error('Missing field on _User.save(): user_registered')
+		}
+		if (this.firstname === undefined) {
+			throw new Error('Missing field on _User.save(): firstname')
+		}
+		if (this.lastname === undefined) {
+			throw new Error('Missing field on _User.save(): lastname')
+		}
+		if (this.birthdate === undefined) {
+			throw new Error('Missing field on _User.save(): birthdate')
+		}
+		if (this.token === undefined) {
+			throw new Error('Missing field on _User.save(): token')
+		}
+
+		if (this.access_token.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.media.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.product.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.sub_order.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.user_billing.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.user_delete.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.user_delivery.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.roles.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

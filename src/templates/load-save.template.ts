@@ -36,22 +36,14 @@ async save(): Promise<boolean> {
 async *saveToTransaction(
   tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 ) {
-  //#!{REQUIREDS}
+  this.checkRequiredFields()
 
   const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-  // toOne
-  // if (this.media !== null && typeof this.media !== 'number') {
-  //   const mediaYield = this.media.saveToTransaction(tx)
-  //   await mediaYield.next()
-  //   saveYieldsArray.push(mediaYield)
-  // }
+  // Relations toOne
   #!{TO_ONE}
 
-  // toMany
-  // const galleryYield = this.gallery.saveToTransaction(tx)
-  // galleryYield.next()
-  // saveYieldsArray.push(galleryYield)
+  // Relations toMany
   #!{TO_MANY}
 
   yield new Promise<number>((resolve) => resolve(0))
@@ -59,8 +51,22 @@ async *saveToTransaction(
   for (const saveYield of saveYieldsArray) {
     saveYield.next()
   }
+  
+  this._#!{ID} = (await this.prisma.upsert({
+    where: { #!{ID}: this._#!{ID} },
+    create: { ...this.nonRelationsToJSON(), #!{ID}: undefined },
+    update: { ...this.nonRelationsToJSON()},
+    select: { #!{ID}: true }
+  })).#!{ID}
 
+  return new Promise<number>((resolve) => resolve(this._#!{ID}))
+}
 
-  return new Promise<number>((resolve) => resolve(1))
+checkRequiredFields(){
+  #!{CHECK_FIELDS}
+
+  #!{CHECK_TO_ONE}
+
+  #!{CHECK_TO_MANY}
 }
 `

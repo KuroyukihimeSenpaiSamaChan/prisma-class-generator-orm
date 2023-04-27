@@ -342,6 +342,19 @@ export class _User extends PrismaClass {
 			roles: this.roles,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			user_pass: this.user_pass!,
+			user_email: this.user_email!,
+			user_registered: this.user_registered!,
+			firstname: this.firstname!,
+			lastname: this.lastname!,
+			birthdate: this.birthdate!,
+			token: this.token!,
+			deleting: this.deleting!,
+		}
+	}
 
 	static async all(query: Prisma.UserFindFirstArgsBase): Promise<_User[]> {
 		const models = await _User.prisma.findMany(query)
@@ -415,58 +428,44 @@ export class _User extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _User.save(): id')
-		}
-
-		if (this.user_pass === undefined) {
-			throw new Error('Invalid field on _User.save(): user_pass')
-		}
-
-		if (this.user_email === undefined) {
-			throw new Error('Invalid field on _User.save(): user_email')
-		}
-
-		if (this.user_registered === undefined) {
-			throw new Error('Invalid field on _User.save(): user_registered')
-		}
-
-		if (this.firstname === undefined) {
-			throw new Error('Invalid field on _User.save(): firstname')
-		}
-
-		if (this.lastname === undefined) {
-			throw new Error('Invalid field on _User.save(): lastname')
-		}
-
-		if (this.birthdate === undefined) {
-			throw new Error('Invalid field on _User.save(): birthdate')
-		}
-
-		if (this.token === undefined) {
-			throw new Error('Invalid field on _User.save(): token')
-		}
-
-		if (this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on _User. Save it first, then add the toMany fields",
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
+		const access_tokenYield = this.access_token!.saveToTransaction(tx)
+		await access_tokenYield.next()
+		saveYieldsArray.push(access_tokenYield)
+
+		const mediaYield = this.media!.saveToTransaction(tx)
+		await mediaYield.next()
+		saveYieldsArray.push(mediaYield)
+
+		const productYield = this.product!.saveToTransaction(tx)
+		await productYield.next()
+		saveYieldsArray.push(productYield)
+
+		const sub_orderYield = this.sub_order!.saveToTransaction(tx)
+		await sub_orderYield.next()
+		saveYieldsArray.push(sub_orderYield)
+
+		const user_billingYield = this.user_billing!.saveToTransaction(tx)
+		await user_billingYield.next()
+		saveYieldsArray.push(user_billingYield)
+
+		const user_deleteYield = this.user_delete!.saveToTransaction(tx)
+		await user_deleteYield.next()
+		saveYieldsArray.push(user_deleteYield)
+
+		const user_deliveryYield = this.user_delivery!.saveToTransaction(tx)
+		await user_deliveryYield.next()
+		saveYieldsArray.push(user_deliveryYield)
+
+		const rolesYield = this.roles!.saveToTransaction(tx)
+		await rolesYield.next()
+		saveYieldsArray.push(rolesYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -474,6 +473,83 @@ export class _User extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _User.save(): id')
+		}
+		if (this.user_pass === undefined) {
+			throw new Error('Missing field on _User.save(): user_pass')
+		}
+		if (this.user_email === undefined) {
+			throw new Error('Missing field on _User.save(): user_email')
+		}
+		if (this.user_registered === undefined) {
+			throw new Error('Missing field on _User.save(): user_registered')
+		}
+		if (this.firstname === undefined) {
+			throw new Error('Missing field on _User.save(): firstname')
+		}
+		if (this.lastname === undefined) {
+			throw new Error('Missing field on _User.save(): lastname')
+		}
+		if (this.birthdate === undefined) {
+			throw new Error('Missing field on _User.save(): birthdate')
+		}
+		if (this.token === undefined) {
+			throw new Error('Missing field on _User.save(): token')
+		}
+
+		if (this.access_token.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.media.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.product.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.sub_order.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.user_billing.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.user_delete.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.user_delivery.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.roles.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

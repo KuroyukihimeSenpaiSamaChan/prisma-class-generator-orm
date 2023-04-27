@@ -409,6 +409,30 @@ export class _Product extends PrismaClass {
 			gallery: this.gallery,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			vendor_id: this.vendor_id!,
+			state: this.state!,
+			tva: this.tva!,
+			product_name: this.product_name!,
+			vendor_sku: this.vendor_sku!,
+			product_sku: this.product_sku!,
+			price: this.price!,
+			price_promo: this.price_promo!,
+			description: this.description!,
+			additional_description: this.additional_description!,
+			backorder: this.backorder!,
+			unique_product: this.unique_product!,
+			linked_products: this.linked_products!,
+			product_image: this.product_image!,
+			product_keywords: this.product_keywords!,
+			creation_date: this.creation_date!,
+			modification_date: this.modification_date!,
+			has_tva: this.has_tva!,
+			visibility: this.visibility!,
+		}
+	}
 
 	static async all(
 		query: Prisma.ProductFindFirstArgsBase,
@@ -484,86 +508,55 @@ export class _Product extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _Product.save(): id')
-		}
-
-		if (this.product_name === undefined) {
-			throw new Error('Invalid field on _Product.save(): product_name')
-		}
-
-		if (this.vendor_sku === undefined) {
-			throw new Error('Invalid field on _Product.save(): vendor_sku')
-		}
-
-		if (this.product_sku === undefined) {
-			throw new Error('Invalid field on _Product.save(): product_sku')
-		}
-
-		if (this.price === undefined) {
-			throw new Error('Invalid field on _Product.save(): price')
-		}
-
-		if (this.price_promo === undefined) {
-			throw new Error('Invalid field on _Product.save(): price_promo')
-		}
-
-		if (this.description === undefined) {
-			throw new Error('Invalid field on _Product.save(): description')
-		}
-
-		if (this.backorder === undefined) {
-			throw new Error('Invalid field on _Product.save(): backorder')
-		}
-
-		if (this.unique_product === undefined) {
-			throw new Error('Invalid field on _Product.save(): unique_product')
-		}
-
-		if (this.linked_products === undefined) {
-			throw new Error('Invalid field on _Product.save(): linked_products')
-		}
-
-		if (this.product_keywords === undefined) {
-			throw new Error(
-				'Invalid field on _Product.save(): product_keywords',
-			)
-		}
-
-		if (this.creation_date === undefined) {
-			throw new Error('Invalid field on _Product.save(): creation_date')
-		}
-
-		if (this.modification_date === undefined) {
-			throw new Error(
-				'Invalid field on _Product.save(): modification_date',
-			)
-		}
-
-		if (this.has_tva === undefined) {
-			throw new Error('Invalid field on _Product.save(): has_tva')
-		}
-
-		if (this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on _Product. Save it first, then add the toMany fields",
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
+		if (typeof this.media !== 'number') {
+			const mediaYield = this.media!.saveToTransaction(tx)
+			await mediaYield.next()
+			saveYieldsArray.push(mediaYield)
+		}
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		if (typeof this.tva_type !== 'number') {
+			const tva_typeYield = this.tva_type!.saveToTransaction(tx)
+			await tva_typeYield.next()
+			saveYieldsArray.push(tva_typeYield)
+		}
+
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
+
+		if (typeof this.productState !== 'number') {
+			const productStateYield = this.productState!.saveToTransaction(tx)
+			await productStateYield.next()
+			saveYieldsArray.push(productStateYield)
+		}
+
+		if (typeof this.productVisibilty !== 'number') {
+			const productVisibiltyYield =
+				this.productVisibilty!.saveToTransaction(tx)
+			await productVisibiltyYield.next()
+			saveYieldsArray.push(productVisibiltyYield)
+		}
+
+		// Relations toMany
+		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		await sub_ordersYield.next()
+		saveYieldsArray.push(sub_ordersYield)
+
+		const product_categoriesYield =
+			this.product_categories!.saveToTransaction(tx)
+		await product_categoriesYield.next()
+		saveYieldsArray.push(product_categoriesYield)
+
+		const galleryYield = this.gallery!.saveToTransaction(tx)
+		await galleryYield.next()
+		saveYieldsArray.push(galleryYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -571,6 +564,103 @@ export class _Product extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _Product.save(): id')
+		}
+		if (this.product_name === undefined) {
+			throw new Error('Missing field on _Product.save(): product_name')
+		}
+		if (this.vendor_sku === undefined) {
+			throw new Error('Missing field on _Product.save(): vendor_sku')
+		}
+		if (this.product_sku === undefined) {
+			throw new Error('Missing field on _Product.save(): product_sku')
+		}
+		if (this.price === undefined) {
+			throw new Error('Missing field on _Product.save(): price')
+		}
+		if (this.price_promo === undefined) {
+			throw new Error('Missing field on _Product.save(): price_promo')
+		}
+		if (this.description === undefined) {
+			throw new Error('Missing field on _Product.save(): description')
+		}
+		if (this.backorder === undefined) {
+			throw new Error('Missing field on _Product.save(): backorder')
+		}
+		if (this.unique_product === undefined) {
+			throw new Error('Missing field on _Product.save(): unique_product')
+		}
+		if (this.linked_products === undefined) {
+			throw new Error('Missing field on _Product.save(): linked_products')
+		}
+		if (this.product_keywords === undefined) {
+			throw new Error(
+				'Missing field on _Product.save(): product_keywords',
+			)
+		}
+		if (this.creation_date === undefined) {
+			throw new Error('Missing field on _Product.save(): creation_date')
+		}
+		if (this.modification_date === undefined) {
+			throw new Error(
+				'Missing field on _Product.save(): modification_date',
+			)
+		}
+		if (this.has_tva === undefined) {
+			throw new Error('Missing field on _Product.save(): has_tva')
+		}
+
+		if (this.media === undefined || this.media === null) {
+			throw new Error("media can't be null or undefined in _Product.")
+		}
+		if (this.tva_type === undefined || this.tva_type === null) {
+			throw new Error("tva_type can't be null or undefined in _Product.")
+		}
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _Product.")
+		}
+		if (this.productState === undefined || this.productState === null) {
+			throw new Error(
+				"productState can't be null or undefined in _Product.",
+			)
+		}
+		if (
+			this.productVisibilty === undefined ||
+			this.productVisibilty === null
+		) {
+			throw new Error(
+				"productVisibilty can't be null or undefined in _Product.",
+			)
+		}
+
+		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.product_categories.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.gallery.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _UserBilling implements PrismaClass {
+export class _UserBilling extends PrismaClass {
 	static prisma: Prisma.UserBillingDelegate<undefined>
 	get prisma(): Prisma.UserBillingDelegate<undefined> {
 		return _UserBilling.prisma
@@ -26,7 +26,13 @@ export class _UserBilling implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	private user_id: ForeignKey
 
@@ -73,12 +79,13 @@ export class _UserBilling implements PrismaClass {
 		company_name?: string | null
 		user?: _User | User | ForeignKey
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _UserBilling>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.address = obj.address
 		this.additional_address =
@@ -106,7 +113,7 @@ export class _UserBilling implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			user_id: this.user_id,
@@ -118,7 +125,7 @@ export class _UserBilling implements PrismaClass {
 			region: this.region,
 			phone_number: this.phone_number,
 			company_name: this.company_name,
-			user: this.user,
+			user: ids ? undefined : this.user,
 		}
 	}
 
@@ -133,9 +140,9 @@ export class _UserBilling implements PrismaClass {
 		}, [] as _UserBilling[])
 	}
 
-	static async from<F extends Prisma.UserBillingWhereInput>(
+	static async from<F extends Prisma.UserBillingWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.UserBillingFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.UserBillingFindUniqueArgsBase, 'where'>,
 	): Promise<_UserBilling | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -143,7 +150,6 @@ export class _UserBilling implements PrismaClass {
 				include: _UserBilling.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -178,10 +184,74 @@ export class _UserBilling implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
+
+		// Relations toMany
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): id')
+		}
+		if (this.address === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): address')
+		}
+		if (this.zipcode === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): zipcode')
+		}
+		if (this.city === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): city')
+		}
+		if (this.country === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): country')
+		}
+		if (this.region === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): region')
+		}
+		if (this.phone_number === undefined) {
+			throw new Error(
+				'Missing field on _UserBilling.save(): phone_number',
+			)
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _UserBilling.")
+		}
 	}
 }

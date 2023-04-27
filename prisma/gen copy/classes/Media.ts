@@ -5,7 +5,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Media implements PrismaClass {
+export class _Media extends PrismaClass {
 	static prisma: Prisma.MediaDelegate<undefined>
 	get prisma(): Prisma.MediaDelegate<undefined> {
 		return _Media.prisma
@@ -31,7 +31,13 @@ export class _Media implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	slug?: string
 
@@ -84,12 +90,13 @@ export class _Media implements PrismaClass {
 		product_image?: _Product[] | Product[] | RelationMany<_Product>
 		product_gallery?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _Media>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.slug = obj.slug
 		this.url = obj.url
@@ -145,7 +152,7 @@ export class _Media implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			slug: this.slug,
@@ -153,9 +160,9 @@ export class _Media implements PrismaClass {
 			creation_date: this.creation_date,
 			modification_date: this.modification_date,
 			user_id: this.user_id,
-			user: this.user,
-			product_image: this.product_image,
-			product_gallery: this.product_gallery,
+			user: ids ? undefined : this.user,
+			product_image: ids ? undefined : this.product_image,
+			product_gallery: ids ? undefined : this.product_gallery,
 		}
 	}
 
@@ -168,9 +175,9 @@ export class _Media implements PrismaClass {
 		}, [] as _Media[])
 	}
 
-	static async from<F extends Prisma.MediaWhereInput>(
+	static async from<F extends Prisma.MediaWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.MediaFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.MediaFindUniqueArgsBase, 'where'>,
 	): Promise<_Media | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -178,7 +185,6 @@ export class _Media implements PrismaClass {
 				include: _Media.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -213,10 +219,84 @@ export class _Media implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
+
+		// Relations toMany
+		const product_imageYield = this.product_image!.saveToTransaction(tx)
+		await product_imageYield.next()
+		saveYieldsArray.push(product_imageYield)
+
+		const product_galleryYield = this.product_gallery!.saveToTransaction(tx)
+		await product_galleryYield.next()
+		saveYieldsArray.push(product_galleryYield)
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _Media.save(): id')
+		}
+		if (this.slug === undefined) {
+			throw new Error('Missing field on _Media.save(): slug')
+		}
+		if (this.url === undefined) {
+			throw new Error('Missing field on _Media.save(): url')
+		}
+		if (this.creation_date === undefined) {
+			throw new Error('Missing field on _Media.save(): creation_date')
+		}
+		if (this.modification_date === undefined) {
+			throw new Error('Missing field on _Media.save(): modification_date')
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _Media.")
+		}
+
+		if (this.product_image.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.product_gallery.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

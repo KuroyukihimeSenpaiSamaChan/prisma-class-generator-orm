@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _AccessToken implements PrismaClass {
+export class _AccessToken extends PrismaClass {
 	static prisma: Prisma.AccessTokenDelegate<undefined>
 	get prisma(): Prisma.AccessTokenDelegate<undefined> {
 		return _AccessToken.prisma
@@ -26,7 +26,13 @@ export class _AccessToken implements PrismaClass {
 	}
 
 	// ID
-	id: number = -1
+	private _id: number
+	get id(): number {
+		return this._id
+	}
+	get primaryKey(): number {
+		return this._id
+	}
 
 	private user_id: ForeignKey
 
@@ -58,12 +64,13 @@ export class _AccessToken implements PrismaClass {
 		expires_at?: number | null
 		user?: _User | User | ForeignKey
 	}) {
+		super()
 		this.init(obj)
 	}
 
 	private init(obj: ConstructorParameters<typeof _AccessToken>[0]) {
 		if (obj.id !== undefined) {
-			this.id = obj.id
+			this._id = obj.id
 		}
 		this.token = obj.token
 		this.created_at = obj.created_at !== null ? obj.created_at : undefined
@@ -84,14 +91,14 @@ export class _AccessToken implements PrismaClass {
 		}
 	}
 
-	toJSON() {
+	toJSON(ids: boolean = false) {
 		return {
 			id: this.id,
 			user_id: this.user_id,
 			token: this.token,
 			created_at: this.created_at,
 			expires_at: this.expires_at,
-			user: this.user,
+			user: ids ? undefined : this.user,
 		}
 	}
 
@@ -106,9 +113,9 @@ export class _AccessToken implements PrismaClass {
 		}, [] as _AccessToken[])
 	}
 
-	static async from<F extends Prisma.AccessTokenWhereInput>(
+	static async from<F extends Prisma.AccessTokenWhereUniqueInput>(
 		where: F,
-		opt?: Omit<Prisma.AccessTokenFindFirstArgsBase, 'where'>,
+		opt?: Omit<Prisma.AccessTokenFindUniqueArgsBase, 'where'>,
 	): Promise<_AccessToken | null> {
 		let prismaOptions = opt
 		if (prismaOptions === undefined) {
@@ -116,7 +123,6 @@ export class _AccessToken implements PrismaClass {
 				include: _AccessToken.getIncludes(),
 			}
 		} else if (
-			prismaOptions !== undefined &&
 			prismaOptions.include === undefined &&
 			prismaOptions.select === undefined
 		) {
@@ -151,10 +157,57 @@ export class _AccessToken implements PrismaClass {
 
 	async save(): Promise<boolean> {
 		try {
+			await this.prismaClient.$transaction(
+				async (tx): Promise<number> => {
+					const saveYield = this.saveToTransaction(tx)
+					console.log('First YIELD')
+					await saveYield.next()
+					console.log('Second YIELD')
+					return (await saveYield.next()).value
+				},
+			)
 		} catch (err) {
 			console.log(err)
 			return false
 		}
 		return true
+	}
+
+	async *saveToTransaction(
+		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
+	) {
+		this.checkRequiredFields()
+
+		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
+
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
+
+		// Relations toMany
+
+		yield new Promise<number>((resolve) => resolve(0))
+
+		for (const saveYield of saveYieldsArray) {
+			saveYield.next()
+		}
+
+		return new Promise<number>((resolve) => resolve(1))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _AccessToken.save(): id')
+		}
+		if (this.token === undefined) {
+			throw new Error('Missing field on _AccessToken.save(): token')
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _AccessToken.")
+		}
 	}
 }

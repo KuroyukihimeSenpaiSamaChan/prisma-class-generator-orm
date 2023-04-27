@@ -118,6 +118,9 @@ export class _TVAType extends PrismaClass {
 			sub_orders: this.sub_orders,
 		}
 	}
+	nonRelationsToJSON() {
+		return { id: this.id!, slug: this.slug!, amount: this.amount! }
+	}
 
 	static async all(
 		query: Prisma.TVATypeFindFirstArgsBase,
@@ -193,38 +196,20 @@ export class _TVAType extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _TVAType.save(): id')
-		}
-
-		if (this.slug === undefined) {
-			throw new Error('Invalid field on _TVAType.save(): slug')
-		}
-
-		if (this.amount === undefined) {
-			throw new Error('Invalid field on _TVAType.save(): amount')
-		}
-
-		if (this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on _TVAType. Save it first, then add the toMany fields",
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
+		const productsYield = this.products!.saveToTransaction(tx)
+		await productsYield.next()
+		saveYieldsArray.push(productsYield)
+
+		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		await sub_ordersYield.next()
+		saveYieldsArray.push(sub_ordersYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -232,6 +217,38 @@ export class _TVAType extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _TVAType.save(): id')
+		}
+		if (this.slug === undefined) {
+			throw new Error('Missing field on _TVAType.save(): slug')
+		}
+		if (this.amount === undefined) {
+			throw new Error('Missing field on _TVAType.save(): amount')
+		}
+
+		if (this.products.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _TVAType. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _TVAType. Save it first, then add the toMany fields",
+			)
+		}
 	}
 }

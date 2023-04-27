@@ -128,6 +128,20 @@ export class _UserBilling extends PrismaClass {
 			user: this.user,
 		}
 	}
+	nonRelationsToJSON() {
+		return {
+			id: this.id!,
+			user_id: this.user_id!,
+			address: this.address!,
+			additional_address: this.additional_address!,
+			zipcode: this.zipcode!,
+			city: this.city!,
+			country: this.country!,
+			region: this.region!,
+			phone_number: this.phone_number!,
+			company_name: this.company_name!,
+		}
+	}
 
 	static async all(
 		query: Prisma.UserBillingFindFirstArgsBase,
@@ -203,50 +217,18 @@ export class _UserBilling extends PrismaClass {
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
-		//
-		if (this.id === undefined) {
-			throw new Error('Invalid field on _UserBilling.save(): id')
-		}
-
-		if (this.address === undefined) {
-			throw new Error('Invalid field on _UserBilling.save(): address')
-		}
-
-		if (this.zipcode === undefined) {
-			throw new Error('Invalid field on _UserBilling.save(): zipcode')
-		}
-
-		if (this.city === undefined) {
-			throw new Error('Invalid field on _UserBilling.save(): city')
-		}
-
-		if (this.country === undefined) {
-			throw new Error('Invalid field on _UserBilling.save(): country')
-		}
-
-		if (this.region === undefined) {
-			throw new Error('Invalid field on _UserBilling.save(): region')
-		}
-
-		if (this.phone_number === undefined) {
-			throw new Error(
-				'Invalid field on _UserBilling.save(): phone_number',
-			)
-		}
+		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
-		// toOne
-		// if (this.media !== null && typeof this.media !== 'number') {
-		//   const mediaYield = this.media.saveToTransaction(tx)
-		//   await mediaYield.next()
-		//   saveYieldsArray.push(mediaYield)
-		// }
+		// Relations toOne
+		if (typeof this.user !== 'number') {
+			const userYield = this.user!.saveToTransaction(tx)
+			await userYield.next()
+			saveYieldsArray.push(userYield)
+		}
 
-		// toMany
-		// const galleryYield = this.gallery.saveToTransaction(tx)
-		// galleryYield.next()
-		// saveYieldsArray.push(galleryYield)
+		// Relations toMany
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -254,6 +236,45 @@ export class _UserBilling extends PrismaClass {
 			saveYield.next()
 		}
 
-		return new Promise<number>((resolve) => resolve(1))
+		this._id = (
+			await this.prisma.upsert({
+				where: { id: this._id },
+				create: { ...this.nonRelationsToJSON(), id: undefined },
+				update: { ...this.nonRelationsToJSON() },
+				select: { id: true },
+			})
+		).id
+
+		return new Promise<number>((resolve) => resolve(this._id))
+	}
+
+	checkRequiredFields() {
+		if (this.id === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): id')
+		}
+		if (this.address === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): address')
+		}
+		if (this.zipcode === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): zipcode')
+		}
+		if (this.city === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): city')
+		}
+		if (this.country === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): country')
+		}
+		if (this.region === undefined) {
+			throw new Error('Missing field on _UserBilling.save(): region')
+		}
+		if (this.phone_number === undefined) {
+			throw new Error(
+				'Missing field on _UserBilling.save(): phone_number',
+			)
+		}
+
+		if (this.user === undefined || this.user === null) {
+			throw new Error("user can't be null or undefined in _UserBilling.")
+		}
 	}
 }
