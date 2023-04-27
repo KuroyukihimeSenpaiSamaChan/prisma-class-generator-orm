@@ -54,12 +54,18 @@ async *saveToTransaction(
     saveYield.next()
   }
   
-  this._#!{ID} = (await this.prisma.upsert({
-    where: { #!{ID}: this._#!{ID} },
-    create: { ...this.nonRelationsToJSON(), #!{ID}: undefined },
-    update: { ...this.nonRelationsToJSON()},
-    select: { #!{ID}: true }
-  })).#!{ID}
+  if(this._#!{ID} === -1){
+    this._#!{ID} = (await this.prisma.create({
+      data: { ...this.nonRelationsToJSON(), #!{ID}: undefined},
+      select: { #!{ID}: true }
+    })).#!{ID}
+  } else {
+    await this.prisma.update({
+      where: { #!{ID}: this._#!{ID} },
+      data: { ...this.nonRelationsToJSON()}
+    })
+  }
+
 
   return new Promise<number>((resolve) => resolve(this._#!{ID}))
 }

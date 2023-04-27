@@ -26,7 +26,7 @@ export class _UserDelivery extends PrismaClass {
 	}
 
 	// ID
-	private _id: number
+	private _id: number = -1
 	get id(): number {
 		return this._id
 	}
@@ -144,7 +144,7 @@ export class _UserDelivery extends PrismaClass {
 	}
 
 	static async all(
-		query: Prisma.UserDeliveryFindFirstArgsBase,
+		query?: Prisma.UserDeliveryFindFirstArgsBase,
 	): Promise<_UserDelivery[]> {
 		const models = await _UserDelivery.prisma.findMany(query)
 
@@ -236,22 +236,24 @@ export class _UserDelivery extends PrismaClass {
 			saveYield.next()
 		}
 
-		this._id = (
-			await this.prisma.upsert({
+		if (this._id === -1) {
+			this._id = (
+				await this.prisma.create({
+					data: { ...this.nonRelationsToJSON(), id: undefined },
+					select: { id: true },
+				})
+			).id
+		} else {
+			await this.prisma.update({
 				where: { id: this._id },
-				create: { ...this.nonRelationsToJSON(), id: undefined },
-				update: { ...this.nonRelationsToJSON() },
-				select: { id: true },
+				data: { ...this.nonRelationsToJSON() },
 			})
-		).id
+		}
 
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
 	checkRequiredFields() {
-		if (this.id === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): id')
-		}
 		if (this.address === undefined) {
 			throw new Error('Missing field on _UserDelivery.save(): address')
 		}

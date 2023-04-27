@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FROM_TEMPLATE = exports.ALL_TEMPLATE = void 0;
 exports.ALL_TEMPLATE = `
-  static async all(query: Prisma.#!{NAME}FindFirstArgsBase): Promise<_#!{NAME}[]> {
+  static async all(query?: Prisma.#!{NAME}FindFirstArgsBase): Promise<_#!{NAME}[]> {
     const models = await _#!{NAME}.prisma.findMany(query)
     
     return models.reduce((acc, m) => {

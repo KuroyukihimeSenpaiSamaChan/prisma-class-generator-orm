@@ -1,5 +1,5 @@
 export const ALL_TEMPLATE = `
-  static async all(query: Prisma.#!{NAME}FindFirstArgsBase): Promise<_#!{NAME}[]> {
+  static async all(query?: Prisma.#!{NAME}FindFirstArgsBase): Promise<_#!{NAME}[]> {
     const models = await _#!{NAME}.prisma.findMany(query)
     
     return models.reduce((acc, m) => {

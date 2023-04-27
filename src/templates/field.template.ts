@@ -3,7 +3,7 @@ export const FIELD_TEMPLATE = `	#!{DECORATORS}
 `
 
 export const FIELD_ID_TEMPLATE = ` #!{DECORATORS}
-	private _#!{NAME}: #!{TYPE}
+	private _#!{NAME}: #!{TYPE} = -1
 	get #!{NAME}(): #!{TYPE} {
 		return this._#!{NAME}
 	}

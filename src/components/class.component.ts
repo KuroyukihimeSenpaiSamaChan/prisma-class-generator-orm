@@ -50,7 +50,9 @@ export class ClassComponent extends BaseComponent implements Echoable {
 						let opt = { parameter: '', initializer: '' }
 						if (_field.nullable) {
 							opt.parameter = ' | null'
-							opt.initializer = ` !== null ? obj.${_field.name}: undefined`
+							opt.initializer = ` !== null ? obj.${_field.name} : undefined`
+						} else if (_field.default) {
+							opt.initializer = ` !== undefined ? obj.${_field.name} : ${_field.default}`
 						}
 						parameters.normal += `${_field.name}?: ${_field.type} ${opt.parameter},`
 						initialiazers.normal += `this.${_field.name} =  obj.${_field.name} ${opt.initializer};`
@@ -80,7 +82,8 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				// If it is a relation toMany
 				else {
 					const typeSingle = _field.type.substring(0, _field.type.length - 2)
-					parameters.toMany += `${_field.name}?: _${_field.type} | ${_field.type} | RelationMany<_${typeSingle}>,`
+					parameters.toMany += `${_field.name}?: _${_field.type} | ${_field.type} | RelationMany<_${typeSingle}>,
+					`
 					initialiazers.toMany += `
 					if (!obj.${_field.name} || obj.${_field.name}.length === 0) {
 						this.${_field.name} = new RelationMany<_${typeSingle}>([])
@@ -129,7 +132,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 		let saveMethod = ''
 		{
 			let checkRequireds = ''
-			for (const _field of this.fields.filter((elem) => !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
+			for (const _field of this.fields.filter((elem) => !elem.isId && !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
 				checkRequireds += `if(this.${_field.name} === undefined){
 					throw new Error("Missing field on _${this.name}.save(): ${_field.name}")
 				}`
