@@ -109,6 +109,15 @@ export class _TVAType extends PrismaClass {
 		}
 	}
 
+	update(obj: { id?: number; slug?: string; amount?: number }) {
+		if (obj.slug !== undefined) {
+			this.slug = obj.slug
+		}
+		if (obj.amount !== undefined) {
+			this.amount = obj.amount
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -133,25 +142,19 @@ export class _TVAType extends PrismaClass {
 		}, [] as _TVAType[])
 	}
 
-	static async from<F extends Prisma.TVATypeWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.TVATypeFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.TVATypeFindFirstArgsBase,
 	): Promise<_TVAType | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _TVAType.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _TVAType.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _TVAType.getIncludes()
 		}
 
 		const dbQuery = await _TVAType.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -180,9 +183,7 @@ export class _TVAType extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -214,18 +215,21 @@ export class _TVAType extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.tVAType.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.tVAType.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -252,5 +256,31 @@ export class _TVAType extends PrismaClass {
 				"Can't save toMany fields on new _TVAType. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _TVAType.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_TVAType.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

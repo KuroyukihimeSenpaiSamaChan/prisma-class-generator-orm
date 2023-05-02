@@ -5,7 +5,7 @@ import { CLASS_TEMPLATE } from '../templates/class.template'
 import { ALL_TEMPLATE, FROM_TEMPLATE } from '../templates/all.template'
 import { GET_INCLUDES_TEMPLATE } from '../templates/includes.template'
 import { isRelationMany } from '../convertor'
-import { LOAD_TEMPLATE, SAVE_TEMPLATE } from '../templates/load-save.template'
+import { DELETE_TEMPLATE, LOAD_TEMPLATE, SAVE_TEMPLATE } from '../templates/load-save.template'
 
 export class ClassComponent extends BaseComponent implements Echoable {
 	name: string
@@ -27,6 +27,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			}
 			let initialiazers = {
 				normal: '',
+				update: '',
 				toOne: '',
 				toMany: ''
 			}
@@ -56,6 +57,10 @@ export class ClassComponent extends BaseComponent implements Echoable {
 						}
 						parameters.normal += `${_field.name}?: ${_field.type} ${opt.parameter},`
 						initialiazers.normal += `this.${_field.name} =  obj.${_field.name} ${opt.initializer};`
+						initialiazers.update += `if(obj.${_field.name} !== undefined){
+							this.${_field.name} = obj.${_field.name}
+						}
+						`
 					} else {
 						parameters.normal += `${_field.name}?: ForeignKey,`
 					}
@@ -117,6 +122,12 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				${initialiazers.toMany}
 			}
 
+			update(obj: {
+				${parameters.normal}
+			}){
+				${initialiazers.update}
+			}
+
 			toJSON() { return {${toJSONRelations}} }
 			nonRelationsToJSON() { return {${toJSON}} }
 			`
@@ -130,6 +141,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 		// Generate the load method
 		let saveMethod = ''
+		let deleteMethod = ''
 		{
 			let checkRequireds = ''
 			for (const _field of this.fields.filter((elem) => !elem.isId && !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
@@ -171,6 +183,31 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				`
 			}
 
+			let connectGenerate = ''
+			let connectSave = ''
+			for (const _field of this.fields.filter(elem => isRelationMany(elem.relation))) {
+				let toRelation: FieldComponent
+				if (!isRelationMany(_field.relation)) continue
+				else {
+					if (_field.relation.A === _field) {
+						toRelation = _field.relation.B
+					} else {
+						toRelation = _field.relation.A
+					}
+				}
+				connectGenerate += `const ${_field.name}Connections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
+				for(const relation of this.${_field.name}){
+					${_field.name}Connections.push({
+						id: relation.primaryKey,
+					})
+				}
+				`
+
+				connectSave += `${_field.name}: {
+					connect: ${_field.name}Connections
+				},`
+			}
+
 			saveMethod = SAVE_TEMPLATE.replaceAll(
 				'#!{CHECK_FIELDS}', checkRequireds)
 				.replaceAll('#!{CHECK_TO_ONE}', checkToOne)
@@ -178,6 +215,13 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				.replaceAll('#!{TO_ONE}', toOne)
 				.replaceAll('#!{TO_MANY}', toMany)
 				.replaceAll('#!{ID}', primaryKey)
+				.replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
+				.replaceAll('#!{CONNECT_GEN}', connectGenerate)
+				.replaceAll('#!{CONNECT_SAVE}', connectSave)
+
+			deleteMethod = DELETE_TEMPLATE.replaceAll(
+				'#!{ID}', primaryKey)
+				.replaceAll('#!{CLASS}', `${this.name}`)
 		}
 
 		// Generate the getClassIncludes
@@ -212,6 +256,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			.replaceAll('#!{ALL}', ALL_TEMPLATE)
 			.replaceAll('#!{LOAD}', loadMethod)
 			.replaceAll('#!{SAVE}', saveMethod)
+			.replaceAll('#!{DELETE}', deleteMethod)
 			.replaceAll('#!{GET_INCLUDES}', getIncludes)
 			.replaceAll('#!{NAME}', `${this.name}`)
 			.replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))

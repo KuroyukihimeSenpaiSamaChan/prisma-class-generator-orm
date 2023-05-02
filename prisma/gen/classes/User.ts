@@ -80,7 +80,7 @@ export class _User extends PrismaClass {
 
 	token?: string
 
-	deleting?: number
+	deleting?: number | null
 
 	private _access_token: RelationMany<_AccessToken>
 	public get access_token(): RelationMany<_AccessToken> {
@@ -322,6 +322,43 @@ export class _User extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		user_pass?: string
+		user_email?: string
+		user_registered?: boolean
+		firstname?: string
+		lastname?: string
+		birthdate?: number
+		token?: string
+		deleting?: number | null
+	}) {
+		if (obj.user_pass !== undefined) {
+			this.user_pass = obj.user_pass
+		}
+		if (obj.user_email !== undefined) {
+			this.user_email = obj.user_email
+		}
+		if (obj.user_registered !== undefined) {
+			this.user_registered = obj.user_registered
+		}
+		if (obj.firstname !== undefined) {
+			this.firstname = obj.firstname
+		}
+		if (obj.lastname !== undefined) {
+			this.lastname = obj.lastname
+		}
+		if (obj.birthdate !== undefined) {
+			this.birthdate = obj.birthdate
+		}
+		if (obj.token !== undefined) {
+			this.token = obj.token
+		}
+		if (obj.deleting !== undefined) {
+			this.deleting = obj.deleting
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -366,25 +403,19 @@ export class _User extends PrismaClass {
 		}, [] as _User[])
 	}
 
-	static async from<F extends Prisma.UserWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.UserFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.UserFindFirstArgsBase,
 	): Promise<_User | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _User.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _User.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _User.getIncludes()
 		}
 
 		const dbQuery = await _User.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -413,9 +444,7 @@ export class _User extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -471,18 +500,32 @@ export class _User extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
+		}
+
+		const rolesConnections: Prisma.Enumerable<Prisma.RoleWhereUniqueInput> =
+			[]
+		for (const relation of this.roles) {
+			rolesConnections.push({
+				id: relation.primaryKey,
+			})
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.user.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+						roles: {
+							connect: rolesConnections,
+						},
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.user.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -554,5 +597,31 @@ export class _User extends PrismaClass {
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _User.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_User.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

@@ -39,15 +39,17 @@ export class _Media extends PrismaClass {
 		return this._id
 	}
 
-	slug?: string
-
 	url?: string
 
 	creation_date?: number
 
 	modification_date?: number
 
-	private user_id: ForeignKey
+	private _user_id: ForeignKey
+
+	description?: string = ''
+
+	name?: string
 
 	private _user: _User | null
 	get user(): _User | ForeignKey {
@@ -56,10 +58,17 @@ export class _Media extends PrismaClass {
 	set user(value: _User | ForeignKey) {
 		if (value instanceof _User) {
 			this._user = value
-			this.user_id = value.id
+			this._user_id = value.id
 		} else {
 			this._user = null
-			this.user_id = value
+			this._user_id = value
+		}
+	}
+	get user_id(): ForeignKey {
+		if (this._user === null) {
+			return this._user_id
+		} else {
+			return this._user.primaryKey
 		}
 	}
 
@@ -81,11 +90,12 @@ export class _Media extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		slug?: string
 		url?: string
 		creation_date?: number
 		modification_date?: number
 		user_id?: ForeignKey
+		description?: string
+		name?: string
 		user?: _User | User | ForeignKey
 		product_image?: _Product[] | Product[] | RelationMany<_Product>
 		product_gallery?: _Product[] | Product[] | RelationMany<_Product>
@@ -98,10 +108,11 @@ export class _Media extends PrismaClass {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
-		this.slug = obj.slug
 		this.url = obj.url
 		this.creation_date = obj.creation_date
 		this.modification_date = obj.modification_date
+		this.description = obj.description !== undefined ? obj.description : ''
+		this.name = obj.name
 
 		if (!obj.user) {
 			if (obj.user_id === undefined) {
@@ -152,14 +163,41 @@ export class _Media extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		url?: string
+		creation_date?: number
+		modification_date?: number
+		user_id?: ForeignKey
+		description?: string
+		name?: string
+	}) {
+		if (obj.url !== undefined) {
+			this.url = obj.url
+		}
+		if (obj.creation_date !== undefined) {
+			this.creation_date = obj.creation_date
+		}
+		if (obj.modification_date !== undefined) {
+			this.modification_date = obj.modification_date
+		}
+		if (obj.description !== undefined) {
+			this.description = obj.description
+		}
+		if (obj.name !== undefined) {
+			this.name = obj.name
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
-			slug: this.slug,
 			url: this.url,
 			creation_date: this.creation_date,
 			modification_date: this.modification_date,
 			user_id: this.user_id,
+			description: this.description,
+			name: this.name,
 			user: this.user,
 			product_image: this.product_image,
 			product_gallery: this.product_gallery,
@@ -168,11 +206,12 @@ export class _Media extends PrismaClass {
 	nonRelationsToJSON() {
 		return {
 			id: this.id!,
-			slug: this.slug!,
 			url: this.url!,
 			creation_date: this.creation_date!,
 			modification_date: this.modification_date!,
 			user_id: this.user_id!,
+			description: this.description!,
+			name: this.name!,
 		}
 	}
 
@@ -185,25 +224,19 @@ export class _Media extends PrismaClass {
 		}, [] as _Media[])
 	}
 
-	static async from<F extends Prisma.MediaWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.MediaFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.MediaFindFirstArgsBase,
 	): Promise<_Media | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _Media.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _Media.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _Media.getIncludes()
 		}
 
 		const dbQuery = await _Media.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -232,9 +265,7 @@ export class _Media extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -271,18 +302,32 @@ export class _Media extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
+		}
+
+		const product_galleryConnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
+			[]
+		for (const relation of this.product_gallery) {
+			product_galleryConnections.push({
+				id: relation.primaryKey,
+			})
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.media.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+						product_gallery: {
+							connect: product_galleryConnections,
+						},
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.media.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -292,9 +337,6 @@ export class _Media extends PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.slug === undefined) {
-			throw new Error('Missing field on _Media.save(): slug')
-		}
 		if (this.url === undefined) {
 			throw new Error('Missing field on _Media.save(): url')
 		}
@@ -303,6 +345,12 @@ export class _Media extends PrismaClass {
 		}
 		if (this.modification_date === undefined) {
 			throw new Error('Missing field on _Media.save(): modification_date')
+		}
+		if (this.description === undefined) {
+			throw new Error('Missing field on _Media.save(): description')
+		}
+		if (this.name === undefined) {
+			throw new Error('Missing field on _Media.save(): name')
 		}
 
 		if (this.user === undefined || this.user === null) {
@@ -319,5 +367,31 @@ export class _Media extends PrismaClass {
 				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _Media.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_Media.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

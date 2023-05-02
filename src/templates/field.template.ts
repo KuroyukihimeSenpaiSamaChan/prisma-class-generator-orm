@@ -20,10 +20,17 @@ get #!{NAME}(): _#!{TYPE} | ForeignKey {
 set #!{NAME}(value: _#!{TYPE} | ForeignKey) {
 	if (value instanceof _#!{TYPE}) {
 		this._#!{NAME} = value
-		this.#!{FOREIGNKEY} = value.id
+		this._#!{FOREIGNKEY} = value.id
 	} else {
 		this._#!{NAME} = null
-		this.#!{FOREIGNKEY} = value
+		this._#!{FOREIGNKEY} = value
+	}
+}
+get #!{FOREIGNKEY}(): ForeignKey {
+	if(this._#!{NAME} === null){
+		return this._#!{FOREIGNKEY}
+	} else {
+		return this._#!{NAME}.primaryKey
 	}
 }
 `

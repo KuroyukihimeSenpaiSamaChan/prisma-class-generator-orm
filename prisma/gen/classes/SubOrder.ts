@@ -53,19 +53,19 @@ export class _SubOrder extends PrismaClass {
 		return this._id
 	}
 
-	private order_id: ForeignKey
+	private _order_id: ForeignKey
 
-	private vendor_id: ForeignKey
+	private _vendor_id: ForeignKey
 
-	private expedition_id: ForeignKey
+	private _expedition_id: ForeignKey
 
-	private product_id: ForeignKey
+	private _product_id: ForeignKey
 
 	product_price?: number
 
 	quantity?: number
 
-	private taxe_id: ForeignKey = 1
+	private _taxe_id: ForeignKey = 1
 
 	private _expedition: _Expedition | null
 	get expedition(): _Expedition | ForeignKey {
@@ -74,10 +74,17 @@ export class _SubOrder extends PrismaClass {
 	set expedition(value: _Expedition | ForeignKey) {
 		if (value instanceof _Expedition) {
 			this._expedition = value
-			this.expedition_id = value.id
+			this._expedition_id = value.id
 		} else {
 			this._expedition = null
-			this.expedition_id = value
+			this._expedition_id = value
+		}
+	}
+	get expedition_id(): ForeignKey {
+		if (this._expedition === null) {
+			return this._expedition_id
+		} else {
+			return this._expedition.primaryKey
 		}
 	}
 
@@ -88,10 +95,17 @@ export class _SubOrder extends PrismaClass {
 	set order(value: _Order | ForeignKey) {
 		if (value instanceof _Order) {
 			this._order = value
-			this.order_id = value.id
+			this._order_id = value.id
 		} else {
 			this._order = null
-			this.order_id = value
+			this._order_id = value
+		}
+	}
+	get order_id(): ForeignKey {
+		if (this._order === null) {
+			return this._order_id
+		} else {
+			return this._order.primaryKey
 		}
 	}
 
@@ -102,10 +116,17 @@ export class _SubOrder extends PrismaClass {
 	set product(value: _Product | ForeignKey) {
 		if (value instanceof _Product) {
 			this._product = value
-			this.product_id = value.id
+			this._product_id = value.id
 		} else {
 			this._product = null
-			this.product_id = value
+			this._product_id = value
+		}
+	}
+	get product_id(): ForeignKey {
+		if (this._product === null) {
+			return this._product_id
+		} else {
+			return this._product.primaryKey
 		}
 	}
 
@@ -116,10 +137,17 @@ export class _SubOrder extends PrismaClass {
 	set user(value: _User | ForeignKey) {
 		if (value instanceof _User) {
 			this._user = value
-			this.vendor_id = value.id
+			this._vendor_id = value.id
 		} else {
 			this._user = null
-			this.vendor_id = value
+			this._vendor_id = value
+		}
+	}
+	get vendor_id(): ForeignKey {
+		if (this._user === null) {
+			return this._vendor_id
+		} else {
+			return this._user.primaryKey
 		}
 	}
 
@@ -130,10 +158,17 @@ export class _SubOrder extends PrismaClass {
 	set tva_type(value: _TVAType | ForeignKey) {
 		if (value instanceof _TVAType) {
 			this._tva_type = value
-			this.taxe_id = value.id
+			this._taxe_id = value.id
 		} else {
 			this._tva_type = null
-			this.taxe_id = value
+			this._taxe_id = value
+		}
+	}
+	get taxe_id(): ForeignKey {
+		if (this._tva_type === null) {
+			return this._taxe_id
+		} else {
+			return this._tva_type.primaryKey
 		}
 	}
 
@@ -234,6 +269,24 @@ export class _SubOrder extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		order_id?: ForeignKey
+		vendor_id?: ForeignKey
+		expedition_id?: ForeignKey
+		product_id?: ForeignKey
+		product_price?: number
+		quantity?: number
+		taxe_id?: ForeignKey
+	}) {
+		if (obj.product_price !== undefined) {
+			this.product_price = obj.product_price
+		}
+		if (obj.quantity !== undefined) {
+			this.quantity = obj.quantity
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -275,25 +328,19 @@ export class _SubOrder extends PrismaClass {
 		}, [] as _SubOrder[])
 	}
 
-	static async from<F extends Prisma.SubOrderWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.SubOrderFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.SubOrderFindFirstArgsBase,
 	): Promise<_SubOrder | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _SubOrder.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _SubOrder.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _SubOrder.getIncludes()
 		}
 
 		const dbQuery = await _SubOrder.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -322,9 +369,7 @@ export class _SubOrder extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -378,18 +423,21 @@ export class _SubOrder extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.subOrder.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.subOrder.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -423,5 +471,31 @@ export class _SubOrder extends PrismaClass {
 		if (this.tva_type === undefined || this.tva_type === null) {
 			throw new Error("tva_type can't be null or undefined in _SubOrder.")
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _SubOrder.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_SubOrder.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

@@ -75,6 +75,12 @@ export class _Role extends PrismaClass {
 		}
 	}
 
+	update(obj: { id?: number; label?: string }) {
+		if (obj.label !== undefined) {
+			this.label = obj.label
+		}
+	}
+
 	toJSON() {
 		return { id: this.id, label: this.label, users: this.users }
 	}
@@ -91,25 +97,19 @@ export class _Role extends PrismaClass {
 		}, [] as _Role[])
 	}
 
-	static async from<F extends Prisma.RoleWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.RoleFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.RoleFindFirstArgsBase,
 	): Promise<_Role | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _Role.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _Role.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _Role.getIncludes()
 		}
 
 		const dbQuery = await _Role.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -138,9 +138,7 @@ export class _Role extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -168,18 +166,32 @@ export class _Role extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
+		}
+
+		const usersConnections: Prisma.Enumerable<Prisma.UserWhereUniqueInput> =
+			[]
+		for (const relation of this.users) {
+			usersConnections.push({
+				id: relation.primaryKey,
+			})
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.role.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+						users: {
+							connect: usersConnections,
+						},
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.role.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -198,5 +210,31 @@ export class _Role extends PrismaClass {
 				"Can't save toMany fields on new _Role. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _Role.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_Role.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

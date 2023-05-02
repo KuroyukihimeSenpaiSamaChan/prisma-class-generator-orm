@@ -1,6 +1,7 @@
 export const CONST_TEMPLATES = {
   RELATION_MANY: `
   import { PrismaClass } from './prisma-class'
+  import { PrismaModel } from './prisma-model'
 
   export class RelationMany<R extends PrismaClass>
     extends PrismaClass
@@ -32,6 +33,10 @@ export const CONST_TEMPLATES = {
     remove(index: number): R {
       return this.relations.splice(index, 1)[0]
     }
+
+    toJSON(){
+      return this.relations
+    }
   
     async load(depth: number) {
       for (const relation of this.relations) {
@@ -51,7 +56,7 @@ export const CONST_TEMPLATES = {
       return true
     }
   
-    async* saveToTransaction(tx) {
+    async* saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]) {
       const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
   
       for (const relation of this.relations) {
@@ -111,12 +116,13 @@ export const CONST_TEMPLATES = {
   
   `,
 
-  PRISMA_CLASS: `
+  PRISMA_CLASS: `import { PrismaModel } from "./prisma-model"
+
   export abstract class PrismaClass {
     // protected static saveToTransaction = Symbol("saveToTransaction")
     abstract load(depth: number): Promise<void>
     abstract save(): Promise<boolean>
-    abstract saveToTransaction(tx): AsyncGenerator<number, number, unknown>
+    abstract saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]): AsyncGenerator<number, number, unknown>
   }
   
   export type ForeignKey = number | -1 | null

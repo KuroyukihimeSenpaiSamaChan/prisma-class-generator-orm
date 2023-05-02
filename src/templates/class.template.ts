@@ -25,6 +25,8 @@ export class _#!{NAME} extends PrismaClass {
 
 #!{SAVE}
 
+#!{DELETE}
+
 }
 #!{EXTRA}
 `

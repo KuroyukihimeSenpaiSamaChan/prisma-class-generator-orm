@@ -34,13 +34,13 @@ export class _AccessToken extends PrismaClass {
 		return this._id
 	}
 
-	private user_id: ForeignKey
+	private _user_id: ForeignKey
 
 	token?: string
 
-	created_at?: number
+	created_at?: number | null
 
-	expires_at?: number
+	expires_at?: number | null
 
 	private _user: _User | null
 	get user(): _User | ForeignKey {
@@ -49,10 +49,17 @@ export class _AccessToken extends PrismaClass {
 	set user(value: _User | ForeignKey) {
 		if (value instanceof _User) {
 			this._user = value
-			this.user_id = value.id
+			this._user_id = value.id
 		} else {
 			this._user = null
-			this.user_id = value
+			this._user_id = value
+		}
+	}
+	get user_id(): ForeignKey {
+		if (this._user === null) {
+			return this._user_id
+		} else {
+			return this._user.primaryKey
 		}
 	}
 
@@ -91,6 +98,24 @@ export class _AccessToken extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		user_id?: ForeignKey
+		token?: string
+		created_at?: number | null
+		expires_at?: number | null
+	}) {
+		if (obj.token !== undefined) {
+			this.token = obj.token
+		}
+		if (obj.created_at !== undefined) {
+			this.created_at = obj.created_at
+		}
+		if (obj.expires_at !== undefined) {
+			this.expires_at = obj.expires_at
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -122,25 +147,19 @@ export class _AccessToken extends PrismaClass {
 		}, [] as _AccessToken[])
 	}
 
-	static async from<F extends Prisma.AccessTokenWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.AccessTokenFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.AccessTokenFindFirstArgsBase,
 	): Promise<_AccessToken | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _AccessToken.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _AccessToken.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _AccessToken.getIncludes()
 		}
 
 		const dbQuery = await _AccessToken.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -169,9 +188,7 @@ export class _AccessToken extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -201,18 +218,21 @@ export class _AccessToken extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.accessToken.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.accessToken.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -229,5 +249,31 @@ export class _AccessToken extends PrismaClass {
 		if (this.user === undefined || this.user === null) {
 			throw new Error("user can't be null or undefined in _AccessToken.")
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _AccessToken.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_AccessToken.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

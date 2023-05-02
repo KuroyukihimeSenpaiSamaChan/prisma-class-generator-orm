@@ -81,6 +81,19 @@ export class _ProductCategory extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		category_name?: string
+		category_slug?: string
+	}) {
+		if (obj.category_name !== undefined) {
+			this.category_name = obj.category_name
+		}
+		if (obj.category_slug !== undefined) {
+			this.category_slug = obj.category_slug
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -108,25 +121,19 @@ export class _ProductCategory extends PrismaClass {
 		}, [] as _ProductCategory[])
 	}
 
-	static async from<F extends Prisma.ProductCategoryWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.ProductCategoryFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.ProductCategoryFindFirstArgsBase,
 	): Promise<_ProductCategory | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _ProductCategory.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _ProductCategory.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _ProductCategory.getIncludes()
 		}
 
 		const dbQuery = await _ProductCategory.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -155,9 +162,7 @@ export class _ProductCategory extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -185,18 +190,32 @@ export class _ProductCategory extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
+		}
+
+		const productsConnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
+			[]
+		for (const relation of this.products) {
+			productsConnections.push({
+				id: relation.primaryKey,
+			})
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.productCategory.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+						products: {
+							connect: productsConnections,
+						},
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.productCategory.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -222,5 +241,31 @@ export class _ProductCategory extends PrismaClass {
 				"Can't save toMany fields on new _ProductCategory. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _ProductCategory.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_ProductCategory.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

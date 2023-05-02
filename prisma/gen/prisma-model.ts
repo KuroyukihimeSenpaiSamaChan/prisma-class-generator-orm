@@ -12,6 +12,7 @@ import { _Product } from './classes/Product'
 import { _ProductCategory } from './classes/ProductCategory'
 import { _ProductVisibilty } from './classes/ProductVisibilty'
 import { _ProductState } from './classes/ProductState'
+import { _ConditioningType } from './classes/ConditioningType'
 import { _SubOrder } from './classes/SubOrder'
 import { _TVAType } from './classes/TVAType'
 
@@ -41,6 +42,7 @@ export abstract class PrismaModel {
 		_ProductCategory.prisma = PrismaModel.prismaClient.productCategory
 		_ProductVisibilty.prisma = PrismaModel.prismaClient.productVisibilty
 		_ProductState.prisma = PrismaModel.prismaClient.productState
+		_ConditioningType.prisma = PrismaModel.prismaClient.conditioningType
 		_SubOrder.prisma = PrismaModel.prismaClient.subOrder
 		_TVAType.prisma = PrismaModel.prismaClient.tVAType
 	}

@@ -34,7 +34,7 @@ export class _UserDelete extends PrismaClass {
 		return this._id
 	}
 
-	private user_id: ForeignKey
+	private _user_id: ForeignKey
 
 	token?: string
 
@@ -49,10 +49,17 @@ export class _UserDelete extends PrismaClass {
 	set user(value: _User | ForeignKey) {
 		if (value instanceof _User) {
 			this._user = value
-			this.user_id = value.id
+			this._user_id = value.id
 		} else {
 			this._user = null
-			this.user_id = value
+			this._user_id = value
+		}
+	}
+	get user_id(): ForeignKey {
+		if (this._user === null) {
+			return this._user_id
+		} else {
+			return this._user.primaryKey
 		}
 	}
 
@@ -91,6 +98,24 @@ export class _UserDelete extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		user_id?: ForeignKey
+		token?: string
+		date?: number
+		validated?: boolean
+	}) {
+		if (obj.token !== undefined) {
+			this.token = obj.token
+		}
+		if (obj.date !== undefined) {
+			this.date = obj.date
+		}
+		if (obj.validated !== undefined) {
+			this.validated = obj.validated
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -122,25 +147,19 @@ export class _UserDelete extends PrismaClass {
 		}, [] as _UserDelete[])
 	}
 
-	static async from<F extends Prisma.UserDeleteWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.UserDeleteFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.UserDeleteFindFirstArgsBase,
 	): Promise<_UserDelete | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _UserDelete.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _UserDelete.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _UserDelete.getIncludes()
 		}
 
 		const dbQuery = await _UserDelete.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -169,9 +188,7 @@ export class _UserDelete extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -201,18 +218,21 @@ export class _UserDelete extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.userDelete.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.userDelete.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -235,5 +255,31 @@ export class _UserDelete extends PrismaClass {
 		if (this.user === undefined || this.user === null) {
 			throw new Error("user can't be null or undefined in _UserDelete.")
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _UserDelete.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_UserDelete.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

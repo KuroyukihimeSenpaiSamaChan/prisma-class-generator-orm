@@ -1,4 +1,5 @@
 import { PrismaClass } from './prisma-class'
+import { PrismaModel } from './prisma-model'
 
 export class RelationMany<R extends PrismaClass>
 	extends PrismaClass
@@ -34,6 +35,10 @@ export class RelationMany<R extends PrismaClass>
 		return this.relations.splice(index, 1)[0]
 	}
 
+	toJSON() {
+		return this.relations
+	}
+
 	async load(depth: number) {
 		for (const relation of this.relations) {
 			relation.load(depth - 1)
@@ -52,7 +57,11 @@ export class RelationMany<R extends PrismaClass>
 		return true
 	}
 
-	async *saveToTransaction(tx) {
+	async *saveToTransaction(
+		tx: Parameters<
+			Parameters<typeof PrismaModel.prismaClient.$transaction>[0]
+		>[0],
+	) {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		for (const relation of this.relations) {

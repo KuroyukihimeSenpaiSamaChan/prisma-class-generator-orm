@@ -89,6 +89,27 @@ export class _Expedition extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		name?: number
+		slug?: number
+		max_weight?: number
+		price?: number
+	}) {
+		if (obj.name !== undefined) {
+			this.name = obj.name
+		}
+		if (obj.slug !== undefined) {
+			this.slug = obj.slug
+		}
+		if (obj.max_weight !== undefined) {
+			this.max_weight = obj.max_weight
+		}
+		if (obj.price !== undefined) {
+			this.price = obj.price
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -120,25 +141,19 @@ export class _Expedition extends PrismaClass {
 		}, [] as _Expedition[])
 	}
 
-	static async from<F extends Prisma.ExpeditionWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.ExpeditionFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.ExpeditionFindFirstArgsBase,
 	): Promise<_Expedition | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _Expedition.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _Expedition.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _Expedition.getIncludes()
 		}
 
 		const dbQuery = await _Expedition.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -167,9 +182,7 @@ export class _Expedition extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -197,18 +210,21 @@ export class _Expedition extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.expedition.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.expedition.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -236,5 +252,31 @@ export class _Expedition extends PrismaClass {
 				"Can't save toMany fields on new _Expedition. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _Expedition.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_Expedition.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

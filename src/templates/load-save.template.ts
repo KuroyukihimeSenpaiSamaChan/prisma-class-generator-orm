@@ -21,9 +21,7 @@ async save(): Promise<boolean> {
   try {
     await this.prismaClient.$transaction(async (tx): Promise<number> => {
       const saveYield = this.saveToTransaction(tx)
-      console.log("First YIELD")
       await saveYield.next()
-      console.log("Second YIELD")
       return (await saveYield.next()).value
     })
   } catch (err) {
@@ -49,21 +47,26 @@ async *saveToTransaction(
   yield new Promise<number>((resolve) => resolve(0))
 
   for (const saveYield of saveYieldsArray) {
-    saveYield.next()
+    await saveYield.next()
   }
   
+  #!{CONNECT_GEN}
+
   if(this._#!{ID} === -1){
-    this._#!{ID} = (await this.prisma.create({
-      data: { ...this.nonRelationsToJSON(), #!{ID}: undefined},
+    this._#!{ID} = (await tx.#!{P_NAME}.create({
+      data: {
+        ...this.nonRelationsToJSON(),
+        #!{ID}: undefined,
+        #!{CONNECT_SAVE}
+      },
       select: { #!{ID}: true }
     })).#!{ID}
   } else {
-    await this.prisma.update({
+    await tx.#!{P_NAME}.update({
       where: { #!{ID}: this._#!{ID} },
       data: { ...this.nonRelationsToJSON()}
     })
   }
-
 
   return new Promise<number>((resolve) => resolve(this._#!{ID}))
 }
@@ -74,5 +77,32 @@ checkRequiredFields(){
   #!{CHECK_TO_ONE}
 
   #!{CHECK_TO_MANY}
+}
+`
+
+export const DELETE_TEMPLATE = `
+static async deleteAll(query: Parameters<typeof _#!{CLASS}.prisma.deleteMany>[0]): Promise<boolean> {
+  try {
+    _#!{CLASS}.prisma.deleteMany(query)
+  } catch (e) {
+    console.log(e)
+    return false
+  }
+  return true
+}
+
+async delete(): Promise<boolean> {
+  if(this.primaryKey === -1)
+    return false
+    
+  try {
+    this.prisma.delete({
+      where: { #!{ID}: this._#!{ID} }
+    })
+  } catch (e) {
+    console.log(e)
+    return false
+  }
+  return true
 }
 `

@@ -113,6 +113,51 @@ export class _Order extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		order_client_id?: number
+		creation_date?: number
+		modification_date?: number
+		order_state?: number
+		type?: number
+		buyer_id?: number
+		buyer_billing_id?: number
+		buyer_delivery_id?: number
+		expedition_id?: number
+		order_total?: number
+	}) {
+		if (obj.order_client_id !== undefined) {
+			this.order_client_id = obj.order_client_id
+		}
+		if (obj.creation_date !== undefined) {
+			this.creation_date = obj.creation_date
+		}
+		if (obj.modification_date !== undefined) {
+			this.modification_date = obj.modification_date
+		}
+		if (obj.order_state !== undefined) {
+			this.order_state = obj.order_state
+		}
+		if (obj.type !== undefined) {
+			this.type = obj.type
+		}
+		if (obj.buyer_id !== undefined) {
+			this.buyer_id = obj.buyer_id
+		}
+		if (obj.buyer_billing_id !== undefined) {
+			this.buyer_billing_id = obj.buyer_billing_id
+		}
+		if (obj.buyer_delivery_id !== undefined) {
+			this.buyer_delivery_id = obj.buyer_delivery_id
+		}
+		if (obj.expedition_id !== undefined) {
+			this.expedition_id = obj.expedition_id
+		}
+		if (obj.order_total !== undefined) {
+			this.order_total = obj.order_total
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -154,25 +199,19 @@ export class _Order extends PrismaClass {
 		}, [] as _Order[])
 	}
 
-	static async from<F extends Prisma.OrderWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.OrderFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.OrderFindFirstArgsBase,
 	): Promise<_Order | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _Order.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _Order.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _Order.getIncludes()
 		}
 
 		const dbQuery = await _Order.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -201,9 +240,7 @@ export class _Order extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -231,18 +268,21 @@ export class _Order extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.order.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.order.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -288,5 +328,31 @@ export class _Order extends PrismaClass {
 				"Can't save toMany fields on new _Order. Save it first, then add the toMany fields",
 			)
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _Order.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_Order.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

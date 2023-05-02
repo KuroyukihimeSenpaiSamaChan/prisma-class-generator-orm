@@ -12,25 +12,20 @@ exports.ALL_TEMPLATE = `
   }
 `;
 exports.FROM_TEMPLATE = `
-static async from<F extends Prisma.#!{NAME}WhereUniqueInput>(
-  where: F,
-  opt?: Omit<Prisma.#!{NAME}FindUniqueArgsBase, "where">
-): Promise<_#!{NAME} | null> {
-  let prismaOptions = opt
-  if (prismaOptions === undefined) {
-    prismaOptions = {
+static async from(query?: Prisma.#!{NAME}FindFirstArgsBase): Promise<_#!{NAME} | null> {
+  if (query === undefined) {
+    query = {
       include: _#!{NAME}.getIncludes()
     }
   } else if (
-    prismaOptions.include === undefined
-    && prismaOptions.select === undefined
+    query.include === undefined
+    && query.select === undefined
   ) {
-    prismaOptions.include = _#!{NAME}.getIncludes()
+    query.include = _#!{NAME}.getIncludes()
   }
 
   const dbQuery = await _#!{NAME}.prisma.findFirst({
-    where: where,
-    ...opt
+    ...query
   })
   
   if(dbQuery === null) return null

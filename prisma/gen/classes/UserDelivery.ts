@@ -34,11 +34,11 @@ export class _UserDelivery extends PrismaClass {
 		return this._id
 	}
 
-	private user_id: ForeignKey
+	private _user_id: ForeignKey
 
 	address?: string
 
-	additional_address?: string
+	additional_address?: string | null
 
 	zipcode?: string
 
@@ -50,7 +50,7 @@ export class _UserDelivery extends PrismaClass {
 
 	phone_number?: string
 
-	company_name?: string
+	company_name?: string | null
 
 	private _user: _User | null
 	get user(): _User | ForeignKey {
@@ -59,10 +59,17 @@ export class _UserDelivery extends PrismaClass {
 	set user(value: _User | ForeignKey) {
 		if (value instanceof _User) {
 			this._user = value
-			this.user_id = value.id
+			this._user_id = value.id
 		} else {
 			this._user = null
-			this.user_id = value
+			this._user_id = value
+		}
+	}
+	get user_id(): ForeignKey {
+		if (this._user === null) {
+			return this._user_id
+		} else {
+			return this._user.primaryKey
 		}
 	}
 
@@ -113,6 +120,44 @@ export class _UserDelivery extends PrismaClass {
 		}
 	}
 
+	update(obj: {
+		id?: number
+		user_id?: ForeignKey
+		address?: string
+		additional_address?: string | null
+		zipcode?: string
+		city?: string
+		country?: string
+		region?: string
+		phone_number?: string
+		company_name?: string | null
+	}) {
+		if (obj.address !== undefined) {
+			this.address = obj.address
+		}
+		if (obj.additional_address !== undefined) {
+			this.additional_address = obj.additional_address
+		}
+		if (obj.zipcode !== undefined) {
+			this.zipcode = obj.zipcode
+		}
+		if (obj.city !== undefined) {
+			this.city = obj.city
+		}
+		if (obj.country !== undefined) {
+			this.country = obj.country
+		}
+		if (obj.region !== undefined) {
+			this.region = obj.region
+		}
+		if (obj.phone_number !== undefined) {
+			this.phone_number = obj.phone_number
+		}
+		if (obj.company_name !== undefined) {
+			this.company_name = obj.company_name
+		}
+	}
+
 	toJSON() {
 		return {
 			id: this.id,
@@ -154,25 +199,19 @@ export class _UserDelivery extends PrismaClass {
 		}, [] as _UserDelivery[])
 	}
 
-	static async from<F extends Prisma.UserDeliveryWhereUniqueInput>(
-		where: F,
-		opt?: Omit<Prisma.UserDeliveryFindUniqueArgsBase, 'where'>,
+	static async from(
+		query?: Prisma.UserDeliveryFindFirstArgsBase,
 	): Promise<_UserDelivery | null> {
-		let prismaOptions = opt
-		if (prismaOptions === undefined) {
-			prismaOptions = {
+		if (query === undefined) {
+			query = {
 				include: _UserDelivery.getIncludes(),
 			}
-		} else if (
-			prismaOptions.include === undefined &&
-			prismaOptions.select === undefined
-		) {
-			prismaOptions.include = _UserDelivery.getIncludes()
+		} else if (query.include === undefined && query.select === undefined) {
+			query.include = _UserDelivery.getIncludes()
 		}
 
 		const dbQuery = await _UserDelivery.prisma.findFirst({
-			where: where,
-			...opt,
+			...query,
 		})
 
 		if (dbQuery === null) return null
@@ -201,9 +240,7 @@ export class _UserDelivery extends PrismaClass {
 			await this.prismaClient.$transaction(
 				async (tx): Promise<number> => {
 					const saveYield = this.saveToTransaction(tx)
-					console.log('First YIELD')
 					await saveYield.next()
-					console.log('Second YIELD')
 					return (await saveYield.next()).value
 				},
 			)
@@ -233,18 +270,21 @@ export class _UserDelivery extends PrismaClass {
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
-			saveYield.next()
+			await saveYield.next()
 		}
 
 		if (this._id === -1) {
 			this._id = (
-				await this.prisma.create({
-					data: { ...this.nonRelationsToJSON(), id: undefined },
+				await tx.userDelivery.create({
+					data: {
+						...this.nonRelationsToJSON(),
+						id: undefined,
+					},
 					select: { id: true },
 				})
 			).id
 		} else {
-			await this.prisma.update({
+			await tx.userDelivery.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -278,5 +318,31 @@ export class _UserDelivery extends PrismaClass {
 		if (this.user === undefined || this.user === null) {
 			throw new Error("user can't be null or undefined in _UserDelivery.")
 		}
+	}
+
+	static async deleteAll(
+		query: Parameters<typeof _UserDelivery.prisma.deleteMany>[0],
+	): Promise<boolean> {
+		try {
+			_UserDelivery.prisma.deleteMany(query)
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
+	}
+
+	async delete(): Promise<boolean> {
+		if (this.primaryKey === -1) return false
+
+		try {
+			this.prisma.delete({
+				where: { id: this._id },
+			})
+		} catch (e) {
+			console.log(e)
+			return false
+		}
+		return true
 	}
 }

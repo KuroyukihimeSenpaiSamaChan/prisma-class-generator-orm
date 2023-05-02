@@ -4,16 +4,16 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ProductState extends PrismaClass {
-	static prisma: Prisma.ProductStateDelegate<undefined>
-	get prisma(): Prisma.ProductStateDelegate<undefined> {
-		return _ProductState.prisma
+export class _ConditioningType extends PrismaClass {
+	static prisma: Prisma.ConditioningTypeDelegate<undefined>
+	get prisma(): Prisma.ConditioningTypeDelegate<undefined> {
+		return _ConditioningType.prisma
 	}
 	get prismaClient() {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.ProductStateInclude {
+	static getIncludes(deep: number = 0): Prisma.ConditioningTypeInclude {
 		if (deep <= 0) {
 			return {
 				products: true,
@@ -34,7 +34,7 @@ export class _ProductState extends PrismaClass {
 		return this._id
 	}
 
-	state?: string
+	label?: string
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -46,7 +46,7 @@ export class _ProductState extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		state?: string
+		label?: string
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
@@ -54,11 +54,11 @@ export class _ProductState extends PrismaClass {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _ProductState>[0]) {
+	private init(obj: ConstructorParameters<typeof _ConditioningType>[0]) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
-		this.state = obj.state
+		this.label = obj.label
 
 		if (!obj.products || obj.products.length === 0) {
 			this.products = new RelationMany<_Product>([])
@@ -77,59 +77,59 @@ export class _ProductState extends PrismaClass {
 		}
 	}
 
-	update(obj: { id?: number; state?: string }) {
-		if (obj.state !== undefined) {
-			this.state = obj.state
+	update(obj: { id?: number; label?: string }) {
+		if (obj.label !== undefined) {
+			this.label = obj.label
 		}
 	}
 
 	toJSON() {
-		return { id: this.id, state: this.state, products: this.products }
+		return { id: this.id, label: this.label, products: this.products }
 	}
 	nonRelationsToJSON() {
-		return { id: this.id!, state: this.state! }
+		return { id: this.id!, label: this.label! }
 	}
 
 	static async all(
-		query?: Prisma.ProductStateFindFirstArgsBase,
-	): Promise<_ProductState[]> {
-		const models = await _ProductState.prisma.findMany(query)
+		query?: Prisma.ConditioningTypeFindFirstArgsBase,
+	): Promise<_ConditioningType[]> {
+		const models = await _ConditioningType.prisma.findMany(query)
 
 		return models.reduce((acc, m) => {
-			acc.push(new _ProductState(m))
+			acc.push(new _ConditioningType(m))
 			return acc
-		}, [] as _ProductState[])
+		}, [] as _ConditioningType[])
 	}
 
 	static async from(
-		query?: Prisma.ProductStateFindFirstArgsBase,
-	): Promise<_ProductState | null> {
+		query?: Prisma.ConditioningTypeFindFirstArgsBase,
+	): Promise<_ConditioningType | null> {
 		if (query === undefined) {
 			query = {
-				include: _ProductState.getIncludes(),
+				include: _ConditioningType.getIncludes(),
 			}
 		} else if (query.include === undefined && query.select === undefined) {
-			query.include = _ProductState.getIncludes()
+			query.include = _ConditioningType.getIncludes()
 		}
 
-		const dbQuery = await _ProductState.prisma.findFirst({
+		const dbQuery = await _ConditioningType.prisma.findFirst({
 			...query,
 		})
 
 		if (dbQuery === null) return null
 
-		return new _ProductState(dbQuery)
+		return new _ConditioningType(dbQuery)
 	}
 
 	async load(depth: number = 0) {
 		if (depth < 0) return
 
 		if (this.id !== -1) {
-			const dbThis = await _ProductState.prisma.findUnique({
+			const dbThis = await _ConditioningType.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _ProductState.getIncludes(depth),
+				select: _ConditioningType.getIncludes(depth),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })
@@ -175,7 +175,7 @@ export class _ProductState extends PrismaClass {
 
 		if (this._id === -1) {
 			this._id = (
-				await tx.productState.create({
+				await tx.conditioningType.create({
 					data: {
 						...this.nonRelationsToJSON(),
 						id: undefined,
@@ -184,7 +184,7 @@ export class _ProductState extends PrismaClass {
 				})
 			).id
 		} else {
-			await tx.productState.update({
+			await tx.conditioningType.update({
 				where: { id: this._id },
 				data: { ...this.nonRelationsToJSON() },
 			})
@@ -194,22 +194,22 @@ export class _ProductState extends PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.state === undefined) {
-			throw new Error('Missing field on _ProductState.save(): state')
+		if (this.label === undefined) {
+			throw new Error('Missing field on _ConditioningType.save(): label')
 		}
 
 		if (this.products.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
-				"Can't save toMany fields on new _ProductState. Save it first, then add the toMany fields",
+				"Can't save toMany fields on new _ConditioningType. Save it first, then add the toMany fields",
 			)
 		}
 	}
 
 	static async deleteAll(
-		query: Parameters<typeof _ProductState.prisma.deleteMany>[0],
+		query: Parameters<typeof _ConditioningType.prisma.deleteMany>[0],
 	): Promise<boolean> {
 		try {
-			_ProductState.prisma.deleteMany(query)
+			_ConditioningType.prisma.deleteMany(query)
 		} catch (e) {
 			console.log(e)
 			return false

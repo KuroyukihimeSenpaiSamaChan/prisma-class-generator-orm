@@ -15,7 +15,7 @@ class FieldComponent extends base_component_1.BaseComponent {
             }
             let type = this.type;
             if (this.privateFromRelation) {
-                name = `private ${name}`;
+                name = `private _${name}`;
                 type = 'ForeignKey';
             }
             let decorators = '';
@@ -42,6 +42,8 @@ class FieldComponent extends base_component_1.BaseComponent {
             let template = '';
             let foreignKey = '';
             if (!this.relation) {
+                if (this.nullable)
+                    type += ' | null';
                 template = field_template_1.FIELD_TEMPLATE;
             }
             else {

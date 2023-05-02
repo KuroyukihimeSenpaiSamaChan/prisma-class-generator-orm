@@ -23,6 +23,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 };
                 let initialiazers = {
                     normal: '',
+                    update: '',
                     toOne: '',
                     toMany: ''
                 };
@@ -52,6 +53,10 @@ class ClassComponent extends base_component_1.BaseComponent {
                             }
                             parameters.normal += `${_field.name}?: ${_field.type} ${opt.parameter},`;
                             initialiazers.normal += `this.${_field.name} =  obj.${_field.name} ${opt.initializer};`;
+                            initialiazers.update += `if(obj.${_field.name} !== undefined){
+							this.${_field.name} = obj.${_field.name}
+						}
+						`;
                         }
                         else {
                             parameters.normal += `${_field.name}?: ForeignKey,`;
@@ -112,6 +117,12 @@ class ClassComponent extends base_component_1.BaseComponent {
 				${initialiazers.toMany}
 			}
 
+			update(obj: {
+				${parameters.normal}
+			}){
+				${initialiazers.update}
+			}
+
 			toJSON() { return {${toJSONRelations}} }
 			nonRelationsToJSON() { return {${toJSON}} }
 			`;
@@ -121,6 +132,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 loadMethod = load_save_template_1.LOAD_TEMPLATE;
             }
             let saveMethod = '';
+            let deleteMethod = '';
             {
                 let checkRequireds = '';
                 for (const _field of this.fields.filter((elem) => !elem.isId && !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
@@ -158,12 +170,42 @@ class ClassComponent extends base_component_1.BaseComponent {
 				
 				`;
                 }
+                let connectGenerate = '';
+                let connectSave = '';
+                for (const _field of this.fields.filter(elem => (0, convertor_1.isRelationMany)(elem.relation))) {
+                    let toRelation;
+                    if (!(0, convertor_1.isRelationMany)(_field.relation))
+                        continue;
+                    else {
+                        if (_field.relation.A === _field) {
+                            toRelation = _field.relation.B;
+                        }
+                        else {
+                            toRelation = _field.relation.A;
+                        }
+                    }
+                    connectGenerate += `const ${_field.name}Connections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
+				for(const relation of this.${_field.name}){
+					${_field.name}Connections.push({
+						id: relation.primaryKey,
+					})
+				}
+				`;
+                    connectSave += `${_field.name}: {
+					connect: ${_field.name}Connections
+				},`;
+                }
                 saveMethod = load_save_template_1.SAVE_TEMPLATE.replaceAll('#!{CHECK_FIELDS}', checkRequireds)
                     .replaceAll('#!{CHECK_TO_ONE}', checkToOne)
                     .replaceAll('#!{CHECK_TO_MANY}', checkToMany)
                     .replaceAll('#!{TO_ONE}', toOne)
                     .replaceAll('#!{TO_MANY}', toMany)
-                    .replaceAll('#!{ID}', primaryKey);
+                    .replaceAll('#!{ID}', primaryKey)
+                    .replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
+                    .replaceAll('#!{CONNECT_GEN}', connectGenerate)
+                    .replaceAll('#!{CONNECT_SAVE}', connectSave);
+                deleteMethod = load_save_template_1.DELETE_TEMPLATE.replaceAll('#!{ID}', primaryKey)
+                    .replaceAll('#!{CLASS}', `${this.name}`);
             }
             const importTypes = new Set();
             let relationFields = this.fields.filter((_field) => _field.relation);
@@ -188,6 +230,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 .replaceAll('#!{ALL}', all_template_1.ALL_TEMPLATE)
                 .replaceAll('#!{LOAD}', loadMethod)
                 .replaceAll('#!{SAVE}', saveMethod)
+                .replaceAll('#!{DELETE}', deleteMethod)
                 .replaceAll('#!{GET_INCLUDES}', getIncludes)
                 .replaceAll('#!{NAME}', `${this.name}`)
                 .replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
