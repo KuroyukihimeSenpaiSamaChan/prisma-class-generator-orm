@@ -601,13 +601,19 @@ export class _Product extends PrismaClass {
 
 	static async from(
 		query?: Prisma.ProductFindFirstArgsBase,
+		includes: boolean = true,
 	): Promise<_Product | null> {
-		if (query === undefined) {
-			query = {
-				include: _Product.getIncludes(),
+		if (includes) {
+			if (query === undefined) {
+				query = {
+					include: _Product.getIncludes(),
+				}
+			} else if (
+				query.include === undefined &&
+				query.select === undefined
+			) {
+				query.include = _Product.getIncludes()
 			}
-		} else if (query.include === undefined && query.select === undefined) {
-			query.include = _Product.getIncludes()
 		}
 
 		const dbQuery = await _Product.prisma.findFirst({
@@ -751,7 +757,15 @@ export class _Product extends PrismaClass {
 		} else {
 			await tx.product.update({
 				where: { id: this._id },
-				data: { ...this.nonRelationsToJSON() },
+				data: {
+					...this.nonRelationsToJSON(),
+					product_categories: {
+						connect: product_categoriesConnections,
+					},
+					gallery: {
+						connect: galleryConnections,
+					},
+				},
 			})
 		}
 
@@ -855,23 +869,25 @@ export class _Product extends PrismaClass {
 
 	static async deleteAll(
 		query: Parameters<typeof _Product.prisma.deleteMany>[0],
-	): Promise<boolean> {
+	): Promise<false | number> {
+		let count: number
 		try {
-			_Product.prisma.deleteMany(query)
+			count = (await _Product.prisma.deleteMany(query)).count
 		} catch (e) {
 			console.log(e)
 			return false
 		}
-		return true
+		return count
 	}
 
 	async delete(): Promise<boolean> {
 		if (this.primaryKey === -1) return false
 
 		try {
-			this.prisma.delete({
+			await this.prisma.delete({
 				where: { id: this._id },
 			})
+			this._id = -1
 		} catch (e) {
 			console.log(e)
 			return false

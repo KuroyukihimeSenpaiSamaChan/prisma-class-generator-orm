@@ -149,13 +149,19 @@ export class _UserDelete extends PrismaClass {
 
 	static async from(
 		query?: Prisma.UserDeleteFindFirstArgsBase,
+		includes: boolean = true,
 	): Promise<_UserDelete | null> {
-		if (query === undefined) {
-			query = {
-				include: _UserDelete.getIncludes(),
+		if (includes) {
+			if (query === undefined) {
+				query = {
+					include: _UserDelete.getIncludes(),
+				}
+			} else if (
+				query.include === undefined &&
+				query.select === undefined
+			) {
+				query.include = _UserDelete.getIncludes()
 			}
-		} else if (query.include === undefined && query.select === undefined) {
-			query.include = _UserDelete.getIncludes()
 		}
 
 		const dbQuery = await _UserDelete.prisma.findFirst({
@@ -234,7 +240,9 @@ export class _UserDelete extends PrismaClass {
 		} else {
 			await tx.userDelete.update({
 				where: { id: this._id },
-				data: { ...this.nonRelationsToJSON() },
+				data: {
+					...this.nonRelationsToJSON(),
+				},
 			})
 		}
 
@@ -259,23 +267,25 @@ export class _UserDelete extends PrismaClass {
 
 	static async deleteAll(
 		query: Parameters<typeof _UserDelete.prisma.deleteMany>[0],
-	): Promise<boolean> {
+	): Promise<false | number> {
+		let count: number
 		try {
-			_UserDelete.prisma.deleteMany(query)
+			count = (await _UserDelete.prisma.deleteMany(query)).count
 		} catch (e) {
 			console.log(e)
 			return false
 		}
-		return true
+		return count
 	}
 
 	async delete(): Promise<boolean> {
 		if (this.primaryKey === -1) return false
 
 		try {
-			this.prisma.delete({
+			await this.prisma.delete({
 				where: { id: this._id },
 			})
+			this._id = -1
 		} catch (e) {
 			console.log(e)
 			return false

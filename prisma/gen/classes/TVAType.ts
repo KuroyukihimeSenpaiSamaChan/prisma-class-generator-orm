@@ -144,13 +144,19 @@ export class _TVAType extends PrismaClass {
 
 	static async from(
 		query?: Prisma.TVATypeFindFirstArgsBase,
+		includes: boolean = true,
 	): Promise<_TVAType | null> {
-		if (query === undefined) {
-			query = {
-				include: _TVAType.getIncludes(),
+		if (includes) {
+			if (query === undefined) {
+				query = {
+					include: _TVAType.getIncludes(),
+				}
+			} else if (
+				query.include === undefined &&
+				query.select === undefined
+			) {
+				query.include = _TVAType.getIncludes()
 			}
-		} else if (query.include === undefined && query.select === undefined) {
-			query.include = _TVAType.getIncludes()
 		}
 
 		const dbQuery = await _TVAType.prisma.findFirst({
@@ -231,7 +237,9 @@ export class _TVAType extends PrismaClass {
 		} else {
 			await tx.tVAType.update({
 				where: { id: this._id },
-				data: { ...this.nonRelationsToJSON() },
+				data: {
+					...this.nonRelationsToJSON(),
+				},
 			})
 		}
 
@@ -260,23 +268,25 @@ export class _TVAType extends PrismaClass {
 
 	static async deleteAll(
 		query: Parameters<typeof _TVAType.prisma.deleteMany>[0],
-	): Promise<boolean> {
+	): Promise<false | number> {
+		let count: number
 		try {
-			_TVAType.prisma.deleteMany(query)
+			count = (await _TVAType.prisma.deleteMany(query)).count
 		} catch (e) {
 			console.log(e)
 			return false
 		}
-		return true
+		return count
 	}
 
 	async delete(): Promise<boolean> {
 		if (this.primaryKey === -1) return false
 
 		try {
-			this.prisma.delete({
+			await this.prisma.delete({
 				where: { id: this._id },
 			})
+			this._id = -1
 		} catch (e) {
 			console.log(e)
 			return false

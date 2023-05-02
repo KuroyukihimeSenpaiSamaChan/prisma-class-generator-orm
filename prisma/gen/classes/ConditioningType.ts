@@ -103,13 +103,19 @@ export class _ConditioningType extends PrismaClass {
 
 	static async from(
 		query?: Prisma.ConditioningTypeFindFirstArgsBase,
+		includes: boolean = true,
 	): Promise<_ConditioningType | null> {
-		if (query === undefined) {
-			query = {
-				include: _ConditioningType.getIncludes(),
+		if (includes) {
+			if (query === undefined) {
+				query = {
+					include: _ConditioningType.getIncludes(),
+				}
+			} else if (
+				query.include === undefined &&
+				query.select === undefined
+			) {
+				query.include = _ConditioningType.getIncludes()
 			}
-		} else if (query.include === undefined && query.select === undefined) {
-			query.include = _ConditioningType.getIncludes()
 		}
 
 		const dbQuery = await _ConditioningType.prisma.findFirst({
@@ -186,7 +192,9 @@ export class _ConditioningType extends PrismaClass {
 		} else {
 			await tx.conditioningType.update({
 				where: { id: this._id },
-				data: { ...this.nonRelationsToJSON() },
+				data: {
+					...this.nonRelationsToJSON(),
+				},
 			})
 		}
 
@@ -207,23 +215,25 @@ export class _ConditioningType extends PrismaClass {
 
 	static async deleteAll(
 		query: Parameters<typeof _ConditioningType.prisma.deleteMany>[0],
-	): Promise<boolean> {
+	): Promise<false | number> {
+		let count: number
 		try {
-			_ConditioningType.prisma.deleteMany(query)
+			count = (await _ConditioningType.prisma.deleteMany(query)).count
 		} catch (e) {
 			console.log(e)
 			return false
 		}
-		return true
+		return count
 	}
 
 	async delete(): Promise<boolean> {
 		if (this.primaryKey === -1) return false
 
 		try {
-			this.prisma.delete({
+			await this.prisma.delete({
 				where: { id: this._id },
 			})
+			this._id = -1
 		} catch (e) {
 			console.log(e)
 			return false

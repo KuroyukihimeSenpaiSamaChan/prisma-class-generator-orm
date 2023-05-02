@@ -64,7 +64,10 @@ async *saveToTransaction(
   } else {
     await tx.#!{P_NAME}.update({
       where: { #!{ID}: this._#!{ID} },
-      data: { ...this.nonRelationsToJSON()}
+      data: {
+        ...this.nonRelationsToJSON(),
+        #!{CONNECT_SAVE}
+      }
     })
   }
 
@@ -81,24 +84,26 @@ checkRequiredFields(){
 `
 
 export const DELETE_TEMPLATE = `
-static async deleteAll(query: Parameters<typeof _#!{CLASS}.prisma.deleteMany>[0]): Promise<boolean> {
+static async deleteAll(query: Parameters<typeof _#!{CLASS}.prisma.deleteMany>[0]): Promise<false | number> {
+  let count: number
   try {
-    _#!{CLASS}.prisma.deleteMany(query)
+    count = (await _#!{CLASS}.prisma.deleteMany(query)).count
   } catch (e) {
     console.log(e)
     return false
   }
-  return true
+  return count
 }
 
 async delete(): Promise<boolean> {
   if(this.primaryKey === -1)
     return false
-    
+
   try {
-    this.prisma.delete({
+    await this.prisma.delete({
       where: { #!{ID}: this._#!{ID} }
     })
+    this._#!{ID} = -1
   } catch (e) {
     console.log(e)
     return false

@@ -10,16 +10,18 @@ export const ALL_TEMPLATE = `
 `
 
 export const FROM_TEMPLATE = `
-static async from(query?: Prisma.#!{NAME}FindFirstArgsBase): Promise<_#!{NAME} | null> {
-  if (query === undefined) {
-    query = {
-      include: _#!{NAME}.getIncludes()
+static async from(query?: Prisma.#!{NAME}FindFirstArgsBase, includes: boolean = true): Promise<_#!{NAME} | null> {
+  if(includes){
+    if (query === undefined) {
+      query = {
+        include: _#!{NAME}.getIncludes()
+      }
+    } else if (
+      query.include === undefined
+      && query.select === undefined
+    ) {
+      query.include = _#!{NAME}.getIncludes()
     }
-  } else if (
-    query.include === undefined
-    && query.select === undefined
-  ) {
-    query.include = _#!{NAME}.getIncludes()
   }
 
   const dbQuery = await _#!{NAME}.prisma.findFirst({

@@ -111,10 +111,10 @@ class RelationIterator<R> implements Iterator<R> {
 			value,
 		}
 	}
-	return?(value?: any): IteratorResult<R, any> {
-		throw new Error('Method not implemented.')
-	}
-	throw?(e?: any): IteratorResult<R, any> {
-		throw new Error('Method not implemented.')
-	}
+	// return?(value?: any): IteratorResult<R, any> {
+	//   throw new Error('Method not implemented.')
+	// }
+	// throw?(e?: any): IteratorResult<R, any> {
+	//   throw new Error('Method not implemented.')
+	// }
 }
