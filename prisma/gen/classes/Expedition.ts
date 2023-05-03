@@ -199,9 +199,15 @@ export class _Expedition extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
@@ -238,6 +244,7 @@ export class _Expedition extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

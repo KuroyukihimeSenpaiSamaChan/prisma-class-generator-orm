@@ -149,7 +149,7 @@ class ClassComponent extends base_component_1.BaseComponent {
 					}
 					`;
                     }
-                    toOne += `if(typeof this.${_field.name} !== 'number'){
+                    toOne += `if(typeof this.${_field.name} !== 'number' && !this.${_field.name}!.saving){
 					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
 					await ${_field.name}Yield.next()
 					saveYieldsArray.push(${_field.name}Yield)
@@ -159,7 +159,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 }
                 let checkToMany = '';
                 let toMany = '';
-                for (const _field of this.fields.filter(elem => elem.relation && ((0, convertor_1.isRelationMany)(elem.relation) || elem.relation.hasMany === elem))) {
+                for (const _field of this.fields.filter(elem => elem.relation && !(0, convertor_1.isRelationMany)(elem.relation) && elem.relation.hasMany === elem)) {
                     checkToMany += `if(this.${_field.name}.length() > 0 && this.primaryKey === -1){
 					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}

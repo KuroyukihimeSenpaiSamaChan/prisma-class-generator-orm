@@ -461,9 +461,15 @@ export class _User extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
@@ -498,10 +504,6 @@ export class _User extends PrismaClass {
 		const user_deliveryYield = this.user_delivery!.saveToTransaction(tx)
 		await user_deliveryYield.next()
 		saveYieldsArray.push(user_deliveryYield)
-
-		const rolesYield = this.roles!.saveToTransaction(tx)
-		await rolesYield.next()
-		saveYieldsArray.push(rolesYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -542,6 +544,7 @@ export class _User extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
@@ -599,11 +602,6 @@ export class _User extends PrismaClass {
 			)
 		}
 		if (this.user_delivery.length() > 0 && this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
-			)
-		}
-		if (this.roles.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)

@@ -657,46 +657,61 @@ export class _Product extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.media !== 'number') {
+		if (typeof this.media !== 'number' && !this.media!.saving) {
 			const mediaYield = this.media!.saveToTransaction(tx)
 			await mediaYield.next()
 			saveYieldsArray.push(mediaYield)
 		}
 
-		if (typeof this.tva_type !== 'number') {
+		if (typeof this.tva_type !== 'number' && !this.tva_type!.saving) {
 			const tva_typeYield = this.tva_type!.saveToTransaction(tx)
 			await tva_typeYield.next()
 			saveYieldsArray.push(tva_typeYield)
 		}
 
-		if (typeof this.user !== 'number') {
+		if (typeof this.user !== 'number' && !this.user!.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
 		}
 
-		if (typeof this.productState !== 'number') {
+		if (
+			typeof this.productState !== 'number' &&
+			!this.productState!.saving
+		) {
 			const productStateYield = this.productState!.saveToTransaction(tx)
 			await productStateYield.next()
 			saveYieldsArray.push(productStateYield)
 		}
 
-		if (typeof this.productVisibilty !== 'number') {
+		if (
+			typeof this.productVisibilty !== 'number' &&
+			!this.productVisibilty!.saving
+		) {
 			const productVisibiltyYield =
 				this.productVisibilty!.saveToTransaction(tx)
 			await productVisibiltyYield.next()
 			saveYieldsArray.push(productVisibiltyYield)
 		}
 
-		if (typeof this.productConditioning !== 'number') {
+		if (
+			typeof this.productConditioning !== 'number' &&
+			!this.productConditioning!.saving
+		) {
 			const productConditioningYield =
 				this.productConditioning!.saveToTransaction(tx)
 			await productConditioningYield.next()
@@ -707,15 +722,6 @@ export class _Product extends PrismaClass {
 		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
 		await sub_ordersYield.next()
 		saveYieldsArray.push(sub_ordersYield)
-
-		const product_categoriesYield =
-			this.product_categories!.saveToTransaction(tx)
-		await product_categoriesYield.next()
-		saveYieldsArray.push(product_categoriesYield)
-
-		const galleryYield = this.gallery!.saveToTransaction(tx)
-		await galleryYield.next()
-		saveYieldsArray.push(galleryYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -769,6 +775,7 @@ export class _Product extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
@@ -851,16 +858,6 @@ export class _Product extends PrismaClass {
 		}
 
 		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
-			)
-		}
-		if (this.product_categories.length() > 0 && this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
-			)
-		}
-		if (this.gallery.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
 			)

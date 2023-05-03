@@ -282,15 +282,21 @@ export class _Media extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.user !== 'number') {
+		if (typeof this.user !== 'number' && !this.user!.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
@@ -300,10 +306,6 @@ export class _Media extends PrismaClass {
 		const product_imageYield = this.product_image!.saveToTransaction(tx)
 		await product_imageYield.next()
 		saveYieldsArray.push(product_imageYield)
-
-		const product_galleryYield = this.product_gallery!.saveToTransaction(tx)
-		await product_galleryYield.next()
-		saveYieldsArray.push(product_galleryYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -344,6 +346,7 @@ export class _Media extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
@@ -369,11 +372,6 @@ export class _Media extends PrismaClass {
 		}
 
 		if (this.product_image.length() > 0 && this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
-			)
-		}
-		if (this.product_gallery.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",
 			)

@@ -41,9 +41,9 @@ exports.CONST_TEMPLATES = {
       return this.relations
     }
   
-    async load(depth: number) {
+    async load(depth: number = 0) {
       for (const relation of this.relations) {
-        relation.load(depth - 1)
+        relation.load(depth)
       }
     }
   

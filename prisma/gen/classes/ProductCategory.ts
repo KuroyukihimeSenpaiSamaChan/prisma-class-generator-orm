@@ -179,9 +179,15 @@ export class _ProductCategory extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
@@ -189,9 +195,6 @@ export class _ProductCategory extends PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const productsYield = this.products!.saveToTransaction(tx)
-		await productsYield.next()
-		saveYieldsArray.push(productsYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -232,6 +235,7 @@ export class _ProductCategory extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
@@ -244,12 +248,6 @@ export class _ProductCategory extends PrismaClass {
 		if (this.category_slug === undefined) {
 			throw new Error(
 				'Missing field on _ProductCategory.save(): category_slug',
-			)
-		}
-
-		if (this.products.length() > 0 && this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on new _ProductCategory. Save it first, then add the toMany fields",
 			)
 		}
 	}

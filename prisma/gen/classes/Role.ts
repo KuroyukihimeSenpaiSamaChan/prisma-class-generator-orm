@@ -155,9 +155,15 @@ export class _Role extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
@@ -165,9 +171,6 @@ export class _Role extends PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const usersYield = this.users!.saveToTransaction(tx)
-		await usersYield.next()
-		saveYieldsArray.push(usersYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -208,18 +211,13 @@ export class _Role extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
 	checkRequiredFields() {
 		if (this.label === undefined) {
 			throw new Error('Missing field on _Role.save(): label')
-		}
-
-		if (this.users.length() > 0 && this.primaryKey === -1) {
-			throw new Error(
-				"Can't save toMany fields on new _Role. Save it first, then add the toMany fields",
-			)
 		}
 	}
 

@@ -386,39 +386,45 @@ export class _SubOrder extends PrismaClass {
 		return true
 	}
 
+	private _saving: boolean = false
+	get saving(): boolean {
+		return this._saving
+	}
 	async *saveToTransaction(
 		tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 	) {
+		this._saving = true
+
 		this.checkRequiredFields()
 
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.expedition !== 'number') {
+		if (typeof this.expedition !== 'number' && !this.expedition!.saving) {
 			const expeditionYield = this.expedition!.saveToTransaction(tx)
 			await expeditionYield.next()
 			saveYieldsArray.push(expeditionYield)
 		}
 
-		if (typeof this.order !== 'number') {
+		if (typeof this.order !== 'number' && !this.order!.saving) {
 			const orderYield = this.order!.saveToTransaction(tx)
 			await orderYield.next()
 			saveYieldsArray.push(orderYield)
 		}
 
-		if (typeof this.product !== 'number') {
+		if (typeof this.product !== 'number' && !this.product!.saving) {
 			const productYield = this.product!.saveToTransaction(tx)
 			await productYield.next()
 			saveYieldsArray.push(productYield)
 		}
 
-		if (typeof this.user !== 'number') {
+		if (typeof this.user !== 'number' && !this.user!.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
 		}
 
-		if (typeof this.tva_type !== 'number') {
+		if (typeof this.tva_type !== 'number' && !this.tva_type!.saving) {
 			const tva_typeYield = this.tva_type!.saveToTransaction(tx)
 			await tva_typeYield.next()
 			saveYieldsArray.push(tva_typeYield)
@@ -451,6 +457,7 @@ export class _SubOrder extends PrismaClass {
 			})
 		}
 
+		this._saving = false
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

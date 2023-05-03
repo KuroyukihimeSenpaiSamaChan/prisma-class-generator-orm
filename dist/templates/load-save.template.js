@@ -33,9 +33,13 @@ async save(): Promise<boolean> {
   return true
 }
 
+private _saving: boolean = false
+get saving(): boolean {return this._saving}
 async *saveToTransaction(
   tx: Parameters<Parameters<typeof this.prismaClient.$transaction>[0]>[0],
 ) {
+  this._saving = true
+
   this.checkRequiredFields()
 
   const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
@@ -73,6 +77,7 @@ async *saveToTransaction(
     })
   }
 
+  this._saving = false
   return new Promise<number>((resolve) => resolve(this._#!{ID}))
 }
 
