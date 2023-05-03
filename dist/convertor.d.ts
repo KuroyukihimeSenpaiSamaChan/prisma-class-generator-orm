@@ -33,8 +33,8 @@ export declare class PrismaConvertor {
     };
     get dmmf(): DMMF.Document;
     set dmmf(value: DMMF.Document);
-    get config(): Partial<Record<"dryRun" | "separateRelationFields" | "useUndefinedDefault", any>>;
-    set config(value: Partial<Record<"dryRun" | "separateRelationFields" | "useUndefinedDefault", any>>);
+    get config(): Partial<Record<"dryRun" | "separateRelationFields" | "useUndefinedDefault" | "enums", any>>;
+    set config(value: Partial<Record<"dryRun" | "separateRelationFields" | "useUndefinedDefault" | "enums", any>>);
     static getInstance(): PrismaConvertor;
     getPrimitiveMapTypeFromDMMF: (dmmfField: DMMF.Field) => PrimitiveMapTypeValues;
     getClass: (input: ConvertModelInput) => ClassComponent;

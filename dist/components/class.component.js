@@ -172,6 +172,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 }
                 let connectGenerate = '';
                 let connectSave = '';
+                let connectUpdate = '';
                 for (const _field of this.fields.filter(elem => (0, convertor_1.isRelationMany)(elem.relation))) {
                     let toRelation;
                     if (!(0, convertor_1.isRelationMany)(_field.relation))
@@ -191,8 +192,20 @@ class ClassComponent extends base_component_1.BaseComponent {
 					})
 				}
 				`;
+                    connectGenerate += `const ${_field.name}Disconnections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
+				for(const relation of this.${_field.name}.toRemoveRelations){
+					${_field.name}Connections.push({
+						id: relation.primaryKey,
+					})
+				}
+				
+				`;
                     connectSave += `${_field.name}: {
 					connect: ${_field.name}Connections
+				},`;
+                    connectUpdate += `${_field.name}: {
+					connect: ${_field.name}Connections,
+					disconnect: ${_field.name}Disconnections
 				},`;
                 }
                 saveMethod = load_save_template_1.SAVE_TEMPLATE.replaceAll('#!{CHECK_FIELDS}', checkRequireds)
@@ -203,24 +216,40 @@ class ClassComponent extends base_component_1.BaseComponent {
                     .replaceAll('#!{ID}', primaryKey)
                     .replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
                     .replaceAll('#!{CONNECT_GEN}', connectGenerate)
-                    .replaceAll('#!{CONNECT_SAVE}', connectSave);
+                    .replaceAll('#!{CONNECT_SAVE}', connectSave)
+                    .replaceAll('#!{CONNECT_UPDATE}', connectUpdate);
                 deleteMethod = load_save_template_1.DELETE_TEMPLATE.replaceAll('#!{ID}', primaryKey)
                     .replaceAll('#!{CLASS}', `${this.name}`);
             }
             const importTypes = new Set();
-            let relationFields = this.fields.filter((_field) => _field.relation);
-            let includeFields = '';
-            let includeDeep = '';
-            for (const _field of relationFields) {
-                includeFields += `${_field.name}: true,`;
-                let relationName = _field.type;
-                if (relationName.includes('[]')) {
-                    relationName = relationName.substring(0, relationName.length - 2);
+            let getIncludes = '';
+            {
+                let relationFields = this.fields.filter((_field) => _field.relation);
+                let includeFields = '';
+                let includeDeep = '';
+                let filterType = '';
+                let includeFieldsFilter = '';
+                let includeDeepFilter = '';
+                for (const _field of relationFields) {
+                    includeFields += `${_field.name}: true,`;
+                    includeFieldsFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? true : undefined,`;
+                    let relationName = _field.type;
+                    if (relationName.includes('[]')) {
+                        relationName = relationName.substring(0, relationName.length - 2);
+                    }
+                    filterType += `${_field.name}?: boolean | Parameters<typeof _${relationName}.getIncludes>[1],`;
+                    includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(depth - 1)},`;
+                    includeDeepFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? {
+					include: _${relationName}.getIncludes(depth - 1, typeof filter.${_field.name} === "boolean" ? undefined : filter.${_field.name})
+				} : undefined,`;
+                    importTypes.add(relationName);
                 }
-                importTypes.add(relationName);
-                includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(deep-1)},`;
+                getIncludes = includeFields === '' ? '' :
+                    includes_template_1.GET_INCLUDES_TEMPLATE.replaceAll('#!{INCLUDE_FIELDS}', includeFields).replaceAll('#!{INCLUDE_DEEP}', includeDeep)
+                        .replaceAll('#!{FILTER_TYPE}', filterType)
+                        .replaceAll('#!{INCLUDE_FIELDS_FILTER}', includeFieldsFilter)
+                        .replaceAll('#!{INCLUDE_DEEP_FILTER}', includeDeepFilter);
             }
-            let getIncludes = includeFields !== '' ? includes_template_1.GET_INCLUDES_TEMPLATE.replaceAll('#!{INCLUDE_FIELDS}', includeFields).replaceAll('#!{INCLUDE_DEEP}', includeDeep) : '';
             const fieldContent = this.fields.map((_field) => _field.echo());
             let importPrisma = '';
             for (const _import of importTypes.values()) {

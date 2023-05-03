@@ -5,21 +5,25 @@ export const CONST_TEMPLATES = {
 
   export class RelationMany<R extends PrismaClass>
     extends PrismaClass
-    implements Iterable<R> {
-    constructor(private relations: R[]) { super() }
-  
+    implements Iterable<R>
+  {
+    private _toRemoveRelations: R[]
+    constructor(private relations: R[]) {
+      super()
+    }
+
     [Symbol.iterator](): RelationIterator<R> {
       return new RelationIterator<R>(this.relations)
     }
-  
+
     length(): number {
       return this.relations.length
     }
-  
+
     get(index: number): R {
       return this.relations[index]
     }
-  
+
     push(value: R | R[]) {
       if (Array.isArray(value)) {
         for (const val of value) {
@@ -29,21 +33,31 @@ export const CONST_TEMPLATES = {
         this.relations.push(value)
       }
     }
-  
-    remove(index: number): R {
-      return this.relations.splice(index, 1)[0]
+
+    remove(index: number): R | null {
+      if (index < 0 || index >= this.relations.length) {
+        return null
+      }
+
+      const relation = this.relations.splice(index, 1)[0]
+      this._toRemoveRelations.push(relation)
+      return relation
     }
 
-    toJSON(){
+    get toRemoveRelations(): R[] {
+      return this._toRemoveRelations
+    }
+
+    toJSON() {
       return this.relations
     }
-  
+
     async load(depth: number = 0) {
       for (const relation of this.relations) {
         relation.load(depth)
       }
     }
-  
+
     async save() {
       try {
         for (const relation of this.relations) {
@@ -51,37 +65,41 @@ export const CONST_TEMPLATES = {
         }
       } catch (err) {
         console.log(err)
-        return false;
+        return false
       }
       return true
     }
-  
-    async* saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]) {
+
+    async *saveToTransaction(
+      tx: Parameters<
+        Parameters<typeof PrismaModel.prismaClient.$transaction>[0]
+      >[0],
+    ) {
       const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
-  
+
       for (const relation of this.relations) {
         const saveYield = relation.saveToTransaction(tx)
         await saveYield.next()
         saveYieldsArray.push(saveYield)
       }
-      yield new Promise<number>(resolve => resolve(0))
-  
+      yield new Promise<number>((resolve) => resolve(0))
+
       for (const saveYield of saveYieldsArray) {
         saveYield.next()
       }
-      return new Promise<number>(resolve => resolve(1))
+      return new Promise<number>((resolve) => resolve(1))
     }
   }
-  
+
   class RelationIterator<R> implements Iterator<R> {
     private index: number
     private done: boolean
-  
+
     constructor(private values: R[]) {
       this.index = 0
       this.done = false
     }
-  
+
     next(...args: [] | [undefined]): IteratorResult<R, number | undefined> {
       if (this.done) {
         return {
@@ -89,7 +107,7 @@ export const CONST_TEMPLATES = {
           value: undefined,
         }
       }
-  
+
       if (this.index === this.values.length) {
         this.done = true
         return {
@@ -97,10 +115,10 @@ export const CONST_TEMPLATES = {
           value: this.index,
         }
       }
-  
+
       const value = this.values[this.index]
       this.index += 1
-  
+
       return {
         done: false,
         value,
@@ -113,7 +131,7 @@ export const CONST_TEMPLATES = {
     //   throw new Error('Method not implemented.')
     // }
   }
-  
+
   `,
 
   PRISMA_CLASS: `import { PrismaModel } from "./prisma-model"

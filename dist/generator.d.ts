@@ -14,6 +14,10 @@ export declare const PrismaClassGeneratorOptions: {
         readonly desc: "use undefined default";
         readonly defaultValue: false;
     };
+    readonly enums: {
+        readonly desc: "List of tables used as enums";
+        readonly defaultValue: string[];
+    };
 };
 export type PrismaClassGeneratorOptionsKeys = keyof typeof PrismaClassGeneratorOptions;
 export type PrismaClassGeneratorConfig = Partial<Record<PrismaClassGeneratorOptionsKeys, any>>;

@@ -24,6 +24,10 @@ export const PrismaClassGeneratorOptions = {
 		desc: 'use undefined default',
 		defaultValue: false,
 	},
+	enums: {
+		desc: 'List of tables used as enums',
+		defaultValue: [] as string[]
+	}
 } as const
 
 export type PrismaClassGeneratorOptionsKeys =

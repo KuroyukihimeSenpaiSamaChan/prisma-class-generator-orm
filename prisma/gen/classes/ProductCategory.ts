@@ -13,15 +13,41 @@ export class _ProductCategory extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.ProductCategoryInclude {
-		if (deep <= 0) {
-			return {
-				products: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
+		},
+	): Prisma.ProductCategoryInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					products: true,
+				}
 			}
-		}
-
-		return {
-			products: { include: _Product.getIncludes(deep - 1) },
+			return {
+				products: { include: _Product.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					products: Object.keys(filter).includes('products')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				products: Object.keys(filter).includes('products')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.products === 'boolean'
+									? undefined
+									: filter.products,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 
@@ -209,6 +235,13 @@ export class _ProductCategory extends PrismaClass {
 				id: relation.primaryKey,
 			})
 		}
+		const productsDisconnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
+			[]
+		for (const relation of this.products.toRemoveRelations) {
+			productsConnections.push({
+				id: relation.primaryKey,
+			})
+		}
 
 		if (this._id === -1) {
 			this._id = (
@@ -230,6 +263,7 @@ export class _ProductCategory extends PrismaClass {
 					...this.nonRelationsToJSON(),
 					products: {
 						connect: productsConnections,
+						disconnect: productsDisconnections,
 					},
 				},
 			})

@@ -72,7 +72,7 @@ async *saveToTransaction(
       where: { #!{ID}: this._#!{ID} },
       data: {
         ...this.nonRelationsToJSON(),
-        #!{CONNECT_SAVE}
+        #!{CONNECT_UPDATE}
       }
     })
   }

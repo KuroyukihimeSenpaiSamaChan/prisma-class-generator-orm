@@ -1,13 +1,30 @@
 export const GET_INCLUDES_TEMPLATE = `
-static getIncludes(deep: number = 0): Prisma.#!{NAME}Include {
-  if(deep <= 0){
+static getIncludes(
+  depth: number = 0,
+  filter?: {
+    #!{FILTER_TYPE}
+  }
+): Prisma.#!{NAME}Include {
+
+  if(filter === undefined){
+    if(depth <= 0){
+      return {
+        #!{INCLUDE_FIELDS}
+      }
+    }
     return {
-      #!{INCLUDE_FIELDS}
+      #!{INCLUDE_DEEP}
     }
   }
-
-  return {
-    #!{INCLUDE_DEEP}
+  else {
+    if(depth <= 0){
+      return {
+        #!{INCLUDE_FIELDS_FILTER}
+      }
+    }
+    return {
+      #!{INCLUDE_DEEP_FILTER}
+    }
   }
 }
 `

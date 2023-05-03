@@ -30,37 +30,195 @@ export class _Product extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.ProductInclude {
-		if (deep <= 0) {
-			return {
-				media: true,
-				tva_type: true,
-				user: true,
-				productState: true,
-				productVisibilty: true,
-				productConditioning: true,
-				sub_orders: true,
-				product_categories: true,
-				gallery: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			media?: boolean | Parameters<typeof _Media.getIncludes>[1]
+			tva_type?: boolean | Parameters<typeof _TVAType.getIncludes>[1]
+			user?: boolean | Parameters<typeof _User.getIncludes>[1]
+			productState?:
+				| boolean
+				| Parameters<typeof _ProductState.getIncludes>[1]
+			productVisibilty?:
+				| boolean
+				| Parameters<typeof _ProductVisibilty.getIncludes>[1]
+			productConditioning?:
+				| boolean
+				| Parameters<typeof _ConditioningType.getIncludes>[1]
+			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
+			product_categories?:
+				| boolean
+				| Parameters<typeof _ProductCategory.getIncludes>[1]
+			gallery?: boolean | Parameters<typeof _Media.getIncludes>[1]
+		},
+	): Prisma.ProductInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					media: true,
+					tva_type: true,
+					user: true,
+					productState: true,
+					productVisibilty: true,
+					productConditioning: true,
+					sub_orders: true,
+					product_categories: true,
+					gallery: true,
+				}
 			}
-		}
-
-		return {
-			media: { include: _Media.getIncludes(deep - 1) },
-			tva_type: { include: _TVAType.getIncludes(deep - 1) },
-			user: { include: _User.getIncludes(deep - 1) },
-			productState: { include: _ProductState.getIncludes(deep - 1) },
-			productVisibilty: {
-				include: _ProductVisibilty.getIncludes(deep - 1),
-			},
-			productConditioning: {
-				include: _ConditioningType.getIncludes(deep - 1),
-			},
-			sub_orders: { include: _SubOrder.getIncludes(deep - 1) },
-			product_categories: {
-				include: _ProductCategory.getIncludes(deep - 1),
-			},
-			gallery: { include: _Media.getIncludes(deep - 1) },
+			return {
+				media: { include: _Media.getIncludes(depth - 1) },
+				tva_type: { include: _TVAType.getIncludes(depth - 1) },
+				user: { include: _User.getIncludes(depth - 1) },
+				productState: { include: _ProductState.getIncludes(depth - 1) },
+				productVisibilty: {
+					include: _ProductVisibilty.getIncludes(depth - 1),
+				},
+				productConditioning: {
+					include: _ConditioningType.getIncludes(depth - 1),
+				},
+				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+				product_categories: {
+					include: _ProductCategory.getIncludes(depth - 1),
+				},
+				gallery: { include: _Media.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					media: Object.keys(filter).includes('media')
+						? true
+						: undefined,
+					tva_type: Object.keys(filter).includes('tva_type')
+						? true
+						: undefined,
+					user: Object.keys(filter).includes('user')
+						? true
+						: undefined,
+					productState: Object.keys(filter).includes('productState')
+						? true
+						: undefined,
+					productVisibilty: Object.keys(filter).includes(
+						'productVisibilty',
+					)
+						? true
+						: undefined,
+					productConditioning: Object.keys(filter).includes(
+						'productConditioning',
+					)
+						? true
+						: undefined,
+					sub_orders: Object.keys(filter).includes('sub_orders')
+						? true
+						: undefined,
+					product_categories: Object.keys(filter).includes(
+						'product_categories',
+					)
+						? true
+						: undefined,
+					gallery: Object.keys(filter).includes('gallery')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				media: Object.keys(filter).includes('media')
+					? {
+							include: _Media.getIncludes(
+								depth - 1,
+								typeof filter.media === 'boolean'
+									? undefined
+									: filter.media,
+							),
+					  }
+					: undefined,
+				tva_type: Object.keys(filter).includes('tva_type')
+					? {
+							include: _TVAType.getIncludes(
+								depth - 1,
+								typeof filter.tva_type === 'boolean'
+									? undefined
+									: filter.tva_type,
+							),
+					  }
+					: undefined,
+				user: Object.keys(filter).includes('user')
+					? {
+							include: _User.getIncludes(
+								depth - 1,
+								typeof filter.user === 'boolean'
+									? undefined
+									: filter.user,
+							),
+					  }
+					: undefined,
+				productState: Object.keys(filter).includes('productState')
+					? {
+							include: _ProductState.getIncludes(
+								depth - 1,
+								typeof filter.productState === 'boolean'
+									? undefined
+									: filter.productState,
+							),
+					  }
+					: undefined,
+				productVisibilty: Object.keys(filter).includes(
+					'productVisibilty',
+				)
+					? {
+							include: _ProductVisibilty.getIncludes(
+								depth - 1,
+								typeof filter.productVisibilty === 'boolean'
+									? undefined
+									: filter.productVisibilty,
+							),
+					  }
+					: undefined,
+				productConditioning: Object.keys(filter).includes(
+					'productConditioning',
+				)
+					? {
+							include: _ConditioningType.getIncludes(
+								depth - 1,
+								typeof filter.productConditioning === 'boolean'
+									? undefined
+									: filter.productConditioning,
+							),
+					  }
+					: undefined,
+				sub_orders: Object.keys(filter).includes('sub_orders')
+					? {
+							include: _SubOrder.getIncludes(
+								depth - 1,
+								typeof filter.sub_orders === 'boolean'
+									? undefined
+									: filter.sub_orders,
+							),
+					  }
+					: undefined,
+				product_categories: Object.keys(filter).includes(
+					'product_categories',
+				)
+					? {
+							include: _ProductCategory.getIncludes(
+								depth - 1,
+								typeof filter.product_categories === 'boolean'
+									? undefined
+									: filter.product_categories,
+							),
+					  }
+					: undefined,
+				gallery: Object.keys(filter).includes('gallery')
+					? {
+							include: _Media.getIncludes(
+								depth - 1,
+								typeof filter.gallery === 'boolean'
+									? undefined
+									: filter.gallery,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 
@@ -736,9 +894,24 @@ export class _Product extends PrismaClass {
 				id: relation.primaryKey,
 			})
 		}
+		const product_categoriesDisconnections: Prisma.Enumerable<Prisma.ProductCategoryWhereUniqueInput> =
+			[]
+		for (const relation of this.product_categories.toRemoveRelations) {
+			product_categoriesConnections.push({
+				id: relation.primaryKey,
+			})
+		}
+
 		const galleryConnections: Prisma.Enumerable<Prisma.MediaWhereUniqueInput> =
 			[]
 		for (const relation of this.gallery) {
+			galleryConnections.push({
+				id: relation.primaryKey,
+			})
+		}
+		const galleryDisconnections: Prisma.Enumerable<Prisma.MediaWhereUniqueInput> =
+			[]
+		for (const relation of this.gallery.toRemoveRelations) {
 			galleryConnections.push({
 				id: relation.primaryKey,
 			})
@@ -767,9 +940,11 @@ export class _Product extends PrismaClass {
 					...this.nonRelationsToJSON(),
 					product_categories: {
 						connect: product_categoriesConnections,
+						disconnect: product_categoriesDisconnections,
 					},
 					gallery: {
 						connect: galleryConnections,
+						disconnect: galleryDisconnections,
 					},
 				},
 			})

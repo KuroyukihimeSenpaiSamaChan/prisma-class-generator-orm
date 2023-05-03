@@ -24,23 +24,105 @@ export class _SubOrder extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.SubOrderInclude {
-		if (deep <= 0) {
-			return {
-				expedition: true,
-				order: true,
-				product: true,
-				user: true,
-				tva_type: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			expedition?: boolean | Parameters<typeof _Expedition.getIncludes>[1]
+			order?: boolean | Parameters<typeof _Order.getIncludes>[1]
+			product?: boolean | Parameters<typeof _Product.getIncludes>[1]
+			user?: boolean | Parameters<typeof _User.getIncludes>[1]
+			tva_type?: boolean | Parameters<typeof _TVAType.getIncludes>[1]
+		},
+	): Prisma.SubOrderInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					expedition: true,
+					order: true,
+					product: true,
+					user: true,
+					tva_type: true,
+				}
 			}
-		}
-
-		return {
-			expedition: { include: _Expedition.getIncludes(deep - 1) },
-			order: { include: _Order.getIncludes(deep - 1) },
-			product: { include: _Product.getIncludes(deep - 1) },
-			user: { include: _User.getIncludes(deep - 1) },
-			tva_type: { include: _TVAType.getIncludes(deep - 1) },
+			return {
+				expedition: { include: _Expedition.getIncludes(depth - 1) },
+				order: { include: _Order.getIncludes(depth - 1) },
+				product: { include: _Product.getIncludes(depth - 1) },
+				user: { include: _User.getIncludes(depth - 1) },
+				tva_type: { include: _TVAType.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					expedition: Object.keys(filter).includes('expedition')
+						? true
+						: undefined,
+					order: Object.keys(filter).includes('order')
+						? true
+						: undefined,
+					product: Object.keys(filter).includes('product')
+						? true
+						: undefined,
+					user: Object.keys(filter).includes('user')
+						? true
+						: undefined,
+					tva_type: Object.keys(filter).includes('tva_type')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				expedition: Object.keys(filter).includes('expedition')
+					? {
+							include: _Expedition.getIncludes(
+								depth - 1,
+								typeof filter.expedition === 'boolean'
+									? undefined
+									: filter.expedition,
+							),
+					  }
+					: undefined,
+				order: Object.keys(filter).includes('order')
+					? {
+							include: _Order.getIncludes(
+								depth - 1,
+								typeof filter.order === 'boolean'
+									? undefined
+									: filter.order,
+							),
+					  }
+					: undefined,
+				product: Object.keys(filter).includes('product')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.product === 'boolean'
+									? undefined
+									: filter.product,
+							),
+					  }
+					: undefined,
+				user: Object.keys(filter).includes('user')
+					? {
+							include: _User.getIncludes(
+								depth - 1,
+								typeof filter.user === 'boolean'
+									? undefined
+									: filter.user,
+							),
+					  }
+					: undefined,
+				tva_type: Object.keys(filter).includes('tva_type')
+					? {
+							include: _TVAType.getIncludes(
+								depth - 1,
+								typeof filter.tva_type === 'boolean'
+									? undefined
+									: filter.tva_type,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 

@@ -14,17 +14,57 @@ export class _TVAType extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.TVATypeInclude {
-		if (deep <= 0) {
-			return {
-				products: true,
-				sub_orders: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
+			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
+		},
+	): Prisma.TVATypeInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					products: true,
+					sub_orders: true,
+				}
 			}
-		}
-
-		return {
-			products: { include: _Product.getIncludes(deep - 1) },
-			sub_orders: { include: _SubOrder.getIncludes(deep - 1) },
+			return {
+				products: { include: _Product.getIncludes(depth - 1) },
+				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					products: Object.keys(filter).includes('products')
+						? true
+						: undefined,
+					sub_orders: Object.keys(filter).includes('sub_orders')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				products: Object.keys(filter).includes('products')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.products === 'boolean'
+									? undefined
+									: filter.products,
+							),
+					  }
+					: undefined,
+				sub_orders: Object.keys(filter).includes('sub_orders')
+					? {
+							include: _SubOrder.getIncludes(
+								depth - 1,
+								typeof filter.sub_orders === 'boolean'
+									? undefined
+									: filter.sub_orders,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 

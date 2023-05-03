@@ -13,15 +13,41 @@ export class _Role extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.RoleInclude {
-		if (deep <= 0) {
-			return {
-				users: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			users?: boolean | Parameters<typeof _User.getIncludes>[1]
+		},
+	): Prisma.RoleInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					users: true,
+				}
 			}
-		}
-
-		return {
-			users: { include: _User.getIncludes(deep - 1) },
+			return {
+				users: { include: _User.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					users: Object.keys(filter).includes('users')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				users: Object.keys(filter).includes('users')
+					? {
+							include: _User.getIncludes(
+								depth - 1,
+								typeof filter.users === 'boolean'
+									? undefined
+									: filter.users,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 
@@ -185,6 +211,13 @@ export class _Role extends PrismaClass {
 				id: relation.primaryKey,
 			})
 		}
+		const usersDisconnections: Prisma.Enumerable<Prisma.UserWhereUniqueInput> =
+			[]
+		for (const relation of this.users.toRemoveRelations) {
+			usersConnections.push({
+				id: relation.primaryKey,
+			})
+		}
 
 		if (this._id === -1) {
 			this._id = (
@@ -206,6 +239,7 @@ export class _Role extends PrismaClass {
 					...this.nonRelationsToJSON(),
 					users: {
 						connect: usersConnections,
+						disconnect: usersDisconnections,
 					},
 				},
 			})

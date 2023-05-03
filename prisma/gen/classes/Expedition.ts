@@ -13,15 +13,41 @@ export class _Expedition extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.ExpeditionInclude {
-		if (deep <= 0) {
-			return {
-				sub_orders: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
+		},
+	): Prisma.ExpeditionInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					sub_orders: true,
+				}
 			}
-		}
-
-		return {
-			sub_orders: { include: _SubOrder.getIncludes(deep - 1) },
+			return {
+				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					sub_orders: Object.keys(filter).includes('sub_orders')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				sub_orders: Object.keys(filter).includes('sub_orders')
+					? {
+							include: _SubOrder.getIncludes(
+								depth - 1,
+								typeof filter.sub_orders === 'boolean'
+									? undefined
+									: filter.sub_orders,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 

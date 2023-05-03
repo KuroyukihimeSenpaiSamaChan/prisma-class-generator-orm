@@ -13,15 +13,41 @@ export class _AccessToken extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.AccessTokenInclude {
-		if (deep <= 0) {
-			return {
-				user: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			user?: boolean | Parameters<typeof _User.getIncludes>[1]
+		},
+	): Prisma.AccessTokenInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					user: true,
+				}
 			}
-		}
-
-		return {
-			user: { include: _User.getIncludes(deep - 1) },
+			return {
+				user: { include: _User.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					user: Object.keys(filter).includes('user')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				user: Object.keys(filter).includes('user')
+					? {
+							include: _User.getIncludes(
+								depth - 1,
+								typeof filter.user === 'boolean'
+									? undefined
+									: filter.user,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 

@@ -47,6 +47,10 @@ exports.PrismaClassGeneratorOptions = {
         desc: 'use undefined default',
         defaultValue: false,
     },
+    enums: {
+        desc: 'List of tables used as enums',
+        defaultValue: []
+    }
 };
 class PrismaClassGenerator {
     constructor(options) {

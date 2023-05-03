@@ -13,15 +13,41 @@ export class _ConditioningType extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.ConditioningTypeInclude {
-		if (deep <= 0) {
-			return {
-				products: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
+		},
+	): Prisma.ConditioningTypeInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					products: true,
+				}
 			}
-		}
-
-		return {
-			products: { include: _Product.getIncludes(deep - 1) },
+			return {
+				products: { include: _Product.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					products: Object.keys(filter).includes('products')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				products: Object.keys(filter).includes('products')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.products === 'boolean'
+									? undefined
+									: filter.products,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 

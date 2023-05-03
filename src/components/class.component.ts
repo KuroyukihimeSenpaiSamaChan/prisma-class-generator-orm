@@ -185,6 +185,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 			let connectGenerate = ''
 			let connectSave = ''
+			let connectUpdate = ''
 			for (const _field of this.fields.filter(elem => isRelationMany(elem.relation))) {
 				let toRelation: FieldComponent
 				if (!isRelationMany(_field.relation)) continue
@@ -202,9 +203,22 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					})
 				}
 				`
+				connectGenerate += `const ${_field.name}Disconnections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
+				for(const relation of this.${_field.name}.toRemoveRelations){
+					${_field.name}Connections.push({
+						id: relation.primaryKey,
+					})
+				}
+				
+				`
 
 				connectSave += `${_field.name}: {
 					connect: ${_field.name}Connections
+				},`
+
+				connectUpdate += `${_field.name}: {
+					connect: ${_field.name}Connections,
+					disconnect: ${_field.name}Disconnections
 				},`
 			}
 
@@ -218,6 +232,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				.replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
 				.replaceAll('#!{CONNECT_GEN}', connectGenerate)
 				.replaceAll('#!{CONNECT_SAVE}', connectSave)
+				.replaceAll('#!{CONNECT_UPDATE}', connectUpdate)
 
 			deleteMethod = DELETE_TEMPLATE.replaceAll(
 				'#!{ID}', primaryKey)
@@ -226,22 +241,39 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 		// Generate the getClassIncludes
 		const importTypes = new Set<string>();
-		let relationFields = this.fields.filter((_field) => _field.relation)
-		let includeFields = ''
-		let includeDeep = ''
-		for (const _field of relationFields) {
-			includeFields += `${_field.name}: true,`
-			let relationName = _field.type
-			if (relationName.includes('[]')) {
-				relationName = relationName.substring(0, relationName.length - 2)
+		let getIncludes = ''
+		{
+			let relationFields = this.fields.filter((_field) => _field.relation)
+			let includeFields = ''
+			let includeDeep = ''
+			let filterType = ''
+			let includeFieldsFilter = ''
+			let includeDeepFilter = ''
+			for (const _field of relationFields) {
+				includeFields += `${_field.name}: true,`
+				includeFieldsFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? true : undefined,`
+				let relationName = _field.type
+				if (relationName.includes('[]')) {
+					relationName = relationName.substring(0, relationName.length - 2)
+				}
+				filterType += `${_field.name}?: boolean | Parameters<typeof _${relationName}.getIncludes>[1],`
+				includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(depth - 1)},`
+				includeDeepFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? {
+					include: _${relationName}.getIncludes(depth - 1, typeof filter.${_field.name} === "boolean" ? undefined : filter.${_field.name})
+				} : undefined,`
+
+				importTypes.add(relationName)
 			}
-			importTypes.add(relationName)
-			includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(deep-1)},`
+			getIncludes = includeFields === '' ? '' :
+				GET_INCLUDES_TEMPLATE.replaceAll(
+					'#!{INCLUDE_FIELDS}',
+					includeFields
+				).replaceAll('#!{INCLUDE_DEEP}', includeDeep)
+					.replaceAll('#!{FILTER_TYPE}', filterType)
+					.replaceAll('#!{INCLUDE_FIELDS_FILTER}', includeFieldsFilter)
+					.replaceAll('#!{INCLUDE_DEEP_FILTER}', includeDeepFilter)
+
 		}
-		let getIncludes = includeFields !== '' ? GET_INCLUDES_TEMPLATE.replaceAll(
-			'#!{INCLUDE_FIELDS}',
-			includeFields
-		).replaceAll('#!{INCLUDE_DEEP}', includeDeep) : ''
 
 		const fieldContent = this.fields.map((_field) => _field.echo())
 

@@ -14,19 +14,77 @@ export class _Media extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.MediaInclude {
-		if (deep <= 0) {
-			return {
-				user: true,
-				product_image: true,
-				product_gallery: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			user?: boolean | Parameters<typeof _User.getIncludes>[1]
+			product_image?: boolean | Parameters<typeof _Product.getIncludes>[1]
+			product_gallery?:
+				| boolean
+				| Parameters<typeof _Product.getIncludes>[1]
+		},
+	): Prisma.MediaInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					user: true,
+					product_image: true,
+					product_gallery: true,
+				}
 			}
-		}
-
-		return {
-			user: { include: _User.getIncludes(deep - 1) },
-			product_image: { include: _Product.getIncludes(deep - 1) },
-			product_gallery: { include: _Product.getIncludes(deep - 1) },
+			return {
+				user: { include: _User.getIncludes(depth - 1) },
+				product_image: { include: _Product.getIncludes(depth - 1) },
+				product_gallery: { include: _Product.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					user: Object.keys(filter).includes('user')
+						? true
+						: undefined,
+					product_image: Object.keys(filter).includes('product_image')
+						? true
+						: undefined,
+					product_gallery: Object.keys(filter).includes(
+						'product_gallery',
+					)
+						? true
+						: undefined,
+				}
+			}
+			return {
+				user: Object.keys(filter).includes('user')
+					? {
+							include: _User.getIncludes(
+								depth - 1,
+								typeof filter.user === 'boolean'
+									? undefined
+									: filter.user,
+							),
+					  }
+					: undefined,
+				product_image: Object.keys(filter).includes('product_image')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.product_image === 'boolean'
+									? undefined
+									: filter.product_image,
+							),
+					  }
+					: undefined,
+				product_gallery: Object.keys(filter).includes('product_gallery')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.product_gallery === 'boolean'
+									? undefined
+									: filter.product_gallery,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 
@@ -320,6 +378,13 @@ export class _Media extends PrismaClass {
 				id: relation.primaryKey,
 			})
 		}
+		const product_galleryDisconnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
+			[]
+		for (const relation of this.product_gallery.toRemoveRelations) {
+			product_galleryConnections.push({
+				id: relation.primaryKey,
+			})
+		}
 
 		if (this._id === -1) {
 			this._id = (
@@ -341,6 +406,7 @@ export class _Media extends PrismaClass {
 					...this.nonRelationsToJSON(),
 					product_gallery: {
 						connect: product_galleryConnections,
+						disconnect: product_galleryDisconnections,
 					},
 				},
 			})

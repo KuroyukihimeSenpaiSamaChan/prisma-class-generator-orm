@@ -30,29 +30,163 @@ export class _User extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
-	static getIncludes(deep: number = 0): Prisma.UserInclude {
-		if (deep <= 0) {
-			return {
-				access_token: true,
-				media: true,
-				product: true,
-				sub_order: true,
-				user_billing: true,
-				user_delete: true,
-				user_delivery: true,
-				roles: true,
+	static getIncludes(
+		depth: number = 0,
+		filter?: {
+			access_token?:
+				| boolean
+				| Parameters<typeof _AccessToken.getIncludes>[1]
+			media?: boolean | Parameters<typeof _Media.getIncludes>[1]
+			product?: boolean | Parameters<typeof _Product.getIncludes>[1]
+			sub_order?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
+			user_billing?:
+				| boolean
+				| Parameters<typeof _UserBilling.getIncludes>[1]
+			user_delete?:
+				| boolean
+				| Parameters<typeof _UserDelete.getIncludes>[1]
+			user_delivery?:
+				| boolean
+				| Parameters<typeof _UserDelivery.getIncludes>[1]
+			roles?: boolean | Parameters<typeof _Role.getIncludes>[1]
+		},
+	): Prisma.UserInclude {
+		if (filter === undefined) {
+			if (depth <= 0) {
+				return {
+					access_token: true,
+					media: true,
+					product: true,
+					sub_order: true,
+					user_billing: true,
+					user_delete: true,
+					user_delivery: true,
+					roles: true,
+				}
 			}
-		}
-
-		return {
-			access_token: { include: _AccessToken.getIncludes(deep - 1) },
-			media: { include: _Media.getIncludes(deep - 1) },
-			product: { include: _Product.getIncludes(deep - 1) },
-			sub_order: { include: _SubOrder.getIncludes(deep - 1) },
-			user_billing: { include: _UserBilling.getIncludes(deep - 1) },
-			user_delete: { include: _UserDelete.getIncludes(deep - 1) },
-			user_delivery: { include: _UserDelivery.getIncludes(deep - 1) },
-			roles: { include: _Role.getIncludes(deep - 1) },
+			return {
+				access_token: { include: _AccessToken.getIncludes(depth - 1) },
+				media: { include: _Media.getIncludes(depth - 1) },
+				product: { include: _Product.getIncludes(depth - 1) },
+				sub_order: { include: _SubOrder.getIncludes(depth - 1) },
+				user_billing: { include: _UserBilling.getIncludes(depth - 1) },
+				user_delete: { include: _UserDelete.getIncludes(depth - 1) },
+				user_delivery: {
+					include: _UserDelivery.getIncludes(depth - 1),
+				},
+				roles: { include: _Role.getIncludes(depth - 1) },
+			}
+		} else {
+			if (depth <= 0) {
+				return {
+					access_token: Object.keys(filter).includes('access_token')
+						? true
+						: undefined,
+					media: Object.keys(filter).includes('media')
+						? true
+						: undefined,
+					product: Object.keys(filter).includes('product')
+						? true
+						: undefined,
+					sub_order: Object.keys(filter).includes('sub_order')
+						? true
+						: undefined,
+					user_billing: Object.keys(filter).includes('user_billing')
+						? true
+						: undefined,
+					user_delete: Object.keys(filter).includes('user_delete')
+						? true
+						: undefined,
+					user_delivery: Object.keys(filter).includes('user_delivery')
+						? true
+						: undefined,
+					roles: Object.keys(filter).includes('roles')
+						? true
+						: undefined,
+				}
+			}
+			return {
+				access_token: Object.keys(filter).includes('access_token')
+					? {
+							include: _AccessToken.getIncludes(
+								depth - 1,
+								typeof filter.access_token === 'boolean'
+									? undefined
+									: filter.access_token,
+							),
+					  }
+					: undefined,
+				media: Object.keys(filter).includes('media')
+					? {
+							include: _Media.getIncludes(
+								depth - 1,
+								typeof filter.media === 'boolean'
+									? undefined
+									: filter.media,
+							),
+					  }
+					: undefined,
+				product: Object.keys(filter).includes('product')
+					? {
+							include: _Product.getIncludes(
+								depth - 1,
+								typeof filter.product === 'boolean'
+									? undefined
+									: filter.product,
+							),
+					  }
+					: undefined,
+				sub_order: Object.keys(filter).includes('sub_order')
+					? {
+							include: _SubOrder.getIncludes(
+								depth - 1,
+								typeof filter.sub_order === 'boolean'
+									? undefined
+									: filter.sub_order,
+							),
+					  }
+					: undefined,
+				user_billing: Object.keys(filter).includes('user_billing')
+					? {
+							include: _UserBilling.getIncludes(
+								depth - 1,
+								typeof filter.user_billing === 'boolean'
+									? undefined
+									: filter.user_billing,
+							),
+					  }
+					: undefined,
+				user_delete: Object.keys(filter).includes('user_delete')
+					? {
+							include: _UserDelete.getIncludes(
+								depth - 1,
+								typeof filter.user_delete === 'boolean'
+									? undefined
+									: filter.user_delete,
+							),
+					  }
+					: undefined,
+				user_delivery: Object.keys(filter).includes('user_delivery')
+					? {
+							include: _UserDelivery.getIncludes(
+								depth - 1,
+								typeof filter.user_delivery === 'boolean'
+									? undefined
+									: filter.user_delivery,
+							),
+					  }
+					: undefined,
+				roles: Object.keys(filter).includes('roles')
+					? {
+							include: _Role.getIncludes(
+								depth - 1,
+								typeof filter.roles === 'boolean'
+									? undefined
+									: filter.roles,
+							),
+					  }
+					: undefined,
+			}
 		}
 	}
 
@@ -518,6 +652,13 @@ export class _User extends PrismaClass {
 				id: relation.primaryKey,
 			})
 		}
+		const rolesDisconnections: Prisma.Enumerable<Prisma.RoleWhereUniqueInput> =
+			[]
+		for (const relation of this.roles.toRemoveRelations) {
+			rolesConnections.push({
+				id: relation.primaryKey,
+			})
+		}
 
 		if (this._id === -1) {
 			this._id = (
@@ -539,6 +680,7 @@ export class _User extends PrismaClass {
 					...this.nonRelationsToJSON(),
 					roles: {
 						connect: rolesConnections,
+						disconnect: rolesDisconnections,
 					},
 				},
 			})

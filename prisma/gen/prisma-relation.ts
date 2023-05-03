@@ -5,6 +5,7 @@ export class RelationMany<R extends PrismaClass>
 	extends PrismaClass
 	implements Iterable<R>
 {
+	private _toRemoveRelations: R[]
 	constructor(private relations: R[]) {
 		super()
 	}
@@ -31,17 +32,27 @@ export class RelationMany<R extends PrismaClass>
 		}
 	}
 
-	remove(index: number): R {
-		return this.relations.splice(index, 1)[0]
+	remove(index: number): R | null {
+		if (index < 0 || index >= this.relations.length) {
+			return null
+		}
+
+		const relation = this.relations.splice(index, 1)[0]
+		this._toRemoveRelations.push(relation)
+		return relation
+	}
+
+	get toRemoveRelations(): R[] {
+		return this._toRemoveRelations
 	}
 
 	toJSON() {
 		return this.relations
 	}
 
-	async load(depth: number) {
+	async load(depth: number = 0) {
 		for (const relation of this.relations) {
-			relation.load(depth - 1)
+			relation.load(depth)
 		}
 	}
 
