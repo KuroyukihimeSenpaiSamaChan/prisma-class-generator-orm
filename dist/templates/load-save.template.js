@@ -2,15 +2,29 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DELETE_TEMPLATE = exports.SAVE_TEMPLATE = exports.LOAD_TEMPLATE = void 0;
 exports.LOAD_TEMPLATE = `
-async load(depth: number = 0) {
-  if (depth < 0) return
+async load(depth?: number): Promise<void>
+async load(filter?: Exclude<Parameters<typeof _#!{NAME}.getIncludes>[0], number>): Promise<void>
+async load(
+  param?: number | Exclude<Parameters<typeof _#!{NAME}.getIncludes>[0], number>
+): Promise<void> {
+  if(param === undefined){
+    param = 0
+  }
+
+  if ((
+    typeof param === 'number' && param < 0
+  ) || (
+    typeof param === 'object' && Object.keys(param).length === 0
+  )) {
+    return
+  }
 
   if (this.id !== -1) {
     const dbThis = await _#!{NAME}.prisma.findUnique({
       where: {
         id: this.id,
       },
-      select: _#!{NAME}.getIncludes(depth),
+      select: _#!{NAME}.getIncludes(param),
     })
     if (dbThis !== null) {
       this.init({ ...this.toJSON(), ...dbThis })

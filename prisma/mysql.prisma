@@ -6,7 +6,7 @@ generator prismaClassGenerator {
   provider = "dist/bin.js"
   output   = "./gen/"
   dryRun   = "false"
-  enums    = ["Role", "Expedition", "ProductCategory", "ProductVisibility", "ProductState", "ConditioningType", "TVAType"]
+  enums    = "Role, Expedition, ProductCategory, ProductVisibility, ProductState, ConditioningType, TVAType"
 }
 
 datasource db {

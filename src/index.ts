@@ -2,7 +2,7 @@ import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper'
 import { GENERATOR_NAME, PrismaClassGenerator } from './generator'
 import { log } from './util'
 import { handleGenerateError } from './error-handler'
-console.log("ze")
+
 generatorHandler({
 	onManifest: () => ({
 		defaultOutput: '../src/_gen/prisma-class',

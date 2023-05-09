@@ -15,7 +15,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _SubOrder extends PrismaClass {
+export class _SubOrder implements PrismaClass {
 	static prisma: Prisma.SubOrderDelegate<undefined>
 	get prisma(): Prisma.SubOrderDelegate<undefined> {
 		return _SubOrder.prisma
@@ -25,17 +25,47 @@ export class _SubOrder extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			expedition?: boolean | Parameters<typeof _Expedition.getIncludes>[1]
-			order?: boolean | Parameters<typeof _Order.getIncludes>[1]
-			product?: boolean | Parameters<typeof _Product.getIncludes>[1]
-			user?: boolean | Parameters<typeof _User.getIncludes>[1]
-			tva_type?: boolean | Parameters<typeof _TVAType.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					expedition?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Expedition.getIncludes>[0],
+								number
+						  >
+					order?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Order.getIncludes>[0],
+								number
+						  >
+					product?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+					user?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _User.getIncludes>[0],
+								number
+						  >
+					tva_type?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _TVAType.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.SubOrderInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					expedition: true,
 					order: true,
@@ -45,82 +75,54 @@ export class _SubOrder extends PrismaClass {
 				}
 			}
 			return {
-				expedition: { include: _Expedition.getIncludes(depth - 1) },
-				order: { include: _Order.getIncludes(depth - 1) },
-				product: { include: _Product.getIncludes(depth - 1) },
-				user: { include: _User.getIncludes(depth - 1) },
-				tva_type: { include: _TVAType.getIncludes(depth - 1) },
+				expedition: { include: _Expedition.getIncludes(param - 1) },
+				order: { include: _Order.getIncludes(param - 1) },
+				product: { include: _Product.getIncludes(param - 1) },
+				user: { include: _User.getIncludes(param - 1) },
+				tva_type: { include: _TVAType.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					expedition: Object.keys(filter).includes('expedition')
-						? true
-						: undefined,
-					order: Object.keys(filter).includes('order')
-						? true
-						: undefined,
-					product: Object.keys(filter).includes('product')
-						? true
-						: undefined,
-					user: Object.keys(filter).includes('user')
-						? true
-						: undefined,
-					tva_type: Object.keys(filter).includes('tva_type')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				expedition: Object.keys(filter).includes('expedition')
-					? {
-							include: _Expedition.getIncludes(
-								depth - 1,
-								typeof filter.expedition === 'boolean'
-									? undefined
-									: filter.expedition,
-							),
-					  }
+				expedition: Object.keys(param).includes('expedition')
+					? typeof param.expedition === 'boolean'
+						? true
+						: {
+								include: _Expedition.getIncludes(
+									param.expedition,
+								),
+						  }
 					: undefined,
-				order: Object.keys(filter).includes('order')
-					? {
-							include: _Order.getIncludes(
-								depth - 1,
-								typeof filter.order === 'boolean'
-									? undefined
-									: filter.order,
-							),
-					  }
+				order: Object.keys(param).includes('order')
+					? typeof param.order === 'boolean'
+						? true
+						: {
+								include: _Order.getIncludes(param.order),
+						  }
 					: undefined,
-				product: Object.keys(filter).includes('product')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.product === 'boolean'
-									? undefined
-									: filter.product,
-							),
-					  }
+				product: Object.keys(param).includes('product')
+					? typeof param.product === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(param.product),
+						  }
 					: undefined,
-				user: Object.keys(filter).includes('user')
-					? {
-							include: _User.getIncludes(
-								depth - 1,
-								typeof filter.user === 'boolean'
-									? undefined
-									: filter.user,
-							),
-					  }
+				user: Object.keys(param).includes('user')
+					? typeof param.user === 'boolean'
+						? true
+						: {
+								include: _User.getIncludes(param.user),
+						  }
 					: undefined,
-				tva_type: Object.keys(filter).includes('tva_type')
-					? {
-							include: _TVAType.getIncludes(
-								depth - 1,
-								typeof filter.tva_type === 'boolean'
-									? undefined
-									: filter.tva_type,
-							),
-					  }
+				tva_type: Object.keys(param).includes('tva_type')
+					? typeof param.tva_type === 'boolean'
+						? true
+						: {
+								include: _TVAType.getIncludes(param.tva_type),
+						  }
 					: undefined,
 			}
 		}
@@ -143,24 +145,19 @@ export class _SubOrder extends PrismaClass {
 
 	private _product_id: ForeignKey
 
-	product_price?: number
+	product_price: number
 
-	quantity?: number
+	quantity: number
 
 	private _taxe_id: ForeignKey = 1
 
-	private _expedition: _Expedition | null
-	get expedition(): _Expedition | ForeignKey {
-		return this._expedition ? this._expedition : this.expedition_id
+	private _expedition: _Expedition
+	get expedition(): _Expedition {
+		return this._expedition
 	}
-	set expedition(value: _Expedition | ForeignKey) {
-		if (value instanceof _Expedition) {
-			this._expedition = value
-			this._expedition_id = value.id
-		} else {
-			this._expedition = null
-			this._expedition_id = value
-		}
+	set expedition(value: _Expedition) {
+		this._expedition = value
+		this._expedition_id = value.id
 	}
 	get expedition_id(): ForeignKey {
 		if (this._expedition === null) {
@@ -170,18 +167,13 @@ export class _SubOrder extends PrismaClass {
 		}
 	}
 
-	private _order: _Order | null
-	get order(): _Order | ForeignKey {
-		return this._order ? this._order : this.order_id
+	private _order: _Order
+	get order(): _Order {
+		return this._order
 	}
-	set order(value: _Order | ForeignKey) {
-		if (value instanceof _Order) {
-			this._order = value
-			this._order_id = value.id
-		} else {
-			this._order = null
-			this._order_id = value
-		}
+	set order(value: _Order) {
+		this._order = value
+		this._order_id = value.id
 	}
 	get order_id(): ForeignKey {
 		if (this._order === null) {
@@ -191,18 +183,13 @@ export class _SubOrder extends PrismaClass {
 		}
 	}
 
-	private _product: _Product | null
-	get product(): _Product | ForeignKey {
-		return this._product ? this._product : this.product_id
+	private _product: _Product
+	get product(): _Product {
+		return this._product
 	}
-	set product(value: _Product | ForeignKey) {
-		if (value instanceof _Product) {
-			this._product = value
-			this._product_id = value.id
-		} else {
-			this._product = null
-			this._product_id = value
-		}
+	set product(value: _Product) {
+		this._product = value
+		this._product_id = value.id
 	}
 	get product_id(): ForeignKey {
 		if (this._product === null) {
@@ -212,18 +199,13 @@ export class _SubOrder extends PrismaClass {
 		}
 	}
 
-	private _user: _User | null
-	get user(): _User | ForeignKey {
-		return this._user ? this._user : this.vendor_id
+	private _user: _User
+	get user(): _User {
+		return this._user
 	}
-	set user(value: _User | ForeignKey) {
-		if (value instanceof _User) {
-			this._user = value
-			this._vendor_id = value.id
-		} else {
-			this._user = null
-			this._vendor_id = value
-		}
+	set user(value: _User) {
+		this._user = value
+		this._vendor_id = value.id
 	}
 	get vendor_id(): ForeignKey {
 		if (this._user === null) {
@@ -233,18 +215,13 @@ export class _SubOrder extends PrismaClass {
 		}
 	}
 
-	private _tva_type: _TVAType | null
-	get tva_type(): _TVAType | ForeignKey {
-		return this._tva_type ? this._tva_type : this.taxe_id
+	private _tva_type: _TVAType
+	get tva_type(): _TVAType {
+		return this._tva_type
 	}
-	set tva_type(value: _TVAType | ForeignKey) {
-		if (value instanceof _TVAType) {
-			this._tva_type = value
-			this._taxe_id = value.id
-		} else {
-			this._tva_type = null
-			this._taxe_id = value
-		}
+	set tva_type(value: _TVAType) {
+		this._tva_type = value
+		this._taxe_id = value.id
 	}
 	get taxe_id(): ForeignKey {
 		if (this._tva_type === null) {
@@ -256,20 +233,19 @@ export class _SubOrder extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		order_id?: ForeignKey
-		vendor_id?: ForeignKey
-		expedition_id?: ForeignKey
-		product_id?: ForeignKey
-		product_price?: number
-		quantity?: number
+		order_id: ForeignKey
+		vendor_id: ForeignKey
+		expedition_id: ForeignKey
+		product_id: ForeignKey
+		product_price: number
+		quantity: number
 		taxe_id?: ForeignKey
-		expedition?: _Expedition | Expedition | ForeignKey
-		order?: _Order | Order | ForeignKey
-		product?: _Product | Product | ForeignKey
-		user?: _User | User | ForeignKey
-		tva_type?: _TVAType | TVAType | ForeignKey
+		expedition?: _Expedition | Expedition
+		order?: _Order | Order
+		product?: _Product | Product
+		user?: _User | User
+		tva_type?: _TVAType | TVAType
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -280,87 +256,58 @@ export class _SubOrder extends PrismaClass {
 		this.product_price = obj.product_price
 		this.quantity = obj.quantity
 
-		if (!obj.expedition) {
-			if (obj.expedition_id === undefined) {
-				this.expedition = null
+		if (obj.expedition !== undefined) {
+			if (obj.expedition instanceof _Expedition) {
+				this.expedition = obj.expedition
 			} else {
-				this.expedition = obj.expedition_id
+				this.expedition = new _Expedition(obj.expedition)
 			}
-		} else if (obj.expedition instanceof _Expedition) {
-			this.expedition = obj.expedition
-		} else if (typeof obj.expedition === 'number') {
-			this.expedition = obj.expedition
-		} else {
-			this.expedition = new _Expedition(obj.expedition)
-		}
+		} else if (obj.expedition_id !== undefined) {
+			this._expedition_id = obj.expedition_id
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.order) {
-			if (obj.order_id === undefined) {
-				this.order = null
+		if (obj.order !== undefined) {
+			if (obj.order instanceof _Order) {
+				this.order = obj.order
 			} else {
-				this.order = obj.order_id
+				this.order = new _Order(obj.order)
 			}
-		} else if (obj.order instanceof _Order) {
-			this.order = obj.order
-		} else if (typeof obj.order === 'number') {
-			this.order = obj.order
-		} else {
-			this.order = new _Order(obj.order)
-		}
+		} else if (obj.order_id !== undefined) {
+			this._order_id = obj.order_id
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.product) {
-			if (obj.product_id === undefined) {
-				this.product = null
+		if (obj.product !== undefined) {
+			if (obj.product instanceof _Product) {
+				this.product = obj.product
 			} else {
-				this.product = obj.product_id
+				this.product = new _Product(obj.product)
 			}
-		} else if (obj.product instanceof _Product) {
-			this.product = obj.product
-		} else if (typeof obj.product === 'number') {
-			this.product = obj.product
-		} else {
-			this.product = new _Product(obj.product)
-		}
+		} else if (obj.product_id !== undefined) {
+			this._product_id = obj.product_id
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.user) {
-			if (obj.vendor_id === undefined) {
-				this.user = null
+		if (obj.user !== undefined) {
+			if (obj.user instanceof _User) {
+				this.user = obj.user
 			} else {
-				this.user = obj.vendor_id
+				this.user = new _User(obj.user)
 			}
-		} else if (obj.user instanceof _User) {
-			this.user = obj.user
-		} else if (typeof obj.user === 'number') {
-			this.user = obj.user
-		} else {
-			this.user = new _User(obj.user)
-		}
+		} else if (obj.vendor_id !== undefined) {
+			this._vendor_id = obj.vendor_id
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.tva_type) {
-			if (obj.taxe_id === undefined) {
-				this.tva_type = null
+		if (obj.tva_type !== undefined) {
+			if (obj.tva_type instanceof _TVAType) {
+				this.tva_type = obj.tva_type
 			} else {
-				this.tva_type = obj.taxe_id
+				this.tva_type = new _TVAType(obj.tva_type)
 			}
-		} else if (obj.tva_type instanceof _TVAType) {
-			this.tva_type = obj.tva_type
-		} else if (typeof obj.tva_type === 'number') {
-			this.tva_type = obj.tva_type
-		} else {
-			this.tva_type = new _TVAType(obj.tva_type)
-		}
+		} else if (obj.taxe_id !== undefined) {
+			this._taxe_id = obj.taxe_id
+		} else throw new Error('Invalid constructor.')
 	}
 
-	update(obj: {
-		id?: number
-		order_id?: ForeignKey
-		vendor_id?: ForeignKey
-		expedition_id?: ForeignKey
-		product_id?: ForeignKey
-		product_price?: number
-		quantity?: number
-		taxe_id?: ForeignKey
-	}) {
+	update(obj: { product_price?: number; quantity?: number }) {
 		if (obj.product_price !== undefined) {
 			this.product_price = obj.product_price
 		}
@@ -436,15 +383,32 @@ export class _SubOrder extends PrismaClass {
 		return new _SubOrder(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _SubOrder.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _SubOrder.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _SubOrder.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _SubOrder.getIncludes(depth),
+				select: _SubOrder.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

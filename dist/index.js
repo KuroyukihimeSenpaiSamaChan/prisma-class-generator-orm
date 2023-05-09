@@ -4,7 +4,6 @@ const generator_helper_1 = require("@prisma/generator-helper");
 const generator_1 = require("./generator");
 const util_1 = require("./util");
 const error_handler_1 = require("./error-handler");
-console.log("ze");
 (0, generator_helper_1.generatorHandler)({
     onManifest: () => ({
         defaultOutput: '../src/_gen/prisma-class',

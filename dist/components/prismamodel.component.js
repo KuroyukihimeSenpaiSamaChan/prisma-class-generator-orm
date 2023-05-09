@@ -33,6 +33,7 @@ class PrismaModelComponent extends file_component_1.FileComponent {
         this.echo = () => {
             let classesImports = '';
             let classesInit = '';
+            let classesEnum = '';
             for (const classComp of this.classes) {
                 classesImports += `import { _${classComp.name} } from './classes/${classComp.name}'
 			`;
@@ -40,8 +41,13 @@ class PrismaModelComponent extends file_component_1.FileComponent {
                     .toLowerCase()
                     .substring(0, 1)}${classComp.name.substring(1)};
 			`;
+                if (classComp.isEnum) {
+                    classesEnum += `await _${classComp.name}.initList()
+				`;
+                }
             }
-            return prismamodel_template_1.PRISMAMODEL_TEMPLATE.replaceAll('!#{CLASSES_IMPORTS}', classesImports).replaceAll('!#{CLASSES_INIT}', classesInit);
+            return prismamodel_template_1.PRISMAMODEL_TEMPLATE.replaceAll('#!{CLASSES_IMPORTS}', classesImports).replaceAll('#!{CLASSES_INIT}', classesInit)
+                .replaceAll('#!{CLASSES_ENUM}', classesEnum);
         };
         this.dir = path.resolve(output);
         this.filename = 'prisma-model.ts';

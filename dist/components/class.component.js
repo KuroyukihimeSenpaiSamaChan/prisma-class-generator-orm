@@ -7,9 +7,11 @@ const all_template_1 = require("../templates/all.template");
 const includes_template_1 = require("../templates/includes.template");
 const convertor_1 = require("../convertor");
 const load_save_template_1 = require("../templates/load-save.template");
+const enum_template_1 = require("../templates/enum.template");
 class ClassComponent extends base_component_1.BaseComponent {
     constructor() {
         super(...arguments);
+        this.isEnum = false;
         this.enumTypes = [];
         this.extra = '';
         this.echo = () => {
@@ -18,6 +20,7 @@ class ClassComponent extends base_component_1.BaseComponent {
             {
                 let parameters = {
                     normal: '',
+                    update: '',
                     toOne: '',
                     toMany: '',
                 };
@@ -31,6 +34,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 let toJSON = '';
                 for (const _field of this.fields) {
                     toJSONRelations += `${_field.name}: this.${_field.name},`;
+                    let fieldName = `${_field.name}${_field.default !== undefined ? '?' : ''}`;
                     if (_field.relation === undefined) {
                         toJSON += `${_field.name}: this.${_field.name}!,`;
                         if (_field.isId) {
@@ -43,41 +47,37 @@ class ClassComponent extends base_component_1.BaseComponent {
 						` + initialiazers.normal;
                         }
                         else if (!_field.privateFromRelation) {
+                            parameters.update += `${_field.name}?: ${_field.type},`;
                             let opt = { parameter: '', initializer: '' };
                             if (_field.nullable) {
                                 opt.parameter = ' | null';
-                                opt.initializer = ` !== null ? obj.${_field.name} : undefined`;
                             }
-                            else if (_field.default) {
-                                opt.initializer = ` !== undefined ? obj.${_field.name} : ${_field.default}`;
+                            if (_field.default) {
+                                opt.initializer = ` ??  ${_field.default}`;
                             }
-                            parameters.normal += `${_field.name}?: ${_field.type} ${opt.parameter},`;
-                            initialiazers.normal += `this.${_field.name} =  obj.${_field.name} ${opt.initializer};`;
+                            parameters.normal += `${fieldName}: ${_field.type} ${opt.parameter},`;
+                            initialiazers.normal += `this.${_field.name} = obj.${_field.name} ${opt.initializer};`;
                             initialiazers.update += `if(obj.${_field.name} !== undefined){
 							this.${_field.name} = obj.${_field.name}
 						}
 						`;
                         }
                         else {
-                            parameters.normal += `${_field.name}?: ForeignKey,`;
+                            parameters.normal += `${fieldName}: ForeignKey,`;
                         }
                     }
                     else if (!(0, convertor_1.isRelationMany)(_field.relation) && _field.relation.hasOne === _field) {
-                        parameters.toOne += `${_field.name}?: _${_field.type} | ${_field.type} | ForeignKey,`;
+                        parameters.toOne += `${_field.name}?: _${_field.type} | ${_field.type},`;
                         initialiazers.toOne += `
-					if(!obj.${_field.name}){
-						if (obj.${_field.relation.fromField} === undefined){
-							this.${_field.name} = null
-						}else{
-							this.${_field.name} = obj.${_field.relation.fromField}
+					if (obj.${_field.name} !== undefined) {
+						if (obj.${_field.name} instanceof _${_field.type}) {
+							this.${_field.name} = obj.${_field.name}
+						} else {
+							this.${_field.name} = new _${_field.type}(obj.${_field.name})
 						}
-					} else if(obj.${_field.name} instanceof _${_field.type}) {
-						this.${_field.name} = obj.${_field.name}
-					} else if (typeof obj.${_field.name} === 'number') {
-						this.${_field.name} = obj.${_field.name}
-					} else {
-						this.${_field.name} = new _${_field.type}(obj.${_field.name})
-					}
+					} else if (obj.${_field.relation.fromField} !== undefined) {
+						this._${_field.relation.fromField} = obj.${_field.relation.fromField}
+					} else throw new Error("Invalid constructor.")
 					`;
                     }
                     else {
@@ -86,7 +86,7 @@ class ClassComponent extends base_component_1.BaseComponent {
 					`;
                         initialiazers.toMany += `
 					if (!obj.${_field.name} || obj.${_field.name}.length === 0) {
-						this.${_field.name} = new RelationMany<_${typeSingle}>([])
+						this.${_field.name} = new RelationMany<_${typeSingle}>()
 					} else if (obj.${_field.name} instanceof RelationMany) {
 						this.${_field.name} = obj.${_field.name}
 					} else if (obj.${_field.name}[0] instanceof _${typeSingle}) {
@@ -107,7 +107,6 @@ class ClassComponent extends base_component_1.BaseComponent {
 				${parameters.toOne}
 				${parameters.toMany}
 			}){
-				super()
 				this.init(obj)
 			}
 
@@ -118,7 +117,7 @@ class ClassComponent extends base_component_1.BaseComponent {
 			}
 
 			update(obj: {
-				${parameters.normal}
+				${parameters.update}
 			}){
 				${initialiazers.update}
 			}
@@ -228,27 +227,31 @@ class ClassComponent extends base_component_1.BaseComponent {
                 let includeFields = '';
                 let includeDeep = '';
                 let filterType = '';
-                let includeFieldsFilter = '';
                 let includeDeepFilter = '';
                 for (const _field of relationFields) {
                     includeFields += `${_field.name}: true,`;
-                    includeFieldsFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? true : undefined,`;
                     let relationName = _field.type;
                     if (relationName.includes('[]')) {
                         relationName = relationName.substring(0, relationName.length - 2);
                     }
-                    filterType += `${_field.name}?: boolean | Parameters<typeof _${relationName}.getIncludes>[1],`;
-                    includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(depth - 1)},`;
-                    includeDeepFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? {
-					include: _${relationName}.getIncludes(depth - 1, typeof filter.${_field.name} === "boolean" ? undefined : filter.${_field.name})
-				} : undefined,`;
+                    filterType += `${_field.name}?: boolean | Exclude<Parameters<typeof _${relationName}.getIncludes>[0], number>,`;
+                    includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(param - 1)},`;
+                    includeDeepFilter += `${_field.name}: Object.keys(param).includes('${_field.name}')
+				? (typeof param.${_field.name} === 'boolean'
+					? true : {
+						include: _${relationName}.getIncludes(param.${_field.name}),
+					}
+				) : undefined,`;
                     importTypes.add(relationName);
                 }
                 getIncludes = includeFields === '' ? '' :
                     includes_template_1.GET_INCLUDES_TEMPLATE.replaceAll('#!{INCLUDE_FIELDS}', includeFields).replaceAll('#!{INCLUDE_DEEP}', includeDeep)
                         .replaceAll('#!{FILTER_TYPE}', filterType)
-                        .replaceAll('#!{INCLUDE_FIELDS_FILTER}', includeFieldsFilter)
-                        .replaceAll('#!{INCLUDE_DEEP_FILTER}', includeDeepFilter);
+                        .replaceAll('#!{INCLUDE_FILTER}', includeDeepFilter);
+            }
+            let enumList = '';
+            if (this.isEnum) {
+                enumList = enum_template_1.ENUM_TEMPLATE;
             }
             const fieldContent = this.fields.map((_field) => _field.echo());
             let importPrisma = '';
@@ -261,6 +264,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 .replaceAll('#!{SAVE}', saveMethod)
                 .replaceAll('#!{DELETE}', deleteMethod)
                 .replaceAll('#!{GET_INCLUDES}', getIncludes)
+                .replaceAll('#!{ENUM_LIST}', `${enumList}`)
                 .replaceAll('#!{NAME}', `${this.name}`)
                 .replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
                 .replaceAll('#!{EXTRA}', this.extra)

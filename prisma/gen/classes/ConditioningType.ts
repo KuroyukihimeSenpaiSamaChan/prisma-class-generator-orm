@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ConditioningType extends PrismaClass {
+export class _ConditioningType implements PrismaClass {
 	static prisma: Prisma.ConditioningTypeDelegate<undefined>
 	get prisma(): Prisma.ConditioningTypeDelegate<undefined> {
 		return _ConditioningType.prisma
@@ -13,39 +13,60 @@ export class _ConditioningType extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	static async initList() {
+		if (this.enumList === null) {
+			return
+		}
+
+		const models = await this.prisma.findMany()
+		this.enumList = []
+		for (const model of models) {
+			this.enumList.push(new _ConditioningType(model))
+		}
+	}
+
+	private static enumList: _ConditioningType[]
+	static get list(): _ConditioningType[] {
+		return this.enumList
+	}
+
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					products?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.ConditioningTypeInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					products: true,
 				}
 			}
 			return {
-				products: { include: _Product.getIncludes(depth - 1) },
+				products: { include: _Product.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					products: Object.keys(filter).includes('products')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				products: Object.keys(filter).includes('products')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.products === 'boolean'
-									? undefined
-									: filter.products,
-							),
-					  }
+				products: Object.keys(param).includes('products')
+					? typeof param.products === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(param.products),
+						  }
 					: undefined,
 			}
 		}
@@ -60,7 +81,7 @@ export class _ConditioningType extends PrismaClass {
 		return this._id
 	}
 
-	label?: string
+	label: string
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -72,11 +93,10 @@ export class _ConditioningType extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		label?: string
+		label: string
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -87,7 +107,7 @@ export class _ConditioningType extends PrismaClass {
 		this.label = obj.label
 
 		if (!obj.products || obj.products.length === 0) {
-			this.products = new RelationMany<_Product>([])
+			this.products = new RelationMany<_Product>()
 		} else if (obj.products instanceof RelationMany) {
 			this.products = obj.products
 		} else if (obj.products[0] instanceof _Product) {
@@ -103,7 +123,7 @@ export class _ConditioningType extends PrismaClass {
 		}
 	}
 
-	update(obj: { id?: number; label?: string }) {
+	update(obj: { label?: string }) {
 		if (obj.label !== undefined) {
 			this.label = obj.label
 		}
@@ -153,15 +173,38 @@ export class _ConditioningType extends PrismaClass {
 		return new _ConditioningType(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<
+			Parameters<typeof _ConditioningType.getIncludes>[0],
+			number
+		>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<
+					Parameters<typeof _ConditioningType.getIncludes>[0],
+					number
+			  >,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _ConditioningType.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _ConditioningType.getIncludes(depth),
+				select: _ConditioningType.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

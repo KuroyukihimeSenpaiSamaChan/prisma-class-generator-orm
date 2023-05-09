@@ -45,5 +45,12 @@ export abstract class PrismaModel {
 		_ConditioningType.prisma = PrismaModel.prismaClient.conditioningType
 		_SubOrder.prisma = PrismaModel.prismaClient.subOrder
 		_TVAType.prisma = PrismaModel.prismaClient.tVAType
+
+		await _Role.initList()
+		await _Expedition.initList()
+		await _ProductCategory.initList()
+		await _ProductState.initList()
+		await _ConditioningType.initList()
+		await _TVAType.initList()
 	}
 }

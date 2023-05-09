@@ -1,13 +1,15 @@
 export const GET_INCLUDES_TEMPLATE = `
 static getIncludes(
-  depth: number = 0,
-  filter?: {
+  param?: number | {
     #!{FILTER_TYPE}
-  }
+  },
 ): Prisma.#!{NAME}Include {
+  if(param === undefined){
+    param = 0
+  }
 
-  if(filter === undefined){
-    if(depth <= 0){
+  if (typeof param === "number") {
+    if (param <= 0) {
       return {
         #!{INCLUDE_FIELDS}
       }
@@ -15,15 +17,13 @@ static getIncludes(
     return {
       #!{INCLUDE_DEEP}
     }
-  }
-  else {
-    if(depth <= 0){
-      return {
-        #!{INCLUDE_FIELDS_FILTER}
-      }
+  } else {
+    if (Object.keys(param).length === 0) {
+      return {}
     }
+
     return {
-      #!{INCLUDE_DEEP_FILTER}
+      #!{INCLUDE_FILTER}
     }
   }
 }

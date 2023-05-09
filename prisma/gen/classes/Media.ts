@@ -5,7 +5,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Media extends PrismaClass {
+export class _Media implements PrismaClass {
 	static prisma: Prisma.MediaDelegate<undefined>
 	get prisma(): Prisma.MediaDelegate<undefined> {
 		return _Media.prisma
@@ -15,17 +15,35 @@ export class _Media extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			user?: boolean | Parameters<typeof _User.getIncludes>[1]
-			product_image?: boolean | Parameters<typeof _Product.getIncludes>[1]
-			product_gallery?:
-				| boolean
-				| Parameters<typeof _Product.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					user?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _User.getIncludes>[0],
+								number
+						  >
+					product_image?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+					product_gallery?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.MediaInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					user: true,
 					product_image: true,
@@ -33,56 +51,40 @@ export class _Media extends PrismaClass {
 				}
 			}
 			return {
-				user: { include: _User.getIncludes(depth - 1) },
-				product_image: { include: _Product.getIncludes(depth - 1) },
-				product_gallery: { include: _Product.getIncludes(depth - 1) },
+				user: { include: _User.getIncludes(param - 1) },
+				product_image: { include: _Product.getIncludes(param - 1) },
+				product_gallery: { include: _Product.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					user: Object.keys(filter).includes('user')
-						? true
-						: undefined,
-					product_image: Object.keys(filter).includes('product_image')
-						? true
-						: undefined,
-					product_gallery: Object.keys(filter).includes(
-						'product_gallery',
-					)
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				user: Object.keys(filter).includes('user')
-					? {
-							include: _User.getIncludes(
-								depth - 1,
-								typeof filter.user === 'boolean'
-									? undefined
-									: filter.user,
-							),
-					  }
+				user: Object.keys(param).includes('user')
+					? typeof param.user === 'boolean'
+						? true
+						: {
+								include: _User.getIncludes(param.user),
+						  }
 					: undefined,
-				product_image: Object.keys(filter).includes('product_image')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.product_image === 'boolean'
-									? undefined
-									: filter.product_image,
-							),
-					  }
+				product_image: Object.keys(param).includes('product_image')
+					? typeof param.product_image === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(
+									param.product_image,
+								),
+						  }
 					: undefined,
-				product_gallery: Object.keys(filter).includes('product_gallery')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.product_gallery === 'boolean'
-									? undefined
-									: filter.product_gallery,
-							),
-					  }
+				product_gallery: Object.keys(param).includes('product_gallery')
+					? typeof param.product_gallery === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(
+									param.product_gallery,
+								),
+						  }
 					: undefined,
 			}
 		}
@@ -97,30 +99,25 @@ export class _Media extends PrismaClass {
 		return this._id
 	}
 
-	url?: string
+	url: string
 
-	creation_date?: number
+	creation_date: number
 
-	modification_date?: number
+	modification_date: number
 
 	private _user_id: ForeignKey
 
-	description?: string = ''
+	description: string = ''
 
-	name?: string
+	name: string
 
-	private _user: _User | null
-	get user(): _User | ForeignKey {
-		return this._user ? this._user : this.user_id
+	private _user: _User
+	get user(): _User {
+		return this._user
 	}
-	set user(value: _User | ForeignKey) {
-		if (value instanceof _User) {
-			this._user = value
-			this._user_id = value.id
-		} else {
-			this._user = null
-			this._user_id = value
-		}
+	set user(value: _User) {
+		this._user = value
+		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
 		if (this._user === null) {
@@ -148,17 +145,16 @@ export class _Media extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		url?: string
-		creation_date?: number
-		modification_date?: number
-		user_id?: ForeignKey
+		url: string
+		creation_date: number
+		modification_date: number
+		user_id: ForeignKey
 		description?: string
-		name?: string
-		user?: _User | User | ForeignKey
+		name: string
+		user?: _User | User
 		product_image?: _Product[] | Product[] | RelationMany<_Product>
 		product_gallery?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -169,25 +165,21 @@ export class _Media extends PrismaClass {
 		this.url = obj.url
 		this.creation_date = obj.creation_date
 		this.modification_date = obj.modification_date
-		this.description = obj.description !== undefined ? obj.description : ''
+		this.description = obj.description ?? ''
 		this.name = obj.name
 
-		if (!obj.user) {
-			if (obj.user_id === undefined) {
-				this.user = null
+		if (obj.user !== undefined) {
+			if (obj.user instanceof _User) {
+				this.user = obj.user
 			} else {
-				this.user = obj.user_id
+				this.user = new _User(obj.user)
 			}
-		} else if (obj.user instanceof _User) {
-			this.user = obj.user
-		} else if (typeof obj.user === 'number') {
-			this.user = obj.user
-		} else {
-			this.user = new _User(obj.user)
-		}
+		} else if (obj.user_id !== undefined) {
+			this._user_id = obj.user_id
+		} else throw new Error('Invalid constructor.')
 
 		if (!obj.product_image || obj.product_image.length === 0) {
-			this.product_image = new RelationMany<_Product>([])
+			this.product_image = new RelationMany<_Product>()
 		} else if (obj.product_image instanceof RelationMany) {
 			this.product_image = obj.product_image
 		} else if (obj.product_image[0] instanceof _Product) {
@@ -203,7 +195,7 @@ export class _Media extends PrismaClass {
 		}
 
 		if (!obj.product_gallery || obj.product_gallery.length === 0) {
-			this.product_gallery = new RelationMany<_Product>([])
+			this.product_gallery = new RelationMany<_Product>()
 		} else if (obj.product_gallery instanceof RelationMany) {
 			this.product_gallery = obj.product_gallery
 		} else if (obj.product_gallery[0] instanceof _Product) {
@@ -222,11 +214,9 @@ export class _Media extends PrismaClass {
 	}
 
 	update(obj: {
-		id?: number
 		url?: string
 		creation_date?: number
 		modification_date?: number
-		user_id?: ForeignKey
 		description?: string
 		name?: string
 	}) {
@@ -308,15 +298,32 @@ export class _Media extends PrismaClass {
 		return new _Media(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _Media.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _Media.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _Media.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _Media.getIncludes(depth),
+				select: _Media.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

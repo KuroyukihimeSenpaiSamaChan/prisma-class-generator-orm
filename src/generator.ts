@@ -3,7 +3,7 @@ import { parseEnvValue } from '@prisma/internals'
 import * as path from 'path'
 import { GeneratorPathNotExists } from './error-handler'
 import { PrismaConvertor } from './convertor'
-import { parseBoolean, parseNumber } from './util'
+import { parseBoolean, parseNumber, arrayify } from './util'
 import * as prettier from 'prettier'
 import { FileComponent } from './components/file.component'
 import { PrismaModelComponent } from './components/prismamodel.component'
@@ -160,6 +160,8 @@ export class PrismaClassGenerator {
 					result[optionName] = parseBoolean(value)
 				} else if (typeof defaultValue === 'number') {
 					result[optionName] = parseNumber(value)
+				} else if (Array.isArray(defaultValue)) {
+					result[optionName] = value.split(',').map(v => v.trim())
 				} else {
 					result[optionName] = value
 				}

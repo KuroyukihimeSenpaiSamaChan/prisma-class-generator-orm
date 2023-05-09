@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ProductCategory extends PrismaClass {
+export class _ProductCategory implements PrismaClass {
 	static prisma: Prisma.ProductCategoryDelegate<undefined>
 	get prisma(): Prisma.ProductCategoryDelegate<undefined> {
 		return _ProductCategory.prisma
@@ -13,39 +13,60 @@ export class _ProductCategory extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	static async initList() {
+		if (this.enumList === null) {
+			return
+		}
+
+		const models = await this.prisma.findMany()
+		this.enumList = []
+		for (const model of models) {
+			this.enumList.push(new _ProductCategory(model))
+		}
+	}
+
+	private static enumList: _ProductCategory[]
+	static get list(): _ProductCategory[] {
+		return this.enumList
+	}
+
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					products?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.ProductCategoryInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					products: true,
 				}
 			}
 			return {
-				products: { include: _Product.getIncludes(depth - 1) },
+				products: { include: _Product.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					products: Object.keys(filter).includes('products')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				products: Object.keys(filter).includes('products')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.products === 'boolean'
-									? undefined
-									: filter.products,
-							),
-					  }
+				products: Object.keys(param).includes('products')
+					? typeof param.products === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(param.products),
+						  }
 					: undefined,
 			}
 		}
@@ -60,9 +81,9 @@ export class _ProductCategory extends PrismaClass {
 		return this._id
 	}
 
-	category_name?: string
+	category_name: string
 
-	category_slug?: string
+	category_slug: string
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -74,12 +95,11 @@ export class _ProductCategory extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		category_name?: string
-		category_slug?: string
+		category_name: string
+		category_slug: string
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -91,7 +111,7 @@ export class _ProductCategory extends PrismaClass {
 		this.category_slug = obj.category_slug
 
 		if (!obj.products || obj.products.length === 0) {
-			this.products = new RelationMany<_Product>([])
+			this.products = new RelationMany<_Product>()
 		} else if (obj.products instanceof RelationMany) {
 			this.products = obj.products
 		} else if (obj.products[0] instanceof _Product) {
@@ -107,11 +127,7 @@ export class _ProductCategory extends PrismaClass {
 		}
 	}
 
-	update(obj: {
-		id?: number
-		category_name?: string
-		category_slug?: string
-	}) {
+	update(obj: { category_name?: string; category_slug?: string }) {
 		if (obj.category_name !== undefined) {
 			this.category_name = obj.category_name
 		}
@@ -173,15 +189,38 @@ export class _ProductCategory extends PrismaClass {
 		return new _ProductCategory(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<
+			Parameters<typeof _ProductCategory.getIncludes>[0],
+			number
+		>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<
+					Parameters<typeof _ProductCategory.getIncludes>[0],
+					number
+			  >,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _ProductCategory.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _ProductCategory.getIncludes(depth),
+				select: _ProductCategory.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

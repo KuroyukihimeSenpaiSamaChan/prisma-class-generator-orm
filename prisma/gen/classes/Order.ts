@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Order extends PrismaClass {
+export class _Order implements PrismaClass {
 	static prisma: Prisma.OrderDelegate<undefined>
 	get prisma(): Prisma.OrderDelegate<undefined> {
 		return _Order.prisma
@@ -14,38 +14,44 @@ export class _Order extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					sub_orders?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _SubOrder.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.OrderInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					sub_orders: true,
 				}
 			}
 			return {
-				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+				sub_orders: { include: _SubOrder.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					sub_orders: Object.keys(filter).includes('sub_orders')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				sub_orders: Object.keys(filter).includes('sub_orders')
-					? {
-							include: _SubOrder.getIncludes(
-								depth - 1,
-								typeof filter.sub_orders === 'boolean'
-									? undefined
-									: filter.sub_orders,
-							),
-					  }
+				sub_orders: Object.keys(param).includes('sub_orders')
+					? typeof param.sub_orders === 'boolean'
+						? true
+						: {
+								include: _SubOrder.getIncludes(
+									param.sub_orders,
+								),
+						  }
 					: undefined,
 			}
 		}
@@ -60,25 +66,25 @@ export class _Order extends PrismaClass {
 		return this._id
 	}
 
-	order_client_id?: number
+	order_client_id: number
 
-	creation_date?: number
+	creation_date: number
 
-	modification_date?: number
+	modification_date: number
 
-	order_state?: number
+	order_state: number
 
-	type?: number
+	type: number
 
-	buyer_id?: number
+	buyer_id: number
 
-	buyer_billing_id?: number
+	buyer_billing_id: number
 
-	buyer_delivery_id?: number
+	buyer_delivery_id: number
 
-	expedition_id?: number
+	expedition_id: number
 
-	order_total?: number
+	order_total: number
 
 	private _sub_orders: RelationMany<_SubOrder>
 	public get sub_orders(): RelationMany<_SubOrder> {
@@ -90,20 +96,19 @@ export class _Order extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		order_client_id?: number
-		creation_date?: number
-		modification_date?: number
-		order_state?: number
-		type?: number
-		buyer_id?: number
-		buyer_billing_id?: number
-		buyer_delivery_id?: number
-		expedition_id?: number
-		order_total?: number
+		order_client_id: number
+		creation_date: number
+		modification_date: number
+		order_state: number
+		type: number
+		buyer_id: number
+		buyer_billing_id: number
+		buyer_delivery_id: number
+		expedition_id: number
+		order_total: number
 
 		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -123,7 +128,7 @@ export class _Order extends PrismaClass {
 		this.order_total = obj.order_total
 
 		if (!obj.sub_orders || obj.sub_orders.length === 0) {
-			this.sub_orders = new RelationMany<_SubOrder>([])
+			this.sub_orders = new RelationMany<_SubOrder>()
 		} else if (obj.sub_orders instanceof RelationMany) {
 			this.sub_orders = obj.sub_orders
 		} else if (obj.sub_orders[0] instanceof _SubOrder) {
@@ -140,7 +145,6 @@ export class _Order extends PrismaClass {
 	}
 
 	update(obj: {
-		id?: number
 		order_client_id?: number
 		creation_date?: number
 		modification_date?: number
@@ -251,15 +255,32 @@ export class _Order extends PrismaClass {
 		return new _Order(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _Order.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _Order.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _Order.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _Order.getIncludes(depth),
+				select: _Order.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

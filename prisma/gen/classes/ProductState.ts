@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ProductState extends PrismaClass {
+export class _ProductState implements PrismaClass {
 	static prisma: Prisma.ProductStateDelegate<undefined>
 	get prisma(): Prisma.ProductStateDelegate<undefined> {
 		return _ProductState.prisma
@@ -13,39 +13,60 @@ export class _ProductState extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	static async initList() {
+		if (this.enumList === null) {
+			return
+		}
+
+		const models = await this.prisma.findMany()
+		this.enumList = []
+		for (const model of models) {
+			this.enumList.push(new _ProductState(model))
+		}
+	}
+
+	private static enumList: _ProductState[]
+	static get list(): _ProductState[] {
+		return this.enumList
+	}
+
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					products?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.ProductStateInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					products: true,
 				}
 			}
 			return {
-				products: { include: _Product.getIncludes(depth - 1) },
+				products: { include: _Product.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					products: Object.keys(filter).includes('products')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				products: Object.keys(filter).includes('products')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.products === 'boolean'
-									? undefined
-									: filter.products,
-							),
-					  }
+				products: Object.keys(param).includes('products')
+					? typeof param.products === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(param.products),
+						  }
 					: undefined,
 			}
 		}
@@ -60,7 +81,7 @@ export class _ProductState extends PrismaClass {
 		return this._id
 	}
 
-	state?: string
+	state: string
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -72,11 +93,10 @@ export class _ProductState extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		state?: string
+		state: string
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -87,7 +107,7 @@ export class _ProductState extends PrismaClass {
 		this.state = obj.state
 
 		if (!obj.products || obj.products.length === 0) {
-			this.products = new RelationMany<_Product>([])
+			this.products = new RelationMany<_Product>()
 		} else if (obj.products instanceof RelationMany) {
 			this.products = obj.products
 		} else if (obj.products[0] instanceof _Product) {
@@ -103,7 +123,7 @@ export class _ProductState extends PrismaClass {
 		}
 	}
 
-	update(obj: { id?: number; state?: string }) {
+	update(obj: { state?: string }) {
 		if (obj.state !== undefined) {
 			this.state = obj.state
 		}
@@ -153,15 +173,35 @@ export class _ProductState extends PrismaClass {
 		return new _ProductState(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<
+			Parameters<typeof _ProductState.getIncludes>[0],
+			number
+		>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _ProductState.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _ProductState.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _ProductState.getIncludes(depth),
+				select: _ProductState.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

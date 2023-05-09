@@ -42,6 +42,9 @@ class PrismaConvertor {
                 className += postfix;
             }
             const classComponent = new class_component_1.ClassComponent({ name: className });
+            if (this._config.enums.includes(className)) {
+                classComponent.isEnum = true;
+            }
             const relationTypes = (0, util_1.uniquify)(model.fields
                 .filter((field) => field.relationName && model.name !== field.type)
                 .map((v) => v.type));

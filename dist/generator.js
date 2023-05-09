@@ -101,6 +101,9 @@ class PrismaClassGenerator {
                     else if (typeof defaultValue === 'number') {
                         result[optionName] = (0, util_1.parseNumber)(value);
                     }
+                    else if (Array.isArray(defaultValue)) {
+                        result[optionName] = value.split(',').map(v => v.trim());
+                    }
                     else {
                         result[optionName] = value;
                     }

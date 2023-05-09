@@ -2,13 +2,10 @@ import { PrismaClass } from './prisma-class'
 import { PrismaModel } from './prisma-model'
 
 export class RelationMany<R extends PrismaClass>
-	extends PrismaClass
-	implements Iterable<R>
+	implements PrismaClass, Iterable<R>
 {
-	private _toRemoveRelations: R[]
-	constructor(private relations: R[]) {
-		super()
-	}
+	private _toRemoveRelations: R[] = []
+	constructor(private relations: R[] = []) {}
 
 	[Symbol.iterator](): RelationIterator<R> {
 		return new RelationIterator<R>(this.relations)
@@ -19,6 +16,10 @@ export class RelationMany<R extends PrismaClass>
 	}
 
 	get(index: number): R {
+		if (index < 0 || index >= this.relations.length) {
+			throw new RangeError('Index out of range')
+		}
+
 		return this.relations[index]
 	}
 
@@ -30,6 +31,13 @@ export class RelationMany<R extends PrismaClass>
 		} else {
 			this.relations.push(value)
 		}
+	}
+
+	reduce<Accumulator>(
+		callback: (acc: Accumulator, elem: R) => Accumulator,
+		accumulator: Accumulator,
+	): Accumulator {
+		return this.relations.reduce(callback, accumulator)
 	}
 
 	remove(index: number): R | null {

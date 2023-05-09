@@ -6,9 +6,12 @@ import { ALL_TEMPLATE, FROM_TEMPLATE } from '../templates/all.template'
 import { GET_INCLUDES_TEMPLATE } from '../templates/includes.template'
 import { isRelationMany } from '../convertor'
 import { DELETE_TEMPLATE, LOAD_TEMPLATE, SAVE_TEMPLATE } from '../templates/load-save.template'
+import { ENUM_TEMPLATE } from '../templates/enum.template'
 
 export class ClassComponent extends BaseComponent implements Echoable {
 	name: string
+
+	isEnum: boolean = false
 
 	fields?: FieldComponent[]
 	relationTypes?: string[]
@@ -22,6 +25,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 		{
 			let parameters = {
 				normal: '',
+				update: '',
 				toOne: '',
 				toMany: '',
 			}
@@ -36,6 +40,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			for (const _field of this.fields) {
 				toJSONRelations += `${_field.name}: this.${_field.name},`
 				// If field is normal
+				let fieldName = `${_field.name}${_field.default !== undefined ? '?' : ''}`
 				if (_field.relation === undefined) {
 					toJSON += `${_field.name}: this.${_field.name}!,`
 					if (_field.isId) {
@@ -48,40 +53,38 @@ export class ClassComponent extends BaseComponent implements Echoable {
 						` + initialiazers.normal
 					}
 					else if (!_field.privateFromRelation) {
+						parameters.update += `${_field.name}?: ${_field.type},`
 						let opt = { parameter: '', initializer: '' }
 						if (_field.nullable) {
 							opt.parameter = ' | null'
-							opt.initializer = ` !== null ? obj.${_field.name} : undefined`
-						} else if (_field.default) {
-							opt.initializer = ` !== undefined ? obj.${_field.name} : ${_field.default}`
 						}
-						parameters.normal += `${_field.name}?: ${_field.type} ${opt.parameter},`
-						initialiazers.normal += `this.${_field.name} =  obj.${_field.name} ${opt.initializer};`
+						if (_field.default) {
+							opt.initializer = ` ??  ${_field.default}`
+						}
+						parameters.normal += `${fieldName}: ${_field.type} ${opt.parameter},`
+						initialiazers.normal += `this.${_field.name} = obj.${_field.name} ${opt.initializer};`
 						initialiazers.update += `if(obj.${_field.name} !== undefined){
 							this.${_field.name} = obj.${_field.name}
 						}
 						`
-					} else {
-						parameters.normal += `${_field.name}?: ForeignKey,`
+					}
+					else {
+						parameters.normal += `${fieldName}: ForeignKey,`
 					}
 				}
 				// If it is a relation toOne
 				else if (!isRelationMany(_field.relation) && _field.relation.hasOne === _field) {
-					parameters.toOne += `${_field.name}?: _${_field.type} | ${_field.type} | ForeignKey,`
+					parameters.toOne += `${_field.name}?: _${_field.type} | ${_field.type},`
 					initialiazers.toOne += `
-					if(!obj.${_field.name}){
-						if (obj.${_field.relation.fromField} === undefined){
-							this.${_field.name} = null
-						}else{
-							this.${_field.name} = obj.${_field.relation.fromField}
+					if (obj.${_field.name} !== undefined) {
+						if (obj.${_field.name} instanceof _${_field.type}) {
+							this.${_field.name} = obj.${_field.name}
+						} else {
+							this.${_field.name} = new _${_field.type}(obj.${_field.name})
 						}
-					} else if(obj.${_field.name} instanceof _${_field.type}) {
-						this.${_field.name} = obj.${_field.name}
-					} else if (typeof obj.${_field.name} === 'number') {
-						this.${_field.name} = obj.${_field.name}
-					} else {
-						this.${_field.name} = new _${_field.type}(obj.${_field.name})
-					}
+					} else if (obj.${_field.relation.fromField} !== undefined) {
+						this._${_field.relation.fromField} = obj.${_field.relation.fromField}
+					} else throw new Error("Invalid constructor.")
 					`
 				}
 				// If it is a relation toMany
@@ -91,7 +94,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					`
 					initialiazers.toMany += `
 					if (!obj.${_field.name} || obj.${_field.name}.length === 0) {
-						this.${_field.name} = new RelationMany<_${typeSingle}>([])
+						this.${_field.name} = new RelationMany<_${typeSingle}>()
 					} else if (obj.${_field.name} instanceof RelationMany) {
 						this.${_field.name} = obj.${_field.name}
 					} else if (obj.${_field.name}[0] instanceof _${typeSingle}) {
@@ -112,7 +115,6 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				${parameters.toOne}
 				${parameters.toMany}
 			}){
-				super()
 				this.init(obj)
 			}
 
@@ -123,7 +125,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			}
 
 			update(obj: {
-				${parameters.normal}
+				${parameters.update}
 			}){
 				${initialiazers.update}
 			}
@@ -247,20 +249,21 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			let includeFields = ''
 			let includeDeep = ''
 			let filterType = ''
-			let includeFieldsFilter = ''
 			let includeDeepFilter = ''
 			for (const _field of relationFields) {
 				includeFields += `${_field.name}: true,`
-				includeFieldsFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? true : undefined,`
 				let relationName = _field.type
 				if (relationName.includes('[]')) {
 					relationName = relationName.substring(0, relationName.length - 2)
 				}
-				filterType += `${_field.name}?: boolean | Parameters<typeof _${relationName}.getIncludes>[1],`
-				includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(depth - 1)},`
-				includeDeepFilter += `${_field.name}: Object.keys(filter).includes("${_field.name}") ? {
-					include: _${relationName}.getIncludes(depth - 1, typeof filter.${_field.name} === "boolean" ? undefined : filter.${_field.name})
-				} : undefined,`
+				filterType += `${_field.name}?: boolean | Exclude<Parameters<typeof _${relationName}.getIncludes>[0], number>,`
+				includeDeep += `${_field.name}: {include: _${relationName}.getIncludes(param - 1)},`
+				includeDeepFilter += `${_field.name}: Object.keys(param).includes('${_field.name}')
+				? (typeof param.${_field.name} === 'boolean'
+					? true : {
+						include: _${relationName}.getIncludes(param.${_field.name}),
+					}
+				) : undefined,`
 
 				importTypes.add(relationName)
 			}
@@ -270,9 +273,14 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					includeFields
 				).replaceAll('#!{INCLUDE_DEEP}', includeDeep)
 					.replaceAll('#!{FILTER_TYPE}', filterType)
-					.replaceAll('#!{INCLUDE_FIELDS_FILTER}', includeFieldsFilter)
-					.replaceAll('#!{INCLUDE_DEEP_FILTER}', includeDeepFilter)
+					.replaceAll('#!{INCLUDE_FILTER}', includeDeepFilter)
 
+		}
+
+		// Generate the list for enum type
+		let enumList = ''
+		if (this.isEnum) {
+			enumList = ENUM_TEMPLATE
 		}
 
 		const fieldContent = this.fields.map((_field) => _field.echo())
@@ -290,6 +298,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			.replaceAll('#!{SAVE}', saveMethod)
 			.replaceAll('#!{DELETE}', deleteMethod)
 			.replaceAll('#!{GET_INCLUDES}', getIncludes)
+			.replaceAll('#!{ENUM_LIST}', `${enumList}`)
 			.replaceAll('#!{NAME}', `${this.name}`)
 			.replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
 			.replaceAll('#!{EXTRA}', this.extra)

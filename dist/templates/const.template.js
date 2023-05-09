@@ -7,13 +7,10 @@ exports.CONST_TEMPLATES = {
   import { PrismaModel } from './prisma-model'
 
   export class RelationMany<R extends PrismaClass>
-    extends PrismaClass
-    implements Iterable<R>
+	implements PrismaClass, Iterable<R>
   {
-    private _toRemoveRelations: R[]
-    constructor(private relations: R[]) {
-      super()
-    }
+    private _toRemoveRelations: R[] = []
+    constructor(private relations: R[] = []) { }
 
     [Symbol.iterator](): RelationIterator<R> {
       return new RelationIterator<R>(this.relations)
@@ -24,6 +21,10 @@ exports.CONST_TEMPLATES = {
     }
 
     get(index: number): R {
+      if (index < 0 || index >= this.relations.length) {
+        throw new RangeError("Index out of range")
+      }
+
       return this.relations[index]
     }
 
@@ -35,6 +36,13 @@ exports.CONST_TEMPLATES = {
       } else {
         this.relations.push(value)
       }
+    }
+
+    reduce<Accumulator>(
+      callback: (acc: Accumulator, elem: R) => Accumulator,
+      accumulator: Accumulator
+    ): Accumulator {
+      return this.relations.reduce(callback, accumulator)
     }
 
     remove(index: number): R | null {
@@ -138,14 +146,17 @@ exports.CONST_TEMPLATES = {
   `,
     PRISMA_CLASS: `import { PrismaModel } from "./prisma-model"
 
-  export abstract class PrismaClass {
-    // protected static saveToTransaction = Symbol("saveToTransaction")
-    abstract load(depth: number): Promise<void>
-    abstract save(): Promise<boolean>
-    abstract saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]): AsyncGenerator<number, number, unknown>
+  export interface PrismaClass {
+    load(
+      param?:
+        | number
+        | any,
+    ): Promise<void>
+    save(): Promise<boolean>
+    saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]): AsyncGenerator<number, number, unknown>
   }
   
-  export type ForeignKey = number | -1 | null
+  export type ForeignKey = number | -1 
   `,
 };
 //# sourceMappingURL=const.template.js.map

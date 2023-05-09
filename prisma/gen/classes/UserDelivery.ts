@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _UserDelivery extends PrismaClass {
+export class _UserDelivery implements PrismaClass {
 	static prisma: Prisma.UserDeliveryDelegate<undefined>
 	get prisma(): Prisma.UserDeliveryDelegate<undefined> {
 		return _UserDelivery.prisma
@@ -14,38 +14,42 @@ export class _UserDelivery extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			user?: boolean | Parameters<typeof _User.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					user?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _User.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.UserDeliveryInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					user: true,
 				}
 			}
 			return {
-				user: { include: _User.getIncludes(depth - 1) },
+				user: { include: _User.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					user: Object.keys(filter).includes('user')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				user: Object.keys(filter).includes('user')
-					? {
-							include: _User.getIncludes(
-								depth - 1,
-								typeof filter.user === 'boolean'
-									? undefined
-									: filter.user,
-							),
-					  }
+				user: Object.keys(param).includes('user')
+					? typeof param.user === 'boolean'
+						? true
+						: {
+								include: _User.getIncludes(param.user),
+						  }
 					: undefined,
 			}
 		}
@@ -62,34 +66,29 @@ export class _UserDelivery extends PrismaClass {
 
 	private _user_id: ForeignKey
 
-	address?: string
+	address: string
 
-	additional_address?: string | null
+	additional_address: string | null
 
-	zipcode?: string
+	zipcode: string
 
-	city?: string
+	city: string
 
-	country?: string
+	country: string
 
-	region?: string
+	region: string
 
-	phone_number?: string
+	phone_number: string
 
-	company_name?: string | null
+	company_name: string | null
 
-	private _user: _User | null
-	get user(): _User | ForeignKey {
-		return this._user ? this._user : this.user_id
+	private _user: _User
+	get user(): _User {
+		return this._user
 	}
-	set user(value: _User | ForeignKey) {
-		if (value instanceof _User) {
-			this._user = value
-			this._user_id = value.id
-		} else {
-			this._user = null
-			this._user_id = value
-		}
+	set user(value: _User) {
+		this._user = value
+		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
 		if (this._user === null) {
@@ -101,18 +100,17 @@ export class _UserDelivery extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		user_id?: ForeignKey
-		address?: string
-		additional_address?: string | null
-		zipcode?: string
-		city?: string
-		country?: string
-		region?: string
-		phone_number?: string
-		company_name?: string | null
-		user?: _User | User | ForeignKey
+		user_id: ForeignKey
+		address: string
+		additional_address: string | null
+		zipcode: string
+		city: string
+		country: string
+		region: string
+		phone_number: string
+		company_name: string | null
+		user?: _User | User
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -121,42 +119,34 @@ export class _UserDelivery extends PrismaClass {
 			this._id = obj.id
 		}
 		this.address = obj.address
-		this.additional_address =
-			obj.additional_address !== null ? obj.additional_address : undefined
+		this.additional_address = obj.additional_address
 		this.zipcode = obj.zipcode
 		this.city = obj.city
 		this.country = obj.country
 		this.region = obj.region
 		this.phone_number = obj.phone_number
-		this.company_name =
-			obj.company_name !== null ? obj.company_name : undefined
+		this.company_name = obj.company_name
 
-		if (!obj.user) {
-			if (obj.user_id === undefined) {
-				this.user = null
+		if (obj.user !== undefined) {
+			if (obj.user instanceof _User) {
+				this.user = obj.user
 			} else {
-				this.user = obj.user_id
+				this.user = new _User(obj.user)
 			}
-		} else if (obj.user instanceof _User) {
-			this.user = obj.user
-		} else if (typeof obj.user === 'number') {
-			this.user = obj.user
-		} else {
-			this.user = new _User(obj.user)
-		}
+		} else if (obj.user_id !== undefined) {
+			this._user_id = obj.user_id
+		} else throw new Error('Invalid constructor.')
 	}
 
 	update(obj: {
-		id?: number
-		user_id?: ForeignKey
 		address?: string
-		additional_address?: string | null
+		additional_address?: string
 		zipcode?: string
 		city?: string
 		country?: string
 		region?: string
 		phone_number?: string
-		company_name?: string | null
+		company_name?: string
 	}) {
 		if (obj.address !== undefined) {
 			this.address = obj.address
@@ -251,15 +241,35 @@ export class _UserDelivery extends PrismaClass {
 		return new _UserDelivery(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<
+			Parameters<typeof _UserDelivery.getIncludes>[0],
+			number
+		>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _UserDelivery.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _UserDelivery.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _UserDelivery.getIncludes(depth),
+				select: _UserDelivery.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

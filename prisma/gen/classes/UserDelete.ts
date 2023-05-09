@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _UserDelete extends PrismaClass {
+export class _UserDelete implements PrismaClass {
 	static prisma: Prisma.UserDeleteDelegate<undefined>
 	get prisma(): Prisma.UserDeleteDelegate<undefined> {
 		return _UserDelete.prisma
@@ -14,38 +14,42 @@ export class _UserDelete extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			user?: boolean | Parameters<typeof _User.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					user?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _User.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.UserDeleteInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					user: true,
 				}
 			}
 			return {
-				user: { include: _User.getIncludes(depth - 1) },
+				user: { include: _User.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					user: Object.keys(filter).includes('user')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				user: Object.keys(filter).includes('user')
-					? {
-							include: _User.getIncludes(
-								depth - 1,
-								typeof filter.user === 'boolean'
-									? undefined
-									: filter.user,
-							),
-					  }
+				user: Object.keys(param).includes('user')
+					? typeof param.user === 'boolean'
+						? true
+						: {
+								include: _User.getIncludes(param.user),
+						  }
 					: undefined,
 			}
 		}
@@ -62,24 +66,19 @@ export class _UserDelete extends PrismaClass {
 
 	private _user_id: ForeignKey
 
-	token?: string
+	token: string
 
-	date?: number
+	date: number
 
-	validated?: boolean = false
+	validated: boolean = false
 
-	private _user: _User | null
-	get user(): _User | ForeignKey {
-		return this._user ? this._user : this.user_id
+	private _user: _User
+	get user(): _User {
+		return this._user
 	}
-	set user(value: _User | ForeignKey) {
-		if (value instanceof _User) {
-			this._user = value
-			this._user_id = value.id
-		} else {
-			this._user = null
-			this._user_id = value
-		}
+	set user(value: _User) {
+		this._user = value
+		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
 		if (this._user === null) {
@@ -91,13 +90,12 @@ export class _UserDelete extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		user_id?: ForeignKey
-		token?: string
-		date?: number
+		user_id: ForeignKey
+		token: string
+		date: number
 		validated?: boolean
-		user?: _User | User | ForeignKey
+		user?: _User | User
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -107,30 +105,20 @@ export class _UserDelete extends PrismaClass {
 		}
 		this.token = obj.token
 		this.date = obj.date
-		this.validated = obj.validated !== undefined ? obj.validated : false
+		this.validated = obj.validated ?? false
 
-		if (!obj.user) {
-			if (obj.user_id === undefined) {
-				this.user = null
+		if (obj.user !== undefined) {
+			if (obj.user instanceof _User) {
+				this.user = obj.user
 			} else {
-				this.user = obj.user_id
+				this.user = new _User(obj.user)
 			}
-		} else if (obj.user instanceof _User) {
-			this.user = obj.user
-		} else if (typeof obj.user === 'number') {
-			this.user = obj.user
-		} else {
-			this.user = new _User(obj.user)
-		}
+		} else if (obj.user_id !== undefined) {
+			this._user_id = obj.user_id
+		} else throw new Error('Invalid constructor.')
 	}
 
-	update(obj: {
-		id?: number
-		user_id?: ForeignKey
-		token?: string
-		date?: number
-		validated?: boolean
-	}) {
+	update(obj: { token?: string; date?: number; validated?: boolean }) {
 		if (obj.token !== undefined) {
 			this.token = obj.token
 		}
@@ -199,15 +187,32 @@ export class _UserDelete extends PrismaClass {
 		return new _UserDelete(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _UserDelete.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _UserDelete.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _UserDelete.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _UserDelete.getIncludes(depth),
+				select: _UserDelete.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

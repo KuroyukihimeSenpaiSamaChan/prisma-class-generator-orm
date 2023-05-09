@@ -21,7 +21,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Product extends PrismaClass {
+export class _Product implements PrismaClass {
 	static prisma: Prisma.ProductDelegate<undefined>
 	get prisma(): Prisma.ProductDelegate<undefined> {
 		return _Product.prisma
@@ -31,29 +31,77 @@ export class _Product extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			media?: boolean | Parameters<typeof _Media.getIncludes>[1]
-			tva_type?: boolean | Parameters<typeof _TVAType.getIncludes>[1]
-			user?: boolean | Parameters<typeof _User.getIncludes>[1]
-			productState?:
-				| boolean
-				| Parameters<typeof _ProductState.getIncludes>[1]
-			productVisibilty?:
-				| boolean
-				| Parameters<typeof _ProductVisibilty.getIncludes>[1]
-			productConditioning?:
-				| boolean
-				| Parameters<typeof _ConditioningType.getIncludes>[1]
-			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
-			product_categories?:
-				| boolean
-				| Parameters<typeof _ProductCategory.getIncludes>[1]
-			gallery?: boolean | Parameters<typeof _Media.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					media?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Media.getIncludes>[0],
+								number
+						  >
+					tva_type?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _TVAType.getIncludes>[0],
+								number
+						  >
+					user?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _User.getIncludes>[0],
+								number
+						  >
+					productState?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _ProductState.getIncludes>[0],
+								number
+						  >
+					productVisibilty?:
+						| boolean
+						| Exclude<
+								Parameters<
+									typeof _ProductVisibilty.getIncludes
+								>[0],
+								number
+						  >
+					productConditioning?:
+						| boolean
+						| Exclude<
+								Parameters<
+									typeof _ConditioningType.getIncludes
+								>[0],
+								number
+						  >
+					sub_orders?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _SubOrder.getIncludes>[0],
+								number
+						  >
+					product_categories?:
+						| boolean
+						| Exclude<
+								Parameters<
+									typeof _ProductCategory.getIncludes
+								>[0],
+								number
+						  >
+					gallery?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Media.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.ProductInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					media: true,
 					tva_type: true,
@@ -67,156 +115,106 @@ export class _Product extends PrismaClass {
 				}
 			}
 			return {
-				media: { include: _Media.getIncludes(depth - 1) },
-				tva_type: { include: _TVAType.getIncludes(depth - 1) },
-				user: { include: _User.getIncludes(depth - 1) },
-				productState: { include: _ProductState.getIncludes(depth - 1) },
+				media: { include: _Media.getIncludes(param - 1) },
+				tva_type: { include: _TVAType.getIncludes(param - 1) },
+				user: { include: _User.getIncludes(param - 1) },
+				productState: { include: _ProductState.getIncludes(param - 1) },
 				productVisibilty: {
-					include: _ProductVisibilty.getIncludes(depth - 1),
+					include: _ProductVisibilty.getIncludes(param - 1),
 				},
 				productConditioning: {
-					include: _ConditioningType.getIncludes(depth - 1),
+					include: _ConditioningType.getIncludes(param - 1),
 				},
-				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+				sub_orders: { include: _SubOrder.getIncludes(param - 1) },
 				product_categories: {
-					include: _ProductCategory.getIncludes(depth - 1),
+					include: _ProductCategory.getIncludes(param - 1),
 				},
-				gallery: { include: _Media.getIncludes(depth - 1) },
+				gallery: { include: _Media.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					media: Object.keys(filter).includes('media')
-						? true
-						: undefined,
-					tva_type: Object.keys(filter).includes('tva_type')
-						? true
-						: undefined,
-					user: Object.keys(filter).includes('user')
-						? true
-						: undefined,
-					productState: Object.keys(filter).includes('productState')
-						? true
-						: undefined,
-					productVisibilty: Object.keys(filter).includes(
-						'productVisibilty',
-					)
-						? true
-						: undefined,
-					productConditioning: Object.keys(filter).includes(
-						'productConditioning',
-					)
-						? true
-						: undefined,
-					sub_orders: Object.keys(filter).includes('sub_orders')
-						? true
-						: undefined,
-					product_categories: Object.keys(filter).includes(
-						'product_categories',
-					)
-						? true
-						: undefined,
-					gallery: Object.keys(filter).includes('gallery')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				media: Object.keys(filter).includes('media')
-					? {
-							include: _Media.getIncludes(
-								depth - 1,
-								typeof filter.media === 'boolean'
-									? undefined
-									: filter.media,
-							),
-					  }
+				media: Object.keys(param).includes('media')
+					? typeof param.media === 'boolean'
+						? true
+						: {
+								include: _Media.getIncludes(param.media),
+						  }
 					: undefined,
-				tva_type: Object.keys(filter).includes('tva_type')
-					? {
-							include: _TVAType.getIncludes(
-								depth - 1,
-								typeof filter.tva_type === 'boolean'
-									? undefined
-									: filter.tva_type,
-							),
-					  }
+				tva_type: Object.keys(param).includes('tva_type')
+					? typeof param.tva_type === 'boolean'
+						? true
+						: {
+								include: _TVAType.getIncludes(param.tva_type),
+						  }
 					: undefined,
-				user: Object.keys(filter).includes('user')
-					? {
-							include: _User.getIncludes(
-								depth - 1,
-								typeof filter.user === 'boolean'
-									? undefined
-									: filter.user,
-							),
-					  }
+				user: Object.keys(param).includes('user')
+					? typeof param.user === 'boolean'
+						? true
+						: {
+								include: _User.getIncludes(param.user),
+						  }
 					: undefined,
-				productState: Object.keys(filter).includes('productState')
-					? {
-							include: _ProductState.getIncludes(
-								depth - 1,
-								typeof filter.productState === 'boolean'
-									? undefined
-									: filter.productState,
-							),
-					  }
+				productState: Object.keys(param).includes('productState')
+					? typeof param.productState === 'boolean'
+						? true
+						: {
+								include: _ProductState.getIncludes(
+									param.productState,
+								),
+						  }
 					: undefined,
-				productVisibilty: Object.keys(filter).includes(
+				productVisibilty: Object.keys(param).includes(
 					'productVisibilty',
 				)
-					? {
-							include: _ProductVisibilty.getIncludes(
-								depth - 1,
-								typeof filter.productVisibilty === 'boolean'
-									? undefined
-									: filter.productVisibilty,
-							),
-					  }
+					? typeof param.productVisibilty === 'boolean'
+						? true
+						: {
+								include: _ProductVisibilty.getIncludes(
+									param.productVisibilty,
+								),
+						  }
 					: undefined,
-				productConditioning: Object.keys(filter).includes(
+				productConditioning: Object.keys(param).includes(
 					'productConditioning',
 				)
-					? {
-							include: _ConditioningType.getIncludes(
-								depth - 1,
-								typeof filter.productConditioning === 'boolean'
-									? undefined
-									: filter.productConditioning,
-							),
-					  }
+					? typeof param.productConditioning === 'boolean'
+						? true
+						: {
+								include: _ConditioningType.getIncludes(
+									param.productConditioning,
+								),
+						  }
 					: undefined,
-				sub_orders: Object.keys(filter).includes('sub_orders')
-					? {
-							include: _SubOrder.getIncludes(
-								depth - 1,
-								typeof filter.sub_orders === 'boolean'
-									? undefined
-									: filter.sub_orders,
-							),
-					  }
+				sub_orders: Object.keys(param).includes('sub_orders')
+					? typeof param.sub_orders === 'boolean'
+						? true
+						: {
+								include: _SubOrder.getIncludes(
+									param.sub_orders,
+								),
+						  }
 					: undefined,
-				product_categories: Object.keys(filter).includes(
+				product_categories: Object.keys(param).includes(
 					'product_categories',
 				)
-					? {
-							include: _ProductCategory.getIncludes(
-								depth - 1,
-								typeof filter.product_categories === 'boolean'
-									? undefined
-									: filter.product_categories,
-							),
-					  }
+					? typeof param.product_categories === 'boolean'
+						? true
+						: {
+								include: _ProductCategory.getIncludes(
+									param.product_categories,
+								),
+						  }
 					: undefined,
-				gallery: Object.keys(filter).includes('gallery')
-					? {
-							include: _Media.getIncludes(
-								depth - 1,
-								typeof filter.gallery === 'boolean'
-									? undefined
-									: filter.gallery,
-							),
-					  }
+				gallery: Object.keys(param).includes('gallery')
+					? typeof param.gallery === 'boolean'
+						? true
+						: {
+								include: _Media.getIncludes(param.gallery),
+						  }
 					: undefined,
 			}
 		}
@@ -237,52 +235,47 @@ export class _Product extends PrismaClass {
 
 	private _tva: ForeignKey
 
-	product_name?: string
+	product_name: string
 
-	vendor_sku?: string
+	vendor_sku: string
 
-	product_sku?: string
+	product_sku: string
 
-	price?: number
+	price: number
 
-	price_promo?: number
+	price_promo: number
 
-	description?: string
+	description: string
 
-	additional_description?: string | null
+	additional_description: string | null
 
-	backorder?: boolean
+	backorder: boolean
 
-	linked_products?: string
+	linked_products: string
 
 	private _product_image: ForeignKey
 
-	product_keywords?: string
+	product_keywords: string
 
-	creation_date?: number
+	creation_date: number
 
-	modification_date?: number
+	modification_date: number
 
-	has_tva?: boolean
+	has_tva: boolean
 
 	private _visibility: ForeignKey = 1
 
 	private _conditioningType: ForeignKey
 
-	conditioningValue?: string
+	conditioningValue: string
 
-	private _media: _Media | null
-	get media(): _Media | ForeignKey {
-		return this._media ? this._media : this.product_image
+	private _media: _Media
+	get media(): _Media {
+		return this._media
 	}
-	set media(value: _Media | ForeignKey) {
-		if (value instanceof _Media) {
-			this._media = value
-			this._product_image = value.id
-		} else {
-			this._media = null
-			this._product_image = value
-		}
+	set media(value: _Media) {
+		this._media = value
+		this._product_image = value.id
 	}
 	get product_image(): ForeignKey {
 		if (this._media === null) {
@@ -292,18 +285,13 @@ export class _Product extends PrismaClass {
 		}
 	}
 
-	private _tva_type: _TVAType | null
-	get tva_type(): _TVAType | ForeignKey {
-		return this._tva_type ? this._tva_type : this.tva
+	private _tva_type: _TVAType
+	get tva_type(): _TVAType {
+		return this._tva_type
 	}
-	set tva_type(value: _TVAType | ForeignKey) {
-		if (value instanceof _TVAType) {
-			this._tva_type = value
-			this._tva = value.id
-		} else {
-			this._tva_type = null
-			this._tva = value
-		}
+	set tva_type(value: _TVAType) {
+		this._tva_type = value
+		this._tva = value.id
 	}
 	get tva(): ForeignKey {
 		if (this._tva_type === null) {
@@ -313,18 +301,13 @@ export class _Product extends PrismaClass {
 		}
 	}
 
-	private _user: _User | null
-	get user(): _User | ForeignKey {
-		return this._user ? this._user : this.vendor_id
+	private _user: _User
+	get user(): _User {
+		return this._user
 	}
-	set user(value: _User | ForeignKey) {
-		if (value instanceof _User) {
-			this._user = value
-			this._vendor_id = value.id
-		} else {
-			this._user = null
-			this._vendor_id = value
-		}
+	set user(value: _User) {
+		this._user = value
+		this._vendor_id = value.id
 	}
 	get vendor_id(): ForeignKey {
 		if (this._user === null) {
@@ -334,18 +317,13 @@ export class _Product extends PrismaClass {
 		}
 	}
 
-	private _productState: _ProductState | null
-	get productState(): _ProductState | ForeignKey {
-		return this._productState ? this._productState : this.state
+	private _productState: _ProductState
+	get productState(): _ProductState {
+		return this._productState
 	}
-	set productState(value: _ProductState | ForeignKey) {
-		if (value instanceof _ProductState) {
-			this._productState = value
-			this._state = value.id
-		} else {
-			this._productState = null
-			this._state = value
-		}
+	set productState(value: _ProductState) {
+		this._productState = value
+		this._state = value.id
 	}
 	get state(): ForeignKey {
 		if (this._productState === null) {
@@ -355,18 +333,13 @@ export class _Product extends PrismaClass {
 		}
 	}
 
-	private _productVisibilty: _ProductVisibilty | null
-	get productVisibilty(): _ProductVisibilty | ForeignKey {
-		return this._productVisibilty ? this._productVisibilty : this.visibility
+	private _productVisibilty: _ProductVisibilty
+	get productVisibilty(): _ProductVisibilty {
+		return this._productVisibilty
 	}
-	set productVisibilty(value: _ProductVisibilty | ForeignKey) {
-		if (value instanceof _ProductVisibilty) {
-			this._productVisibilty = value
-			this._visibility = value.id
-		} else {
-			this._productVisibilty = null
-			this._visibility = value
-		}
+	set productVisibilty(value: _ProductVisibilty) {
+		this._productVisibilty = value
+		this._visibility = value.id
 	}
 	get visibility(): ForeignKey {
 		if (this._productVisibilty === null) {
@@ -376,20 +349,13 @@ export class _Product extends PrismaClass {
 		}
 	}
 
-	private _productConditioning: _ConditioningType | null
-	get productConditioning(): _ConditioningType | ForeignKey {
+	private _productConditioning: _ConditioningType
+	get productConditioning(): _ConditioningType {
 		return this._productConditioning
-			? this._productConditioning
-			: this.conditioningType
 	}
-	set productConditioning(value: _ConditioningType | ForeignKey) {
-		if (value instanceof _ConditioningType) {
-			this._productConditioning = value
-			this._conditioningType = value.id
-		} else {
-			this._productConditioning = null
-			this._conditioningType = value
-		}
+	set productConditioning(value: _ConditioningType) {
+		this._productConditioning = value
+		this._conditioningType = value.id
 	}
 	get conditioningType(): ForeignKey {
 		if (this._productConditioning === null) {
@@ -425,32 +391,32 @@ export class _Product extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		vendor_id?: ForeignKey
+		vendor_id: ForeignKey
 		state?: ForeignKey
-		tva?: ForeignKey
-		product_name?: string
-		vendor_sku?: string
-		product_sku?: string
-		price?: number
-		price_promo?: number
-		description?: string
-		additional_description?: string | null
-		backorder?: boolean
-		linked_products?: string
-		product_image?: ForeignKey
-		product_keywords?: string
-		creation_date?: number
-		modification_date?: number
-		has_tva?: boolean
+		tva: ForeignKey
+		product_name: string
+		vendor_sku: string
+		product_sku: string
+		price: number
+		price_promo: number
+		description: string
+		additional_description: string | null
+		backorder: boolean
+		linked_products: string
+		product_image: ForeignKey
+		product_keywords: string
+		creation_date: number
+		modification_date: number
+		has_tva: boolean
 		visibility?: ForeignKey
-		conditioningType?: ForeignKey
-		conditioningValue?: string
-		media?: _Media | Media | ForeignKey
-		tva_type?: _TVAType | TVAType | ForeignKey
-		user?: _User | User | ForeignKey
-		productState?: _ProductState | ProductState | ForeignKey
-		productVisibilty?: _ProductVisibilty | ProductVisibilty | ForeignKey
-		productConditioning?: _ConditioningType | ConditioningType | ForeignKey
+		conditioningType: ForeignKey
+		conditioningValue: string
+		media?: _Media | Media
+		tva_type?: _TVAType | TVAType
+		user?: _User | User
+		productState?: _ProductState | ProductState
+		productVisibilty?: _ProductVisibilty | ProductVisibilty
+		productConditioning?: _ConditioningType | ConditioningType
 		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
 		product_categories?:
 			| _ProductCategory[]
@@ -458,7 +424,6 @@ export class _Product extends PrismaClass {
 			| RelationMany<_ProductCategory>
 		gallery?: _Media[] | Media[] | RelationMany<_Media>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -472,10 +437,7 @@ export class _Product extends PrismaClass {
 		this.price = obj.price
 		this.price_promo = obj.price_promo
 		this.description = obj.description
-		this.additional_description =
-			obj.additional_description !== null
-				? obj.additional_description
-				: undefined
+		this.additional_description = obj.additional_description
 		this.backorder = obj.backorder
 		this.linked_products = obj.linked_products
 		this.product_keywords = obj.product_keywords
@@ -484,94 +446,72 @@ export class _Product extends PrismaClass {
 		this.has_tva = obj.has_tva
 		this.conditioningValue = obj.conditioningValue
 
-		if (!obj.media) {
-			if (obj.product_image === undefined) {
-				this.media = null
+		if (obj.media !== undefined) {
+			if (obj.media instanceof _Media) {
+				this.media = obj.media
 			} else {
-				this.media = obj.product_image
+				this.media = new _Media(obj.media)
 			}
-		} else if (obj.media instanceof _Media) {
-			this.media = obj.media
-		} else if (typeof obj.media === 'number') {
-			this.media = obj.media
-		} else {
-			this.media = new _Media(obj.media)
-		}
+		} else if (obj.product_image !== undefined) {
+			this._product_image = obj.product_image
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.tva_type) {
-			if (obj.tva === undefined) {
-				this.tva_type = null
+		if (obj.tva_type !== undefined) {
+			if (obj.tva_type instanceof _TVAType) {
+				this.tva_type = obj.tva_type
 			} else {
-				this.tva_type = obj.tva
+				this.tva_type = new _TVAType(obj.tva_type)
 			}
-		} else if (obj.tva_type instanceof _TVAType) {
-			this.tva_type = obj.tva_type
-		} else if (typeof obj.tva_type === 'number') {
-			this.tva_type = obj.tva_type
-		} else {
-			this.tva_type = new _TVAType(obj.tva_type)
-		}
+		} else if (obj.tva !== undefined) {
+			this._tva = obj.tva
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.user) {
-			if (obj.vendor_id === undefined) {
-				this.user = null
+		if (obj.user !== undefined) {
+			if (obj.user instanceof _User) {
+				this.user = obj.user
 			} else {
-				this.user = obj.vendor_id
+				this.user = new _User(obj.user)
 			}
-		} else if (obj.user instanceof _User) {
-			this.user = obj.user
-		} else if (typeof obj.user === 'number') {
-			this.user = obj.user
-		} else {
-			this.user = new _User(obj.user)
-		}
+		} else if (obj.vendor_id !== undefined) {
+			this._vendor_id = obj.vendor_id
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.productState) {
-			if (obj.state === undefined) {
-				this.productState = null
+		if (obj.productState !== undefined) {
+			if (obj.productState instanceof _ProductState) {
+				this.productState = obj.productState
 			} else {
-				this.productState = obj.state
+				this.productState = new _ProductState(obj.productState)
 			}
-		} else if (obj.productState instanceof _ProductState) {
-			this.productState = obj.productState
-		} else if (typeof obj.productState === 'number') {
-			this.productState = obj.productState
-		} else {
-			this.productState = new _ProductState(obj.productState)
-		}
+		} else if (obj.state !== undefined) {
+			this._state = obj.state
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.productVisibilty) {
-			if (obj.visibility === undefined) {
-				this.productVisibilty = null
+		if (obj.productVisibilty !== undefined) {
+			if (obj.productVisibilty instanceof _ProductVisibilty) {
+				this.productVisibilty = obj.productVisibilty
 			} else {
-				this.productVisibilty = obj.visibility
+				this.productVisibilty = new _ProductVisibilty(
+					obj.productVisibilty,
+				)
 			}
-		} else if (obj.productVisibilty instanceof _ProductVisibilty) {
-			this.productVisibilty = obj.productVisibilty
-		} else if (typeof obj.productVisibilty === 'number') {
-			this.productVisibilty = obj.productVisibilty
-		} else {
-			this.productVisibilty = new _ProductVisibilty(obj.productVisibilty)
-		}
+		} else if (obj.visibility !== undefined) {
+			this._visibility = obj.visibility
+		} else throw new Error('Invalid constructor.')
 
-		if (!obj.productConditioning) {
-			if (obj.conditioningType === undefined) {
-				this.productConditioning = null
+		if (obj.productConditioning !== undefined) {
+			if (obj.productConditioning instanceof _ConditioningType) {
+				this.productConditioning = obj.productConditioning
 			} else {
-				this.productConditioning = obj.conditioningType
+				this.productConditioning = new _ConditioningType(
+					obj.productConditioning,
+				)
 			}
-		} else if (obj.productConditioning instanceof _ConditioningType) {
-			this.productConditioning = obj.productConditioning
-		} else if (typeof obj.productConditioning === 'number') {
-			this.productConditioning = obj.productConditioning
-		} else {
-			this.productConditioning = new _ConditioningType(
-				obj.productConditioning,
-			)
-		}
+		} else if (obj.conditioningType !== undefined) {
+			this._conditioningType = obj.conditioningType
+		} else throw new Error('Invalid constructor.')
 
 		if (!obj.sub_orders || obj.sub_orders.length === 0) {
-			this.sub_orders = new RelationMany<_SubOrder>([])
+			this.sub_orders = new RelationMany<_SubOrder>()
 		} else if (obj.sub_orders instanceof RelationMany) {
 			this.sub_orders = obj.sub_orders
 		} else if (obj.sub_orders[0] instanceof _SubOrder) {
@@ -587,7 +527,7 @@ export class _Product extends PrismaClass {
 		}
 
 		if (!obj.product_categories || obj.product_categories.length === 0) {
-			this.product_categories = new RelationMany<_ProductCategory>([])
+			this.product_categories = new RelationMany<_ProductCategory>()
 		} else if (obj.product_categories instanceof RelationMany) {
 			this.product_categories = obj.product_categories
 		} else if (obj.product_categories[0] instanceof _ProductCategory) {
@@ -605,7 +545,7 @@ export class _Product extends PrismaClass {
 		}
 
 		if (!obj.gallery || obj.gallery.length === 0) {
-			this.gallery = new RelationMany<_Media>([])
+			this.gallery = new RelationMany<_Media>()
 		} else if (obj.gallery instanceof RelationMany) {
 			this.gallery = obj.gallery
 		} else if (obj.gallery[0] instanceof _Media) {
@@ -620,26 +560,19 @@ export class _Product extends PrismaClass {
 	}
 
 	update(obj: {
-		id?: number
-		vendor_id?: ForeignKey
-		state?: ForeignKey
-		tva?: ForeignKey
 		product_name?: string
 		vendor_sku?: string
 		product_sku?: string
 		price?: number
 		price_promo?: number
 		description?: string
-		additional_description?: string | null
+		additional_description?: string
 		backorder?: boolean
 		linked_products?: string
-		product_image?: ForeignKey
 		product_keywords?: string
 		creation_date?: number
 		modification_date?: number
 		has_tva?: boolean
-		visibility?: ForeignKey
-		conditioningType?: ForeignKey
 		conditioningValue?: string
 	}) {
 		if (obj.product_name !== undefined) {
@@ -783,15 +716,32 @@ export class _Product extends PrismaClass {
 		return new _Product(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _Product.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _Product.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _Product.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _Product.getIncludes(depth),
+				select: _Product.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

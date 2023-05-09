@@ -21,7 +21,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _User extends PrismaClass {
+export class _User implements PrismaClass {
 	static prisma: Prisma.UserDelegate<undefined>
 	get prisma(): Prisma.UserDelegate<undefined> {
 		return _User.prisma
@@ -31,28 +31,65 @@ export class _User extends PrismaClass {
 	}
 
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			access_token?:
-				| boolean
-				| Parameters<typeof _AccessToken.getIncludes>[1]
-			media?: boolean | Parameters<typeof _Media.getIncludes>[1]
-			product?: boolean | Parameters<typeof _Product.getIncludes>[1]
-			sub_order?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
-			user_billing?:
-				| boolean
-				| Parameters<typeof _UserBilling.getIncludes>[1]
-			user_delete?:
-				| boolean
-				| Parameters<typeof _UserDelete.getIncludes>[1]
-			user_delivery?:
-				| boolean
-				| Parameters<typeof _UserDelivery.getIncludes>[1]
-			roles?: boolean | Parameters<typeof _Role.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					access_token?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _AccessToken.getIncludes>[0],
+								number
+						  >
+					media?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Media.getIncludes>[0],
+								number
+						  >
+					product?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+					sub_order?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _SubOrder.getIncludes>[0],
+								number
+						  >
+					user_billing?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _UserBilling.getIncludes>[0],
+								number
+						  >
+					user_delete?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _UserDelete.getIncludes>[0],
+								number
+						  >
+					user_delivery?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _UserDelivery.getIncludes>[0],
+								number
+						  >
+					roles?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Role.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.UserInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					access_token: true,
 					media: true,
@@ -65,126 +102,86 @@ export class _User extends PrismaClass {
 				}
 			}
 			return {
-				access_token: { include: _AccessToken.getIncludes(depth - 1) },
-				media: { include: _Media.getIncludes(depth - 1) },
-				product: { include: _Product.getIncludes(depth - 1) },
-				sub_order: { include: _SubOrder.getIncludes(depth - 1) },
-				user_billing: { include: _UserBilling.getIncludes(depth - 1) },
-				user_delete: { include: _UserDelete.getIncludes(depth - 1) },
+				access_token: { include: _AccessToken.getIncludes(param - 1) },
+				media: { include: _Media.getIncludes(param - 1) },
+				product: { include: _Product.getIncludes(param - 1) },
+				sub_order: { include: _SubOrder.getIncludes(param - 1) },
+				user_billing: { include: _UserBilling.getIncludes(param - 1) },
+				user_delete: { include: _UserDelete.getIncludes(param - 1) },
 				user_delivery: {
-					include: _UserDelivery.getIncludes(depth - 1),
+					include: _UserDelivery.getIncludes(param - 1),
 				},
-				roles: { include: _Role.getIncludes(depth - 1) },
+				roles: { include: _Role.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					access_token: Object.keys(filter).includes('access_token')
-						? true
-						: undefined,
-					media: Object.keys(filter).includes('media')
-						? true
-						: undefined,
-					product: Object.keys(filter).includes('product')
-						? true
-						: undefined,
-					sub_order: Object.keys(filter).includes('sub_order')
-						? true
-						: undefined,
-					user_billing: Object.keys(filter).includes('user_billing')
-						? true
-						: undefined,
-					user_delete: Object.keys(filter).includes('user_delete')
-						? true
-						: undefined,
-					user_delivery: Object.keys(filter).includes('user_delivery')
-						? true
-						: undefined,
-					roles: Object.keys(filter).includes('roles')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				access_token: Object.keys(filter).includes('access_token')
-					? {
-							include: _AccessToken.getIncludes(
-								depth - 1,
-								typeof filter.access_token === 'boolean'
-									? undefined
-									: filter.access_token,
-							),
-					  }
+				access_token: Object.keys(param).includes('access_token')
+					? typeof param.access_token === 'boolean'
+						? true
+						: {
+								include: _AccessToken.getIncludes(
+									param.access_token,
+								),
+						  }
 					: undefined,
-				media: Object.keys(filter).includes('media')
-					? {
-							include: _Media.getIncludes(
-								depth - 1,
-								typeof filter.media === 'boolean'
-									? undefined
-									: filter.media,
-							),
-					  }
+				media: Object.keys(param).includes('media')
+					? typeof param.media === 'boolean'
+						? true
+						: {
+								include: _Media.getIncludes(param.media),
+						  }
 					: undefined,
-				product: Object.keys(filter).includes('product')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.product === 'boolean'
-									? undefined
-									: filter.product,
-							),
-					  }
+				product: Object.keys(param).includes('product')
+					? typeof param.product === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(param.product),
+						  }
 					: undefined,
-				sub_order: Object.keys(filter).includes('sub_order')
-					? {
-							include: _SubOrder.getIncludes(
-								depth - 1,
-								typeof filter.sub_order === 'boolean'
-									? undefined
-									: filter.sub_order,
-							),
-					  }
+				sub_order: Object.keys(param).includes('sub_order')
+					? typeof param.sub_order === 'boolean'
+						? true
+						: {
+								include: _SubOrder.getIncludes(param.sub_order),
+						  }
 					: undefined,
-				user_billing: Object.keys(filter).includes('user_billing')
-					? {
-							include: _UserBilling.getIncludes(
-								depth - 1,
-								typeof filter.user_billing === 'boolean'
-									? undefined
-									: filter.user_billing,
-							),
-					  }
+				user_billing: Object.keys(param).includes('user_billing')
+					? typeof param.user_billing === 'boolean'
+						? true
+						: {
+								include: _UserBilling.getIncludes(
+									param.user_billing,
+								),
+						  }
 					: undefined,
-				user_delete: Object.keys(filter).includes('user_delete')
-					? {
-							include: _UserDelete.getIncludes(
-								depth - 1,
-								typeof filter.user_delete === 'boolean'
-									? undefined
-									: filter.user_delete,
-							),
-					  }
+				user_delete: Object.keys(param).includes('user_delete')
+					? typeof param.user_delete === 'boolean'
+						? true
+						: {
+								include: _UserDelete.getIncludes(
+									param.user_delete,
+								),
+						  }
 					: undefined,
-				user_delivery: Object.keys(filter).includes('user_delivery')
-					? {
-							include: _UserDelivery.getIncludes(
-								depth - 1,
-								typeof filter.user_delivery === 'boolean'
-									? undefined
-									: filter.user_delivery,
-							),
-					  }
+				user_delivery: Object.keys(param).includes('user_delivery')
+					? typeof param.user_delivery === 'boolean'
+						? true
+						: {
+								include: _UserDelivery.getIncludes(
+									param.user_delivery,
+								),
+						  }
 					: undefined,
-				roles: Object.keys(filter).includes('roles')
-					? {
-							include: _Role.getIncludes(
-								depth - 1,
-								typeof filter.roles === 'boolean'
-									? undefined
-									: filter.roles,
-							),
-					  }
+				roles: Object.keys(param).includes('roles')
+					? typeof param.roles === 'boolean'
+						? true
+						: {
+								include: _Role.getIncludes(param.roles),
+						  }
 					: undefined,
 			}
 		}
@@ -199,22 +196,22 @@ export class _User extends PrismaClass {
 		return this._id
 	}
 
-	user_pass?: string
+	user_pass: string
 
 	// UNIQUE
-	user_email?: string
+	user_email: string
 
-	user_registered?: boolean = false
+	user_registered: boolean = false
 
-	firstname?: string
+	firstname: string
 
-	lastname?: string
+	lastname: string
 
-	birthdate?: number
+	birthdate: number
 
-	token?: string
+	token: string
 
-	deleting?: number | null
+	deleting: number | null
 
 	private _access_token: RelationMany<_AccessToken>
 	public get access_token(): RelationMany<_AccessToken> {
@@ -282,14 +279,14 @@ export class _User extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		user_pass?: string
-		user_email?: string
+		user_pass: string
+		user_email: string
 		user_registered?: boolean
-		firstname?: string
-		lastname?: string
-		birthdate?: number
-		token?: string
-		deleting?: number | null
+		firstname: string
+		lastname: string
+		birthdate: number
+		token: string
+		deleting: number | null
 
 		access_token?:
 			| _AccessToken[]
@@ -309,7 +306,6 @@ export class _User extends PrismaClass {
 			| RelationMany<_UserDelivery>
 		roles?: _Role[] | Role[] | RelationMany<_Role>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -319,16 +315,15 @@ export class _User extends PrismaClass {
 		}
 		this.user_pass = obj.user_pass
 		this.user_email = obj.user_email
-		this.user_registered =
-			obj.user_registered !== undefined ? obj.user_registered : false
+		this.user_registered = obj.user_registered ?? false
 		this.firstname = obj.firstname
 		this.lastname = obj.lastname
 		this.birthdate = obj.birthdate
 		this.token = obj.token
-		this.deleting = obj.deleting !== null ? obj.deleting : undefined
+		this.deleting = obj.deleting
 
 		if (!obj.access_token || obj.access_token.length === 0) {
-			this.access_token = new RelationMany<_AccessToken>([])
+			this.access_token = new RelationMany<_AccessToken>()
 		} else if (obj.access_token instanceof RelationMany) {
 			this.access_token = obj.access_token
 		} else if (obj.access_token[0] instanceof _AccessToken) {
@@ -346,7 +341,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.media || obj.media.length === 0) {
-			this.media = new RelationMany<_Media>([])
+			this.media = new RelationMany<_Media>()
 		} else if (obj.media instanceof RelationMany) {
 			this.media = obj.media
 		} else if (obj.media[0] instanceof _Media) {
@@ -360,7 +355,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.product || obj.product.length === 0) {
-			this.product = new RelationMany<_Product>([])
+			this.product = new RelationMany<_Product>()
 		} else if (obj.product instanceof RelationMany) {
 			this.product = obj.product
 		} else if (obj.product[0] instanceof _Product) {
@@ -374,7 +369,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.sub_order || obj.sub_order.length === 0) {
-			this.sub_order = new RelationMany<_SubOrder>([])
+			this.sub_order = new RelationMany<_SubOrder>()
 		} else if (obj.sub_order instanceof RelationMany) {
 			this.sub_order = obj.sub_order
 		} else if (obj.sub_order[0] instanceof _SubOrder) {
@@ -390,7 +385,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.user_billing || obj.user_billing.length === 0) {
-			this.user_billing = new RelationMany<_UserBilling>([])
+			this.user_billing = new RelationMany<_UserBilling>()
 		} else if (obj.user_billing instanceof RelationMany) {
 			this.user_billing = obj.user_billing
 		} else if (obj.user_billing[0] instanceof _UserBilling) {
@@ -408,7 +403,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.user_delete || obj.user_delete.length === 0) {
-			this.user_delete = new RelationMany<_UserDelete>([])
+			this.user_delete = new RelationMany<_UserDelete>()
 		} else if (obj.user_delete instanceof RelationMany) {
 			this.user_delete = obj.user_delete
 		} else if (obj.user_delete[0] instanceof _UserDelete) {
@@ -424,7 +419,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.user_delivery || obj.user_delivery.length === 0) {
-			this.user_delivery = new RelationMany<_UserDelivery>([])
+			this.user_delivery = new RelationMany<_UserDelivery>()
 		} else if (obj.user_delivery instanceof RelationMany) {
 			this.user_delivery = obj.user_delivery
 		} else if (obj.user_delivery[0] instanceof _UserDelivery) {
@@ -442,7 +437,7 @@ export class _User extends PrismaClass {
 		}
 
 		if (!obj.roles || obj.roles.length === 0) {
-			this.roles = new RelationMany<_Role>([])
+			this.roles = new RelationMany<_Role>()
 		} else if (obj.roles instanceof RelationMany) {
 			this.roles = obj.roles
 		} else if (obj.roles[0] instanceof _Role) {
@@ -457,7 +452,6 @@ export class _User extends PrismaClass {
 	}
 
 	update(obj: {
-		id?: number
 		user_pass?: string
 		user_email?: string
 		user_registered?: boolean
@@ -465,7 +459,7 @@ export class _User extends PrismaClass {
 		lastname?: string
 		birthdate?: number
 		token?: string
-		deleting?: number | null
+		deleting?: number
 	}) {
 		if (obj.user_pass !== undefined) {
 			this.user_pass = obj.user_pass
@@ -563,15 +557,32 @@ export class _User extends PrismaClass {
 		return new _User(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _User.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _User.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _User.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _User.getIncludes(depth),
+				select: _User.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

@@ -4,7 +4,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _Expedition extends PrismaClass {
+export class _Expedition implements PrismaClass {
 	static prisma: Prisma.ExpeditionDelegate<undefined>
 	get prisma(): Prisma.ExpeditionDelegate<undefined> {
 		return _Expedition.prisma
@@ -13,39 +13,62 @@ export class _Expedition extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	static async initList() {
+		if (this.enumList === null) {
+			return
+		}
+
+		const models = await this.prisma.findMany()
+		this.enumList = []
+		for (const model of models) {
+			this.enumList.push(new _Expedition(model))
+		}
+	}
+
+	private static enumList: _Expedition[]
+	static get list(): _Expedition[] {
+		return this.enumList
+	}
+
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					sub_orders?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _SubOrder.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.ExpeditionInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					sub_orders: true,
 				}
 			}
 			return {
-				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+				sub_orders: { include: _SubOrder.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					sub_orders: Object.keys(filter).includes('sub_orders')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				sub_orders: Object.keys(filter).includes('sub_orders')
-					? {
-							include: _SubOrder.getIncludes(
-								depth - 1,
-								typeof filter.sub_orders === 'boolean'
-									? undefined
-									: filter.sub_orders,
-							),
-					  }
+				sub_orders: Object.keys(param).includes('sub_orders')
+					? typeof param.sub_orders === 'boolean'
+						? true
+						: {
+								include: _SubOrder.getIncludes(
+									param.sub_orders,
+								),
+						  }
 					: undefined,
 			}
 		}
@@ -60,13 +83,13 @@ export class _Expedition extends PrismaClass {
 		return this._id
 	}
 
-	name?: number
+	name: number
 
-	slug?: number
+	slug: number
 
-	max_weight?: number
+	max_weight: number
 
-	price?: number
+	price: number
 
 	private _sub_orders: RelationMany<_SubOrder>
 	public get sub_orders(): RelationMany<_SubOrder> {
@@ -78,14 +101,13 @@ export class _Expedition extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		name?: number
-		slug?: number
-		max_weight?: number
-		price?: number
+		name: number
+		slug: number
+		max_weight: number
+		price: number
 
 		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -99,7 +121,7 @@ export class _Expedition extends PrismaClass {
 		this.price = obj.price
 
 		if (!obj.sub_orders || obj.sub_orders.length === 0) {
-			this.sub_orders = new RelationMany<_SubOrder>([])
+			this.sub_orders = new RelationMany<_SubOrder>()
 		} else if (obj.sub_orders instanceof RelationMany) {
 			this.sub_orders = obj.sub_orders
 		} else if (obj.sub_orders[0] instanceof _SubOrder) {
@@ -116,7 +138,6 @@ export class _Expedition extends PrismaClass {
 	}
 
 	update(obj: {
-		id?: number
 		name?: number
 		slug?: number
 		max_weight?: number
@@ -193,15 +214,32 @@ export class _Expedition extends PrismaClass {
 		return new _Expedition(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _Expedition.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _Expedition.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _Expedition.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _Expedition.getIncludes(depth),
+				select: _Expedition.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

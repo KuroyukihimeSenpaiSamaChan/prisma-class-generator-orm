@@ -5,7 +5,7 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _TVAType extends PrismaClass {
+export class _TVAType implements PrismaClass {
 	static prisma: Prisma.TVATypeDelegate<undefined>
 	get prisma(): Prisma.TVATypeDelegate<undefined> {
 		return _TVAType.prisma
@@ -14,55 +14,77 @@ export class _TVAType extends PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	static async initList() {
+		if (this.enumList === null) {
+			return
+		}
+
+		const models = await this.prisma.findMany()
+		this.enumList = []
+		for (const model of models) {
+			this.enumList.push(new _TVAType(model))
+		}
+	}
+
+	private static enumList: _TVAType[]
+	static get list(): _TVAType[] {
+		return this.enumList
+	}
+
 	static getIncludes(
-		depth: number = 0,
-		filter?: {
-			products?: boolean | Parameters<typeof _Product.getIncludes>[1]
-			sub_orders?: boolean | Parameters<typeof _SubOrder.getIncludes>[1]
-		},
+		param?:
+			| number
+			| {
+					products?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Product.getIncludes>[0],
+								number
+						  >
+					sub_orders?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _SubOrder.getIncludes>[0],
+								number
+						  >
+			  },
 	): Prisma.TVATypeInclude {
-		if (filter === undefined) {
-			if (depth <= 0) {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (typeof param === 'number') {
+			if (param <= 0) {
 				return {
 					products: true,
 					sub_orders: true,
 				}
 			}
 			return {
-				products: { include: _Product.getIncludes(depth - 1) },
-				sub_orders: { include: _SubOrder.getIncludes(depth - 1) },
+				products: { include: _Product.getIncludes(param - 1) },
+				sub_orders: { include: _SubOrder.getIncludes(param - 1) },
 			}
 		} else {
-			if (depth <= 0) {
-				return {
-					products: Object.keys(filter).includes('products')
-						? true
-						: undefined,
-					sub_orders: Object.keys(filter).includes('sub_orders')
-						? true
-						: undefined,
-				}
+			if (Object.keys(param).length === 0) {
+				return {}
 			}
+
 			return {
-				products: Object.keys(filter).includes('products')
-					? {
-							include: _Product.getIncludes(
-								depth - 1,
-								typeof filter.products === 'boolean'
-									? undefined
-									: filter.products,
-							),
-					  }
+				products: Object.keys(param).includes('products')
+					? typeof param.products === 'boolean'
+						? true
+						: {
+								include: _Product.getIncludes(param.products),
+						  }
 					: undefined,
-				sub_orders: Object.keys(filter).includes('sub_orders')
-					? {
-							include: _SubOrder.getIncludes(
-								depth - 1,
-								typeof filter.sub_orders === 'boolean'
-									? undefined
-									: filter.sub_orders,
-							),
-					  }
+				sub_orders: Object.keys(param).includes('sub_orders')
+					? typeof param.sub_orders === 'boolean'
+						? true
+						: {
+								include: _SubOrder.getIncludes(
+									param.sub_orders,
+								),
+						  }
 					: undefined,
 			}
 		}
@@ -77,9 +99,9 @@ export class _TVAType extends PrismaClass {
 		return this._id
 	}
 
-	slug?: string
+	slug: string
 
-	amount?: number = 0
+	amount: number = 0
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -99,13 +121,12 @@ export class _TVAType extends PrismaClass {
 
 	constructor(obj: {
 		id?: number
-		slug?: string
+		slug: string
 		amount?: number
 
 		products?: _Product[] | Product[] | RelationMany<_Product>
 		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
 	}) {
-		super()
 		this.init(obj)
 	}
 
@@ -114,10 +135,10 @@ export class _TVAType extends PrismaClass {
 			this._id = obj.id
 		}
 		this.slug = obj.slug
-		this.amount = obj.amount !== undefined ? obj.amount : 0
+		this.amount = obj.amount ?? 0
 
 		if (!obj.products || obj.products.length === 0) {
-			this.products = new RelationMany<_Product>([])
+			this.products = new RelationMany<_Product>()
 		} else if (obj.products instanceof RelationMany) {
 			this.products = obj.products
 		} else if (obj.products[0] instanceof _Product) {
@@ -133,7 +154,7 @@ export class _TVAType extends PrismaClass {
 		}
 
 		if (!obj.sub_orders || obj.sub_orders.length === 0) {
-			this.sub_orders = new RelationMany<_SubOrder>([])
+			this.sub_orders = new RelationMany<_SubOrder>()
 		} else if (obj.sub_orders instanceof RelationMany) {
 			this.sub_orders = obj.sub_orders
 		} else if (obj.sub_orders[0] instanceof _SubOrder) {
@@ -149,7 +170,7 @@ export class _TVAType extends PrismaClass {
 		}
 	}
 
-	update(obj: { id?: number; slug?: string; amount?: number }) {
+	update(obj: { slug?: string; amount?: number }) {
 		if (obj.slug !== undefined) {
 			this.slug = obj.slug
 		}
@@ -208,15 +229,32 @@ export class _TVAType extends PrismaClass {
 		return new _TVAType(dbQuery)
 	}
 
-	async load(depth: number = 0) {
-		if (depth < 0) return
+	async load(depth?: number): Promise<void>
+	async load(
+		filter?: Exclude<Parameters<typeof _TVAType.getIncludes>[0], number>,
+	): Promise<void>
+	async load(
+		param?:
+			| number
+			| Exclude<Parameters<typeof _TVAType.getIncludes>[0], number>,
+	): Promise<void> {
+		if (param === undefined) {
+			param = 0
+		}
+
+		if (
+			(typeof param === 'number' && param < 0) ||
+			(typeof param === 'object' && Object.keys(param).length === 0)
+		) {
+			return
+		}
 
 		if (this.id !== -1) {
 			const dbThis = await _TVAType.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _TVAType.getIncludes(depth),
+				select: _TVAType.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })

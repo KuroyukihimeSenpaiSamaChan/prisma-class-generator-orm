@@ -10,9 +10,6 @@ class FieldComponent extends base_component_1.BaseComponent {
         this.privateFromRelation = false;
         this.echo = () => {
             let name = this.name;
-            if (!this.relation && !this.isId && !this.privateFromRelation) {
-                name += '?';
-            }
             let type = this.type;
             if (this.privateFromRelation) {
                 name = `private _${name}`;
@@ -34,13 +31,9 @@ class FieldComponent extends base_component_1.BaseComponent {
             if (this.default) {
                 defaultValue = `= ${this.default}`;
             }
-            else {
-                if (this.useUndefinedDefault === true) {
-                    defaultValue = `= undefined`;
-                }
-            }
             let template = '';
             let foreignKey = '';
+            let toOneNullable = '';
             if (!this.relation) {
                 if (this.nullable)
                     type += ' | null';
@@ -51,6 +44,7 @@ class FieldComponent extends base_component_1.BaseComponent {
                     if (this.relation.hasOne === this) {
                         template = field_template_1.FIELD_TO_ONE_TEMPLATE;
                         foreignKey = this.relation.fromField[0];
+                        toOneNullable = this.nullable ? '| null = null' : '';
                     }
                     else {
                         template = field_template_1.FIELD_TO_MANY_TEMPLATE;
@@ -66,7 +60,8 @@ class FieldComponent extends base_component_1.BaseComponent {
                 .replaceAll('#!{TYPE}', type)
                 .replaceAll('#!{DECORATORS}', decorators)
                 .replaceAll('#!{DEFAULT}', defaultValue)
-                .replaceAll('#!{FOREIGNKEY}', foreignKey);
+                .replaceAll('#!{FOREIGNKEY}', foreignKey)
+                .replaceAll('#!{NULLABLE}', toOneNullable);
         };
     }
 }

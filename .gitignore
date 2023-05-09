@@ -3,3 +3,4 @@ src/practice.ts
 yarn-error.log
 .env
 src/_gen/prisma-class/*.ts
+pets*

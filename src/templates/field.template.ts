@@ -13,18 +13,13 @@ export const FIELD_ID_TEMPLATE = ` #!{DECORATORS}
 `
 
 export const FIELD_TO_ONE_TEMPLATE = `
-private _#!{NAME}: _#!{TYPE} | null
-get #!{NAME}(): _#!{TYPE} | ForeignKey {
-	return this._#!{NAME} ? this._#!{NAME} : this.#!{FOREIGNKEY}
+private _#!{NAME}: _#!{TYPE} #!{NULLABLE}
+get #!{NAME}(): _#!{TYPE} #!{NULLABLE} {
+	return this._#!{NAME}
 }
-set #!{NAME}(value: _#!{TYPE} | ForeignKey) {
-	if (value instanceof _#!{TYPE}) {
-		this._#!{NAME} = value
-		this._#!{FOREIGNKEY} = value.id
-	} else {
-		this._#!{NAME} = null
-		this._#!{FOREIGNKEY} = value
-	}
+set #!{NAME}(value: _#!{TYPE}) {
+	this._#!{NAME} = value
+	this._#!{FOREIGNKEY} = value.id
 }
 get #!{FOREIGNKEY}(): ForeignKey {
 	if(this._#!{NAME} === null){
