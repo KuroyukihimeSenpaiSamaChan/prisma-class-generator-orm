@@ -4,6 +4,7 @@ exports.handleGenerateError = exports.GeneratorPathNotExists = exports.Generator
 const generator_1 = require("./generator");
 const util_1 = require("./util");
 class GeneratorFormatNotValidError extends Error {
+    config;
     constructor(config) {
         super();
         this.config = config;

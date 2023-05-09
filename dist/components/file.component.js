@@ -29,6 +29,11 @@ const util_1 = require("../util");
 const generator_1 = require("../generator");
 const import_component_1 = require("./import.component");
 class FileComponent {
+    _dir;
+    _filename;
+    _imports = [];
+    _prismaClass;
+    static TEMP_PREFIX = '__TEMPORARY_CLASS_PATH__';
     get dir() {
         return this._dir;
     }
@@ -54,20 +59,6 @@ class FileComponent {
         this._prismaClass = value;
     }
     constructor(input) {
-        this._imports = [];
-        this.echoImports = () => {
-            return this.imports
-                .reduce((result, importRow) => {
-                result.push(importRow.echo());
-                return result;
-            }, [])
-                .join('\r\n');
-        };
-        this.echo = () => {
-            return this.prismaClass
-                .echo()
-                .replace('#!{IMPORTS}', this.echoImports());
-        };
         if (input === undefined) {
             return;
         }
@@ -77,6 +68,19 @@ class FileComponent {
         this.filename = `${classComponent.name}.ts`;
         this.resolveImports();
     }
+    echoImports = () => {
+        return this.imports
+            .reduce((result, importRow) => {
+            result.push(importRow.echo());
+            return result;
+        }, [])
+            .join('\r\n');
+    };
+    echo = () => {
+        return this.prismaClass
+            .echo()
+            .replace('#!{IMPORTS}', this.echoImports());
+    };
     registerImport(item, from) {
         const oldIndex = this.imports.findIndex((_import) => _import.from === from);
         if (oldIndex > -1) {
@@ -115,6 +119,5 @@ class FileComponent {
         return path.resolve(this.dir, this.filename);
     }
 }
-FileComponent.TEMP_PREFIX = '__TEMPORARY_CLASS_PATH__';
 exports.FileComponent = FileComponent;
 //# sourceMappingURL=file.component.js.map

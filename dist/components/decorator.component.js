@@ -2,8 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DecoratorComponent = void 0;
 class DecoratorComponent {
+    name;
+    params = [];
+    importFrom;
     constructor(input) {
-        this.params = [];
         const { name, params, importFrom } = input;
         this.name = name;
         if (params) {

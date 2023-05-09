@@ -28,15 +28,16 @@ const path = __importStar(require("path"));
 const file_component_1 = require("./file.component");
 const const_template_1 = require("../templates/const.template");
 class ConstComponent extends file_component_1.FileComponent {
+    template;
     constructor(output, filename, template) {
         super();
-        this.echo = () => {
-            return this.template;
-        };
         this.dir = path.resolve(output);
         this.filename = filename;
         this.template = const_template_1.CONST_TEMPLATES[template];
     }
+    echo = () => {
+        return this.template;
+    };
 }
 exports.ConstComponent = ConstComponent;
 //# sourceMappingURL=const.component.js.map

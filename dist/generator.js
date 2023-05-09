@@ -53,64 +53,12 @@ exports.PrismaClassGeneratorOptions = {
     }
 };
 class PrismaClassGenerator {
+    static instance;
+    _options;
+    _prettierOptions;
+    rootPath;
+    clientPath;
     constructor(options) {
-        this.run = async () => {
-            const { generator, dmmf } = this.options;
-            const output = (0, internals_1.parseEnvValue)(generator.output);
-            const config = this.getConfig();
-            this.setPrismaClientPath();
-            const convertor = convertor_1.PrismaConvertor.getInstance();
-            convertor.dmmf = dmmf;
-            convertor.config = config;
-            const classes = convertor.getClasses();
-            const classesOutput = `${output}/classes/`;
-            const files = classes.map((classComponent) => new file_component_1.FileComponent({ classComponent, output: classesOutput }));
-            const classToPath = files.reduce((result, fileRow) => {
-                const fullPath = path.resolve(fileRow.dir, fileRow.filename);
-                result[fileRow.prismaClass.name] = fullPath;
-                return result;
-            }, {});
-            files.forEach((fileRow) => {
-                fileRow.imports = fileRow.imports.map((importRow) => {
-                    const pathToReplace = importRow.getReplacePath(classToPath);
-                    if (pathToReplace !== null) {
-                        importRow.from = fileRow.getRelativePath(pathToReplace);
-                    }
-                    return importRow;
-                });
-            });
-            files.push(new prismamodel_component_1.PrismaModelComponent(output, classes));
-            files.push(new const_component_1.ConstComponent(output, 'prisma-relation.ts', "RELATION_MANY"));
-            files.push(new const_component_1.ConstComponent(output, 'prisma-class.ts', "PRISMA_CLASS"));
-            files.forEach((fileRow) => {
-                fileRow.write(config.dryRun);
-            });
-            return;
-        };
-        this.getConfig = () => {
-            const config = this.options.generator.config;
-            const result = {};
-            for (const optionName in exports.PrismaClassGeneratorOptions) {
-                const { defaultValue } = exports.PrismaClassGeneratorOptions[optionName];
-                result[optionName] = defaultValue;
-                const value = config[optionName];
-                if (value) {
-                    if (typeof defaultValue === 'boolean') {
-                        result[optionName] = (0, util_1.parseBoolean)(value);
-                    }
-                    else if (typeof defaultValue === 'number') {
-                        result[optionName] = (0, util_1.parseNumber)(value);
-                    }
-                    else if (Array.isArray(defaultValue)) {
-                        result[optionName] = value.split(',').map(v => v.trim());
-                    }
-                    else {
-                        result[optionName] = value;
-                    }
-                }
-            }
-            return result;
-        };
         if (options) {
             this.options = options;
         }
@@ -150,13 +98,69 @@ class PrismaClassGenerator {
         return finalPath.replace('node_modules/', '');
     }
     setPrismaClientPath() {
-        var _a;
         const { otherGenerators, schemaPath } = this.options;
         this.rootPath = schemaPath.replace('/prisma/schema.prisma', '');
         const defaultPath = path.resolve(this.rootPath, 'node_modules/@prisma/client');
         const clientGenerator = otherGenerators.find((g) => g.provider.value === 'prisma-client-js');
-        this.clientPath = (_a = clientGenerator === null || clientGenerator === void 0 ? void 0 : clientGenerator.output.value) !== null && _a !== void 0 ? _a : defaultPath;
+        this.clientPath = clientGenerator?.output.value ?? defaultPath;
     }
+    run = async () => {
+        const { generator, dmmf } = this.options;
+        const output = (0, internals_1.parseEnvValue)(generator.output);
+        const config = this.getConfig();
+        this.setPrismaClientPath();
+        const convertor = convertor_1.PrismaConvertor.getInstance();
+        convertor.dmmf = dmmf;
+        convertor.config = config;
+        const classes = convertor.getClasses();
+        const classesOutput = `${output}/classes/`;
+        const files = classes.map((classComponent) => new file_component_1.FileComponent({ classComponent, output: classesOutput }));
+        const classToPath = files.reduce((result, fileRow) => {
+            const fullPath = path.resolve(fileRow.dir, fileRow.filename);
+            result[fileRow.prismaClass.name] = fullPath;
+            return result;
+        }, {});
+        files.forEach((fileRow) => {
+            fileRow.imports = fileRow.imports.map((importRow) => {
+                const pathToReplace = importRow.getReplacePath(classToPath);
+                if (pathToReplace !== null) {
+                    importRow.from = fileRow.getRelativePath(pathToReplace);
+                }
+                return importRow;
+            });
+        });
+        files.push(new prismamodel_component_1.PrismaModelComponent(output, classes));
+        files.push(new const_component_1.ConstComponent(output, 'prisma-relation.ts', "RELATION_MANY"));
+        files.push(new const_component_1.ConstComponent(output, 'prisma-class.ts', "PRISMA_CLASS"));
+        files.forEach((fileRow) => {
+            fileRow.write(config.dryRun);
+        });
+        return;
+    };
+    getConfig = () => {
+        const config = this.options.generator.config;
+        const result = {};
+        for (const optionName in exports.PrismaClassGeneratorOptions) {
+            const { defaultValue } = exports.PrismaClassGeneratorOptions[optionName];
+            result[optionName] = defaultValue;
+            const value = config[optionName];
+            if (value) {
+                if (typeof defaultValue === 'boolean') {
+                    result[optionName] = (0, util_1.parseBoolean)(value);
+                }
+                else if (typeof defaultValue === 'number') {
+                    result[optionName] = (0, util_1.parseNumber)(value);
+                }
+                else if (Array.isArray(defaultValue)) {
+                    result[optionName] = value.split(',').map(v => v.trim());
+                }
+                else {
+                    result[optionName] = value;
+                }
+            }
+        }
+        return result;
+    };
 }
 exports.PrismaClassGenerator = PrismaClassGenerator;
 //# sourceMappingURL=generator.js.map
