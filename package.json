@@ -6,11 +6,10 @@
 	"license": "MIT",
 	"keywords": [
 		"prisma",
-		"nestjs",
 		"typescript",
 		"generator"
 	],
-	"homepage": "https://github.com/kimjbstar/prisma-class-generator",
+	"homepage": "git://github.com/KuroyukihimeSenpaiSamaChan/prisma-class-generator-orm.git",
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/KuroyukihimeSenpaiSamaChan/prisma-class-generator-orm.git"
@@ -28,7 +27,7 @@
 		"prisma-class-generator-orm": "dist/bin.js"
 	},
 	"engines": {
-		"node": ">=14"
+		"node": ">=15"
 	},
 	"author": {
 		"name": "eliot",

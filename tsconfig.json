@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "ES2019",
+		"target": "ES2022",
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"allowSyntheticDefaultImports": true,
@@ -22,7 +22,7 @@
 		"noEmit": false,
 		"noEmitOnError": false,
 		"preserveConstEnums": true,
-		"lib": ["esnext", "dom"],
+		"lib": ["ES2022", "dom"],
 		"downlevelIteration": false,
 		"stripInternal": false,
 		"sourceMap": true,
