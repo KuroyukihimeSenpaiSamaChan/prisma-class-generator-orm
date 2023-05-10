@@ -334,10 +334,6 @@ export class _Cart implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (!this.user && this.user_id) {
-			throw new Error("user can't be null or undefined in _Cart.")
-		}
-
 		if (this.products.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Cart. Save it first, then add the toMany fields",

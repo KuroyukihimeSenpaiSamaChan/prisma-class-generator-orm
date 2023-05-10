@@ -1061,31 +1061,6 @@ export class _Product implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (!this.productConditioning && this.conditioningType) {
-			throw new Error(
-				"productConditioning can't be null or undefined in _Product.",
-			)
-		}
-		if (!this.media && this.product_image) {
-			throw new Error("media can't be null or undefined in _Product.")
-		}
-		if (!this.productState && this.state) {
-			throw new Error(
-				"productState can't be null or undefined in _Product.",
-			)
-		}
-		if (!this.tva_type && this.tva) {
-			throw new Error("tva_type can't be null or undefined in _Product.")
-		}
-		if (!this.user && this.vendor_id) {
-			throw new Error("user can't be null or undefined in _Product.")
-		}
-		if (!this.productVisibilty && this.visibility) {
-			throw new Error(
-				"productVisibilty can't be null or undefined in _Product.",
-			)
-		}
-
 		if (this.basketProducts.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",

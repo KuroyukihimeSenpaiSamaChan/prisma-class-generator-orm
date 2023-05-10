@@ -195,17 +195,17 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			let checkToOne = ''
 			let toOne = ''
 			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasOne === elem)) {
-				if (!_field.nullable) {
-					const fieldForeignKey = _field.relation
-					// Seems useless, but needed for typing
-					if (isRelationMany(fieldForeignKey)) {
-						continue
-					}
-					checkToOne += `if(!this.${_field.name} && this.${fieldForeignKey.fromField}){
-						throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
-					}
-					`
-				}
+				// if (!_field.nullable) {
+				// 	const fieldForeignKey = _field.relation
+				// 	// Seems useless, but needed for typing
+				// 	if (isRelationMany(fieldForeignKey)) {
+				// 		continue
+				// 	}
+				// 	checkToOne += `if(!this.${_field.name} && this.${fieldForeignKey.fromField}){
+				// 		throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
+				// 	}
+				// 	`
+				// }
 				//this.${_field.name} !== undefined && this.${_field.name} !== null && 
 				toOne += `if(this.${_field.name} && !this.${_field.name}.saving){
 					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)

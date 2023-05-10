@@ -304,11 +304,7 @@ export class _AccessToken implements PrismaClass {
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
-	checkRequiredFields() {
-		if (!this.user && this.user_id) {
-			throw new Error("user can't be null or undefined in _AccessToken.")
-		}
-	}
+	checkRequiredFields() {}
 
 	static async deleteAll(
 		query: Parameters<typeof _AccessToken.prisma.deleteMany>[0],

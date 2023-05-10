@@ -345,18 +345,7 @@ export class _CartProduct implements PrismaClass {
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
-	checkRequiredFields() {
-		if (!this.basket && this.basket_id) {
-			throw new Error(
-				"basket can't be null or undefined in _CartProduct.",
-			)
-		}
-		if (!this.product && this.product_id) {
-			throw new Error(
-				"product can't be null or undefined in _CartProduct.",
-			)
-		}
-	}
+	checkRequiredFields() {}
 
 	static async deleteAll(
 		query: Parameters<typeof _CartProduct.prisma.deleteMany>[0],

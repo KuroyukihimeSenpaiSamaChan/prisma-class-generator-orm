@@ -434,10 +434,6 @@ export class _Media implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (!this.user && this.user_id) {
-			throw new Error("user can't be null or undefined in _Media.")
-		}
-
 		if (this.product_image.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Media. Save it first, then add the toMany fields",

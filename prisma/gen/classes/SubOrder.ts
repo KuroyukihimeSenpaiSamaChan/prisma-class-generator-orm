@@ -549,25 +549,7 @@ export class _SubOrder implements PrismaClass {
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
-	checkRequiredFields() {
-		if (!this.expedition && this.expedition_id) {
-			throw new Error(
-				"expedition can't be null or undefined in _SubOrder.",
-			)
-		}
-		if (!this.order && this.order_id) {
-			throw new Error("order can't be null or undefined in _SubOrder.")
-		}
-		if (!this.product && this.product_id) {
-			throw new Error("product can't be null or undefined in _SubOrder.")
-		}
-		if (!this.user && this.vendor_id) {
-			throw new Error("user can't be null or undefined in _SubOrder.")
-		}
-		if (!this.tva_type && this.tva_id) {
-			throw new Error("tva_type can't be null or undefined in _SubOrder.")
-		}
-	}
+	checkRequiredFields() {}
 
 	static async deleteAll(
 		query: Parameters<typeof _SubOrder.prisma.deleteMany>[0],

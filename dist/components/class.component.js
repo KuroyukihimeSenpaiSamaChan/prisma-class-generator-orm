@@ -169,16 +169,6 @@ class ClassComponent extends base_component_1.BaseComponent {
             let checkToOne = '';
             let toOne = '';
             for (const _field of this.fields.filter(elem => elem.relation && !(0, convertor_1.isRelationMany)(elem.relation) && elem.relation.hasOne === elem)) {
-                if (!_field.nullable) {
-                    const fieldForeignKey = _field.relation;
-                    if ((0, convertor_1.isRelationMany)(fieldForeignKey)) {
-                        continue;
-                    }
-                    checkToOne += `if(!this.${_field.name} && this.${fieldForeignKey.fromField}){
-						throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
-					}
-					`;
-                }
                 toOne += `if(this.${_field.name} && !this.${_field.name}.saving){
 					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
 					await ${_field.name}Yield.next()
