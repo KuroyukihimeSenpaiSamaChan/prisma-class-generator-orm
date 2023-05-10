@@ -86,7 +86,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					parameters.toOne = {
 						genericsDeclaration: parameters.toOne.genericsDeclaration + `
 						ForeignKey | undefined,`,
-						generics: parameters.toOne.generics + `${_field.name}Type extends ForeignKey | undefined,
+						generics: parameters.toOne.generics + `${_field.name}Type extends ForeignKey | undefined = ForeignKey | undefined,
 						`,
 						type: parameters.toOne.type + ` & (${_field.name}Type extends ForeignKey ? {
 							${_field.relation.fromField}: ForeignKey,
@@ -151,11 +151,11 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 
 			constructor = `
-			constructor(obj: _${this.name}Constructor${parameters.toOne.genericsDeclaration}){
+			constructor(obj: _${this.name}Constructor){
 				this.init(obj)
 			}
 
-			private init(obj: _${this.name}Constructor${parameters.toOne.genericsDeclaration}){
+			private init(obj: _${this.name}Constructor){
 				${initialiazers.normal}
 				${initialiazers.toOne}
 				${initialiazers.toMany}
@@ -172,34 +172,42 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			`
 		}
 
-		// Generate the save method
+		// Generate the load method
 		let loadMethod = ''
 		{
 			loadMethod = LOAD_TEMPLATE
 		}
 
-		// Generate the load method
+		// Generate the save method
 		let saveMethod = ''
 		let deleteMethod = ''
 		{
 			let checkRequireds = ''
-			for (const _field of this.fields.filter((elem) => !elem.isId && !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
-				checkRequireds += `if(this.${_field.name} === undefined){
-					throw new Error("Missing field on _${this.name}.save(): ${_field.name}")
-				}`
-			}
+			// for (const _field of this.fields.filter((elem) => !elem.isId && !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
+			// 	if (this.name === "Product") {
+			// 		console.log(_field)
+			// 	}
+			// 	checkRequireds += `if(this.${_field.name} === undefined){
+			// 		throw new Error("Missing field on _${this.name}.save(): ${_field.name}")
+			// 	}`
+			// }
 
 			let checkToOne = ''
 			let toOne = ''
 			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasOne === elem)) {
 				if (!_field.nullable) {
-					checkToOne += `if(this.${_field.name} === undefined || this.${_field.name} === null){
+					const fieldForeignKey = _field.relation
+					// Seems useless, but needed for typing
+					if (isRelationMany(fieldForeignKey)) {
+						continue
+					}
+					checkToOne += `if(!this.${_field.name} && this.${fieldForeignKey.fromField}){
 						throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
 					}
 					`
 				}
 				//this.${_field.name} !== undefined && this.${_field.name} !== null && 
-				toOne += `if(typeof this.${_field.name} !== 'number' && !this.${_field.name}!.saving){
+				toOne += `if(this.${_field.name} && !this.${_field.name}.saving){
 					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
 					await ${_field.name}Yield.next()
 					saveYieldsArray.push(${_field.name}Yield)
@@ -211,7 +219,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			let checkToMany = ''
 			let toMany = ''
 			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasMany === elem)) {
-				checkToMany += `if(this.${_field.name}.length() > 0 && this.primaryKey === -1){
+				checkToMany += `if(this.${_field.name}.length > 0 && this.primaryKey === -1){
 					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}
 				`

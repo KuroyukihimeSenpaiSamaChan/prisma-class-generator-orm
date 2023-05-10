@@ -4,7 +4,9 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-type _UserDeliveryConstructor<userType extends ForeignKey | undefined> = {
+type _UserDeliveryConstructor<
+	userType extends ForeignKey | undefined = ForeignKey | undefined,
+> = {
 	id?: number
 	address: string
 	additional_address?: string | null
@@ -111,18 +113,18 @@ export class _UserDelivery implements PrismaClass {
 		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
-		if (this._user === undefined) {
+		if (!this._user) {
 			return this._user_id
 		} else {
 			return this._user.primaryKey
 		}
 	}
 
-	constructor(obj: _UserDeliveryConstructor<ForeignKey | undefined>) {
+	constructor(obj: _UserDeliveryConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: _UserDeliveryConstructor<ForeignKey | undefined>) {
+	private init(obj: _UserDeliveryConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -315,7 +317,7 @@ export class _UserDelivery implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.user !== 'number' && !this.user!.saving) {
+		if (this.user && !this.user.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
@@ -353,28 +355,7 @@ export class _UserDelivery implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.address === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): address')
-		}
-		if (this.zipcode === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): zipcode')
-		}
-		if (this.city === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): city')
-		}
-		if (this.country === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): country')
-		}
-		if (this.region === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): region')
-		}
-		if (this.phone_number === undefined) {
-			throw new Error(
-				'Missing field on _UserDelivery.save(): phone_number',
-			)
-		}
-
-		if (this.user === undefined || this.user === null) {
+		if (!this.user && this.user_id) {
 			throw new Error("user can't be null or undefined in _UserDelivery.")
 		}
 	}

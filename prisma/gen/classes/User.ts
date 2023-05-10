@@ -742,64 +742,42 @@ export class _User implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.user_pass === undefined) {
-			throw new Error('Missing field on _User.save(): user_pass')
-		}
-		if (this.user_email === undefined) {
-			throw new Error('Missing field on _User.save(): user_email')
-		}
-		if (this.user_registered === undefined) {
-			throw new Error('Missing field on _User.save(): user_registered')
-		}
-		if (this.firstname === undefined) {
-			throw new Error('Missing field on _User.save(): firstname')
-		}
-		if (this.lastname === undefined) {
-			throw new Error('Missing field on _User.save(): lastname')
-		}
-		if (this.birthdate === undefined) {
-			throw new Error('Missing field on _User.save(): birthdate')
-		}
-		if (this.token === undefined) {
-			throw new Error('Missing field on _User.save(): token')
-		}
-
-		if (this.access_token.length() > 0 && this.primaryKey === -1) {
+		if (this.access_token.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.media.length() > 0 && this.primaryKey === -1) {
+		if (this.media.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.product.length() > 0 && this.primaryKey === -1) {
+		if (this.product.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.sub_order.length() > 0 && this.primaryKey === -1) {
+		if (this.sub_order.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.user_billing.length() > 0 && this.primaryKey === -1) {
+		if (this.user_billing.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.user_delete.length() > 0 && this.primaryKey === -1) {
+		if (this.user_delete.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.user_delivery.length() > 0 && this.primaryKey === -1) {
+		if (this.user_delivery.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.baskets.length() > 0 && this.primaryKey === -1) {
+		if (this.baskets.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)

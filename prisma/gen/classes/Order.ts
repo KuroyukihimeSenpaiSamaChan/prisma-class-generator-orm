@@ -355,38 +355,7 @@ export class _Order implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.order_client_id === undefined) {
-			throw new Error('Missing field on _Order.save(): order_client_id')
-		}
-		if (this.creation_date === undefined) {
-			throw new Error('Missing field on _Order.save(): creation_date')
-		}
-		if (this.modification_date === undefined) {
-			throw new Error('Missing field on _Order.save(): modification_date')
-		}
-		if (this.order_state === undefined) {
-			throw new Error('Missing field on _Order.save(): order_state')
-		}
-		if (this.type === undefined) {
-			throw new Error('Missing field on _Order.save(): type')
-		}
-		if (this.buyer_id === undefined) {
-			throw new Error('Missing field on _Order.save(): buyer_id')
-		}
-		if (this.buyer_billing_id === undefined) {
-			throw new Error('Missing field on _Order.save(): buyer_billing_id')
-		}
-		if (this.buyer_delivery_id === undefined) {
-			throw new Error('Missing field on _Order.save(): buyer_delivery_id')
-		}
-		if (this.expedition_id === undefined) {
-			throw new Error('Missing field on _Order.save(): expedition_id')
-		}
-		if (this.order_total === undefined) {
-			throw new Error('Missing field on _Order.save(): order_total')
-		}
-
-		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+		if (this.sub_orders.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Order. Save it first, then add the toMany fields",
 			)

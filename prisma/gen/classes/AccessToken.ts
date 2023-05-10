@@ -4,7 +4,9 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-type _AccessTokenConstructor<userType extends ForeignKey | undefined> = {
+type _AccessTokenConstructor<
+	userType extends ForeignKey | undefined = ForeignKey | undefined,
+> = {
 	id?: number
 	token: string
 	created_at?: number | null
@@ -96,18 +98,18 @@ export class _AccessToken implements PrismaClass {
 		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
-		if (this._user === undefined) {
+		if (!this._user) {
 			return this._user_id
 		} else {
 			return this._user.primaryKey
 		}
 	}
 
-	constructor(obj: _AccessTokenConstructor<ForeignKey | undefined>) {
+	constructor(obj: _AccessTokenConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: _AccessTokenConstructor<ForeignKey | undefined>) {
+	private init(obj: _AccessTokenConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -265,7 +267,7 @@ export class _AccessToken implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.user !== 'number' && !this.user!.saving) {
+		if (this.user && !this.user.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
@@ -303,11 +305,7 @@ export class _AccessToken implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.token === undefined) {
-			throw new Error('Missing field on _AccessToken.save(): token')
-		}
-
-		if (this.user === undefined || this.user === null) {
+		if (!this.user && this.user_id) {
 			throw new Error("user can't be null or undefined in _AccessToken.")
 		}
 	}

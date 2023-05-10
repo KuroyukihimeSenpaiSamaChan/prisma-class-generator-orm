@@ -287,11 +287,7 @@ export class _Role implements PrismaClass {
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
-	checkRequiredFields() {
-		if (this.label === undefined) {
-			throw new Error('Missing field on _Role.save(): label')
-		}
-	}
+	checkRequiredFields() {}
 
 	static async deleteAll(
 		query: Parameters<typeof _Role.prisma.deleteMany>[0],

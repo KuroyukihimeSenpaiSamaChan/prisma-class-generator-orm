@@ -313,18 +313,7 @@ export class _ProductCategory implements PrismaClass {
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 
-	checkRequiredFields() {
-		if (this.category_name === undefined) {
-			throw new Error(
-				'Missing field on _ProductCategory.save(): category_name',
-			)
-		}
-		if (this.category_slug === undefined) {
-			throw new Error(
-				'Missing field on _ProductCategory.save(): category_slug',
-			)
-		}
-	}
+	checkRequiredFields() {}
 
 	static async deleteAll(
 		query: Parameters<typeof _ProductCategory.prisma.deleteMany>[0],

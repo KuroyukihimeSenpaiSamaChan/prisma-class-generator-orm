@@ -276,11 +276,7 @@ export class _ProductState implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.state === undefined) {
-			throw new Error('Missing field on _ProductState.save(): state')
-		}
-
-		if (this.products.length() > 0 && this.primaryKey === -1) {
+		if (this.products.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _ProductState. Save it first, then add the toMany fields",
 			)

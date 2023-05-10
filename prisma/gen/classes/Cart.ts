@@ -5,7 +5,9 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-type _CartConstructor<userType extends ForeignKey | undefined> = {
+type _CartConstructor<
+	userType extends ForeignKey | undefined = ForeignKey | undefined,
+> = {
 	id?: number
 	creation_date: number
 	modification_date: number
@@ -112,7 +114,7 @@ export class _Cart implements PrismaClass {
 		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
-		if (this._user === undefined) {
+		if (!this._user) {
 			return this._user_id
 		} else {
 			return this._user.primaryKey
@@ -127,11 +129,11 @@ export class _Cart implements PrismaClass {
 		this._products = value
 	}
 
-	constructor(obj: _CartConstructor<ForeignKey | undefined>) {
+	constructor(obj: _CartConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: _CartConstructor<ForeignKey | undefined>) {
+	private init(obj: _CartConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -291,7 +293,7 @@ export class _Cart implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.user !== 'number' && !this.user!.saving) {
+		if (this.user && !this.user.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
@@ -332,18 +334,11 @@ export class _Cart implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.creation_date === undefined) {
-			throw new Error('Missing field on _Cart.save(): creation_date')
-		}
-		if (this.modification_date === undefined) {
-			throw new Error('Missing field on _Cart.save(): modification_date')
-		}
-
-		if (this.user === undefined || this.user === null) {
+		if (!this.user && this.user_id) {
 			throw new Error("user can't be null or undefined in _Cart.")
 		}
 
-		if (this.products.length() > 0 && this.primaryKey === -1) {
+		if (this.products.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Cart. Save it first, then add the toMany fields",
 			)

@@ -24,12 +24,16 @@ import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
 type _ProductConstructor<
-	productConditioningType extends ForeignKey | undefined,
-	mediaType extends ForeignKey | undefined,
-	productStateType extends ForeignKey | undefined,
-	tva_typeType extends ForeignKey | undefined,
-	userType extends ForeignKey | undefined,
-	productVisibiltyType extends ForeignKey | undefined,
+	productConditioningType extends ForeignKey | undefined =
+		| ForeignKey
+		| undefined,
+	mediaType extends ForeignKey | undefined = ForeignKey | undefined,
+	productStateType extends ForeignKey | undefined = ForeignKey | undefined,
+	tva_typeType extends ForeignKey | undefined = ForeignKey | undefined,
+	userType extends ForeignKey | undefined = ForeignKey | undefined,
+	productVisibiltyType extends ForeignKey | undefined =
+		| ForeignKey
+		| undefined,
 > = {
 	id?: number
 	product_name: string
@@ -408,7 +412,7 @@ export class _Product implements PrismaClass {
 		this._conditioningType = value.id
 	}
 	get conditioningType(): ForeignKey {
-		if (this._productConditioning === undefined) {
+		if (!this._productConditioning) {
 			return this._conditioningType
 		} else {
 			return this._productConditioning.primaryKey
@@ -424,7 +428,7 @@ export class _Product implements PrismaClass {
 		this._product_image = value.id
 	}
 	get product_image(): ForeignKey {
-		if (this._media === undefined) {
+		if (!this._media) {
 			return this._product_image
 		} else {
 			return this._media.primaryKey
@@ -440,7 +444,7 @@ export class _Product implements PrismaClass {
 		this._state = value.id
 	}
 	get state(): ForeignKey {
-		if (this._productState === undefined) {
+		if (!this._productState) {
 			return this._state
 		} else {
 			return this._productState.primaryKey
@@ -456,7 +460,7 @@ export class _Product implements PrismaClass {
 		this._tva = value.id
 	}
 	get tva(): ForeignKey {
-		if (this._tva_type === undefined) {
+		if (!this._tva_type) {
 			return this._tva
 		} else {
 			return this._tva_type.primaryKey
@@ -472,7 +476,7 @@ export class _Product implements PrismaClass {
 		this._vendor_id = value.id
 	}
 	get vendor_id(): ForeignKey {
-		if (this._user === undefined) {
+		if (!this._user) {
 			return this._vendor_id
 		} else {
 			return this._user.primaryKey
@@ -488,7 +492,7 @@ export class _Product implements PrismaClass {
 		this._visibility = value.id
 	}
 	get visibility(): ForeignKey {
-		if (this._productVisibilty === undefined) {
+		if (!this._productVisibilty) {
 			return this._visibility
 		} else {
 			return this._productVisibilty.primaryKey
@@ -519,29 +523,11 @@ export class _Product implements PrismaClass {
 		this._gallery = value
 	}
 
-	constructor(
-		obj: _ProductConstructor<
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined
-		>,
-	) {
+	constructor(obj: _ProductConstructor) {
 		this.init(obj)
 	}
 
-	private init(
-		obj: _ProductConstructor<
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined
-		>,
-	) {
+	private init(obj: _ProductConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -954,47 +940,38 @@ export class _Product implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (
-			typeof this.productConditioning !== 'number' &&
-			!this.productConditioning!.saving
-		) {
+		if (this.productConditioning && !this.productConditioning.saving) {
 			const productConditioningYield =
 				this.productConditioning!.saveToTransaction(tx)
 			await productConditioningYield.next()
 			saveYieldsArray.push(productConditioningYield)
 		}
 
-		if (typeof this.media !== 'number' && !this.media!.saving) {
+		if (this.media && !this.media.saving) {
 			const mediaYield = this.media!.saveToTransaction(tx)
 			await mediaYield.next()
 			saveYieldsArray.push(mediaYield)
 		}
 
-		if (
-			typeof this.productState !== 'number' &&
-			!this.productState!.saving
-		) {
+		if (this.productState && !this.productState.saving) {
 			const productStateYield = this.productState!.saveToTransaction(tx)
 			await productStateYield.next()
 			saveYieldsArray.push(productStateYield)
 		}
 
-		if (typeof this.tva_type !== 'number' && !this.tva_type!.saving) {
+		if (this.tva_type && !this.tva_type.saving) {
 			const tva_typeYield = this.tva_type!.saveToTransaction(tx)
 			await tva_typeYield.next()
 			saveYieldsArray.push(tva_typeYield)
 		}
 
-		if (typeof this.user !== 'number' && !this.user!.saving) {
+		if (this.user && !this.user.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
 		}
 
-		if (
-			typeof this.productVisibilty !== 'number' &&
-			!this.productVisibilty!.saving
-		) {
+		if (this.productVisibilty && !this.productVisibilty.saving) {
 			const productVisibiltyYield =
 				this.productVisibilty!.saveToTransaction(tx)
 			await productVisibiltyYield.next()
@@ -1084,109 +1061,37 @@ export class _Product implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.product_name === undefined) {
-			throw new Error('Missing field on _Product.save(): product_name')
-		}
-		if (this.vendor_sku === undefined) {
-			throw new Error('Missing field on _Product.save(): vendor_sku')
-		}
-		if (this.product_sku === undefined) {
-			throw new Error('Missing field on _Product.save(): product_sku')
-		}
-		if (this.price === undefined) {
-			throw new Error('Missing field on _Product.save(): price')
-		}
-		if (this.price_promo === undefined) {
-			throw new Error('Missing field on _Product.save(): price_promo')
-		}
-		if (this.description === undefined) {
-			throw new Error('Missing field on _Product.save(): description')
-		}
-		if (this.backorder === undefined) {
-			throw new Error('Missing field on _Product.save(): backorder')
-		}
-		if (this.linked_products === undefined) {
-			throw new Error('Missing field on _Product.save(): linked_products')
-		}
-		if (this.product_keywords === undefined) {
-			throw new Error(
-				'Missing field on _Product.save(): product_keywords',
-			)
-		}
-		if (this.creation_date === undefined) {
-			throw new Error('Missing field on _Product.save(): creation_date')
-		}
-		if (this.modification_date === undefined) {
-			throw new Error(
-				'Missing field on _Product.save(): modification_date',
-			)
-		}
-		if (this.has_tva === undefined) {
-			throw new Error('Missing field on _Product.save(): has_tva')
-		}
-		if (this.conditioningValue === undefined) {
-			throw new Error(
-				'Missing field on _Product.save(): conditioningValue',
-			)
-		}
-		if (this.dimensions === undefined) {
-			throw new Error('Missing field on _Product.save(): dimensions')
-		}
-		if (this.marque === undefined) {
-			throw new Error('Missing field on _Product.save(): marque')
-		}
-		if (this.slug === undefined) {
-			throw new Error('Missing field on _Product.save(): slug')
-		}
-		if (this.state_description === undefined) {
-			throw new Error(
-				'Missing field on _Product.save(): state_description',
-			)
-		}
-		if (this.quantity === undefined) {
-			throw new Error('Missing field on _Product.save(): quantity')
-		}
-		if (this.weight === undefined) {
-			throw new Error('Missing field on _Product.save(): weight')
-		}
-
-		if (
-			this.productConditioning === undefined ||
-			this.productConditioning === null
-		) {
+		if (!this.productConditioning && this.conditioningType) {
 			throw new Error(
 				"productConditioning can't be null or undefined in _Product.",
 			)
 		}
-		if (this.media === undefined || this.media === null) {
+		if (!this.media && this.product_image) {
 			throw new Error("media can't be null or undefined in _Product.")
 		}
-		if (this.productState === undefined || this.productState === null) {
+		if (!this.productState && this.state) {
 			throw new Error(
 				"productState can't be null or undefined in _Product.",
 			)
 		}
-		if (this.tva_type === undefined || this.tva_type === null) {
+		if (!this.tva_type && this.tva) {
 			throw new Error("tva_type can't be null or undefined in _Product.")
 		}
-		if (this.user === undefined || this.user === null) {
+		if (!this.user && this.vendor_id) {
 			throw new Error("user can't be null or undefined in _Product.")
 		}
-		if (
-			this.productVisibilty === undefined ||
-			this.productVisibilty === null
-		) {
+		if (!this.productVisibilty && this.visibility) {
 			throw new Error(
 				"productVisibilty can't be null or undefined in _Product.",
 			)
 		}
 
-		if (this.basketProducts.length() > 0 && this.primaryKey === -1) {
+		if (this.basketProducts.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.subOrders.length() > 0 && this.primaryKey === -1) {
+		if (this.subOrders.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
 			)

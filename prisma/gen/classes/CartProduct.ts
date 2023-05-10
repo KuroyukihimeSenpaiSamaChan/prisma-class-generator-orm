@@ -6,8 +6,8 @@ import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
 type _CartProductConstructor<
-	basketType extends ForeignKey | undefined,
-	productType extends ForeignKey | undefined,
+	basketType extends ForeignKey | undefined = ForeignKey | undefined,
+	productType extends ForeignKey | undefined = ForeignKey | undefined,
 > = {
 	id?: number
 	quantity: number
@@ -120,7 +120,7 @@ export class _CartProduct implements PrismaClass {
 		this._basket_id = value.id
 	}
 	get basket_id(): ForeignKey {
-		if (this._basket === undefined) {
+		if (!this._basket) {
 			return this._basket_id
 		} else {
 			return this._basket.primaryKey
@@ -136,28 +136,18 @@ export class _CartProduct implements PrismaClass {
 		this._product_id = value.id
 	}
 	get product_id(): ForeignKey {
-		if (this._product === undefined) {
+		if (!this._product) {
 			return this._product_id
 		} else {
 			return this._product.primaryKey
 		}
 	}
 
-	constructor(
-		obj: _CartProductConstructor<
-			ForeignKey | undefined,
-			ForeignKey | undefined
-		>,
-	) {
+	constructor(obj: _CartProductConstructor) {
 		this.init(obj)
 	}
 
-	private init(
-		obj: _CartProductConstructor<
-			ForeignKey | undefined,
-			ForeignKey | undefined
-		>,
-	) {
+	private init(obj: _CartProductConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -312,13 +302,13 @@ export class _CartProduct implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.basket !== 'number' && !this.basket!.saving) {
+		if (this.basket && !this.basket.saving) {
 			const basketYield = this.basket!.saveToTransaction(tx)
 			await basketYield.next()
 			saveYieldsArray.push(basketYield)
 		}
 
-		if (typeof this.product !== 'number' && !this.product!.saving) {
+		if (this.product && !this.product.saving) {
 			const productYield = this.product!.saveToTransaction(tx)
 			await productYield.next()
 			saveYieldsArray.push(productYield)
@@ -356,16 +346,12 @@ export class _CartProduct implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.quantity === undefined) {
-			throw new Error('Missing field on _CartProduct.save(): quantity')
-		}
-
-		if (this.basket === undefined || this.basket === null) {
+		if (!this.basket && this.basket_id) {
 			throw new Error(
 				"basket can't be null or undefined in _CartProduct.",
 			)
 		}
-		if (this.product === undefined || this.product === null) {
+		if (!this.product && this.product_id) {
 			throw new Error(
 				"product can't be null or undefined in _CartProduct.",
 			)

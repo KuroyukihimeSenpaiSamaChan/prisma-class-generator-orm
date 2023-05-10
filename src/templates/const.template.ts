@@ -13,7 +13,7 @@ export const CONST_TEMPLATES = {
       return new RelationIterator<R>(this.relations)
     }
 
-    length(): number {
+    get length(): number {
       return this.relations.length
     }
 
@@ -55,7 +55,7 @@ export const CONST_TEMPLATES = {
     }
 
     clear() {
-      while (this.length() > 0) {
+      while (this.length > 0) {
         this.remove(0)
       }
     }

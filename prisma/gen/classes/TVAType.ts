@@ -333,19 +333,12 @@ export class _TVAType implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.slug === undefined) {
-			throw new Error('Missing field on _TVAType.save(): slug')
-		}
-		if (this.amount === undefined) {
-			throw new Error('Missing field on _TVAType.save(): amount')
-		}
-
-		if (this.products.length() > 0 && this.primaryKey === -1) {
+		if (this.products.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _TVAType. Save it first, then add the toMany fields",
 			)
 		}
-		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+		if (this.sub_orders.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _TVAType. Save it first, then add the toMany fields",
 			)

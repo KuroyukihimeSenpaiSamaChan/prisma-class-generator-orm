@@ -279,11 +279,7 @@ export class _ConditioningType implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.label === undefined) {
-			throw new Error('Missing field on _ConditioningType.save(): label')
-		}
-
-		if (this.products.length() > 0 && this.primaryKey === -1) {
+		if (this.products.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _ConditioningType. Save it first, then add the toMany fields",
 			)

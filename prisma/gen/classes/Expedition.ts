@@ -314,20 +314,7 @@ export class _Expedition implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.name === undefined) {
-			throw new Error('Missing field on _Expedition.save(): name')
-		}
-		if (this.slug === undefined) {
-			throw new Error('Missing field on _Expedition.save(): slug')
-		}
-		if (this.max_weight === undefined) {
-			throw new Error('Missing field on _Expedition.save(): max_weight')
-		}
-		if (this.price === undefined) {
-			throw new Error('Missing field on _Expedition.save(): price')
-		}
-
-		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+		if (this.sub_orders.length > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Expedition. Save it first, then add the toMany fields",
 			)

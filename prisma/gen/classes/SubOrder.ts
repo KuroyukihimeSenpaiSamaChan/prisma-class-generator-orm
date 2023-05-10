@@ -16,11 +16,11 @@ import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
 type _SubOrderConstructor<
-	expeditionType extends ForeignKey | undefined,
-	orderType extends ForeignKey | undefined,
-	productType extends ForeignKey | undefined,
-	userType extends ForeignKey | undefined,
-	tva_typeType extends ForeignKey | undefined,
+	expeditionType extends ForeignKey | undefined = ForeignKey | undefined,
+	orderType extends ForeignKey | undefined = ForeignKey | undefined,
+	productType extends ForeignKey | undefined = ForeignKey | undefined,
+	userType extends ForeignKey | undefined = ForeignKey | undefined,
+	tva_typeType extends ForeignKey | undefined = ForeignKey | undefined,
 > = {
 	id?: number
 	product_price: number
@@ -216,7 +216,7 @@ export class _SubOrder implements PrismaClass {
 		this._expedition_id = value.id
 	}
 	get expedition_id(): ForeignKey {
-		if (this._expedition === undefined) {
+		if (!this._expedition) {
 			return this._expedition_id
 		} else {
 			return this._expedition.primaryKey
@@ -232,7 +232,7 @@ export class _SubOrder implements PrismaClass {
 		this._order_id = value.id
 	}
 	get order_id(): ForeignKey {
-		if (this._order === undefined) {
+		if (!this._order) {
 			return this._order_id
 		} else {
 			return this._order.primaryKey
@@ -248,7 +248,7 @@ export class _SubOrder implements PrismaClass {
 		this._product_id = value.id
 	}
 	get product_id(): ForeignKey {
-		if (this._product === undefined) {
+		if (!this._product) {
 			return this._product_id
 		} else {
 			return this._product.primaryKey
@@ -264,7 +264,7 @@ export class _SubOrder implements PrismaClass {
 		this._vendor_id = value.id
 	}
 	get vendor_id(): ForeignKey {
-		if (this._user === undefined) {
+		if (!this._user) {
 			return this._vendor_id
 		} else {
 			return this._user.primaryKey
@@ -280,34 +280,18 @@ export class _SubOrder implements PrismaClass {
 		this._tva_id = value.id
 	}
 	get tva_id(): ForeignKey {
-		if (this._tva_type === undefined) {
+		if (!this._tva_type) {
 			return this._tva_id
 		} else {
 			return this._tva_type.primaryKey
 		}
 	}
 
-	constructor(
-		obj: _SubOrderConstructor<
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined
-		>,
-	) {
+	constructor(obj: _SubOrderConstructor) {
 		this.init(obj)
 	}
 
-	private init(
-		obj: _SubOrderConstructor<
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined,
-			ForeignKey | undefined
-		>,
-	) {
+	private init(obj: _SubOrderConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -504,31 +488,31 @@ export class _SubOrder implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
-		if (typeof this.expedition !== 'number' && !this.expedition!.saving) {
+		if (this.expedition && !this.expedition.saving) {
 			const expeditionYield = this.expedition!.saveToTransaction(tx)
 			await expeditionYield.next()
 			saveYieldsArray.push(expeditionYield)
 		}
 
-		if (typeof this.order !== 'number' && !this.order!.saving) {
+		if (this.order && !this.order.saving) {
 			const orderYield = this.order!.saveToTransaction(tx)
 			await orderYield.next()
 			saveYieldsArray.push(orderYield)
 		}
 
-		if (typeof this.product !== 'number' && !this.product!.saving) {
+		if (this.product && !this.product.saving) {
 			const productYield = this.product!.saveToTransaction(tx)
 			await productYield.next()
 			saveYieldsArray.push(productYield)
 		}
 
-		if (typeof this.user !== 'number' && !this.user!.saving) {
+		if (this.user && !this.user.saving) {
 			const userYield = this.user!.saveToTransaction(tx)
 			await userYield.next()
 			saveYieldsArray.push(userYield)
 		}
 
-		if (typeof this.tva_type !== 'number' && !this.tva_type!.saving) {
+		if (this.tva_type && !this.tva_type.saving) {
 			const tva_typeYield = this.tva_type!.saveToTransaction(tx)
 			await tva_typeYield.next()
 			saveYieldsArray.push(tva_typeYield)
@@ -566,28 +550,21 @@ export class _SubOrder implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.product_price === undefined) {
-			throw new Error('Missing field on _SubOrder.save(): product_price')
-		}
-		if (this.quantity === undefined) {
-			throw new Error('Missing field on _SubOrder.save(): quantity')
-		}
-
-		if (this.expedition === undefined || this.expedition === null) {
+		if (!this.expedition && this.expedition_id) {
 			throw new Error(
 				"expedition can't be null or undefined in _SubOrder.",
 			)
 		}
-		if (this.order === undefined || this.order === null) {
+		if (!this.order && this.order_id) {
 			throw new Error("order can't be null or undefined in _SubOrder.")
 		}
-		if (this.product === undefined || this.product === null) {
+		if (!this.product && this.product_id) {
 			throw new Error("product can't be null or undefined in _SubOrder.")
 		}
-		if (this.user === undefined || this.user === null) {
+		if (!this.user && this.vendor_id) {
 			throw new Error("user can't be null or undefined in _SubOrder.")
 		}
-		if (this.tva_type === undefined || this.tva_type === null) {
+		if (!this.tva_type && this.tva_id) {
 			throw new Error("tva_type can't be null or undefined in _SubOrder.")
 		}
 	}
