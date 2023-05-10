@@ -23,9 +23,9 @@ export class RelationMany<R extends PrismaClass>
 		return this.relations[index]
 	}
 
-	push(value: R)
-	push(values: R[])
-	push(value: R | R[]) {
+	push(value: R): void
+	push(values: R[]): void
+	push(value: R | R[]): void {
 		if (Array.isArray(value)) {
 			for (const val of value) {
 				this.relations.push(val)

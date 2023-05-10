@@ -216,7 +216,7 @@ export class _SubOrder implements PrismaClass {
 		this._expedition_id = value.id
 	}
 	get expedition_id(): ForeignKey {
-		if (this._expedition === null) {
+		if (this._expedition === undefined) {
 			return this._expedition_id
 		} else {
 			return this._expedition.primaryKey
@@ -232,7 +232,7 @@ export class _SubOrder implements PrismaClass {
 		this._order_id = value.id
 	}
 	get order_id(): ForeignKey {
-		if (this._order === null) {
+		if (this._order === undefined) {
 			return this._order_id
 		} else {
 			return this._order.primaryKey
@@ -248,7 +248,7 @@ export class _SubOrder implements PrismaClass {
 		this._product_id = value.id
 	}
 	get product_id(): ForeignKey {
-		if (this._product === null) {
+		if (this._product === undefined) {
 			return this._product_id
 		} else {
 			return this._product.primaryKey
@@ -264,7 +264,7 @@ export class _SubOrder implements PrismaClass {
 		this._vendor_id = value.id
 	}
 	get vendor_id(): ForeignKey {
-		if (this._user === null) {
+		if (this._user === undefined) {
 			return this._vendor_id
 		} else {
 			return this._user.primaryKey
@@ -280,7 +280,7 @@ export class _SubOrder implements PrismaClass {
 		this._tva_id = value.id
 	}
 	get tva_id(): ForeignKey {
-		if (this._tva_type === null) {
+		if (this._tva_type === undefined) {
 			return this._tva_id
 		} else {
 			return this._tva_type.primaryKey

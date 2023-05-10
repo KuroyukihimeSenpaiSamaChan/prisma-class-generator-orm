@@ -22,7 +22,7 @@ set #!{NAME}(value: _#!{TYPE}) {
 	this._#!{FOREIGNKEY} = value.id
 }
 get #!{FOREIGNKEY}(): ForeignKey {
-	if(this._#!{NAME} === null){
+	if(!this._#!{NAME}){
 		return this._#!{FOREIGNKEY}
 	} else {
 		return this._#!{NAME}.primaryKey

@@ -120,7 +120,7 @@ export class _CartProduct implements PrismaClass {
 		this._basket_id = value.id
 	}
 	get basket_id(): ForeignKey {
-		if (this._basket === null) {
+		if (this._basket === undefined) {
 			return this._basket_id
 		} else {
 			return this._basket.primaryKey
@@ -136,7 +136,7 @@ export class _CartProduct implements PrismaClass {
 		this._product_id = value.id
 	}
 	get product_id(): ForeignKey {
-		if (this._product === null) {
+		if (this._product === undefined) {
 			return this._product_id
 		} else {
 			return this._product.primaryKey

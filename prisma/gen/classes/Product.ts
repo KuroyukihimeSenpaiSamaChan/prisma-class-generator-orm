@@ -408,7 +408,7 @@ export class _Product implements PrismaClass {
 		this._conditioningType = value.id
 	}
 	get conditioningType(): ForeignKey {
-		if (this._productConditioning === null) {
+		if (this._productConditioning === undefined) {
 			return this._conditioningType
 		} else {
 			return this._productConditioning.primaryKey
@@ -424,7 +424,7 @@ export class _Product implements PrismaClass {
 		this._product_image = value.id
 	}
 	get product_image(): ForeignKey {
-		if (this._media === null) {
+		if (this._media === undefined) {
 			return this._product_image
 		} else {
 			return this._media.primaryKey
@@ -440,7 +440,7 @@ export class _Product implements PrismaClass {
 		this._state = value.id
 	}
 	get state(): ForeignKey {
-		if (this._productState === null) {
+		if (this._productState === undefined) {
 			return this._state
 		} else {
 			return this._productState.primaryKey
@@ -456,7 +456,7 @@ export class _Product implements PrismaClass {
 		this._tva = value.id
 	}
 	get tva(): ForeignKey {
-		if (this._tva_type === null) {
+		if (this._tva_type === undefined) {
 			return this._tva
 		} else {
 			return this._tva_type.primaryKey
@@ -472,7 +472,7 @@ export class _Product implements PrismaClass {
 		this._vendor_id = value.id
 	}
 	get vendor_id(): ForeignKey {
-		if (this._user === null) {
+		if (this._user === undefined) {
 			return this._vendor_id
 		} else {
 			return this._user.primaryKey
@@ -488,7 +488,7 @@ export class _Product implements PrismaClass {
 		this._visibility = value.id
 	}
 	get visibility(): ForeignKey {
-		if (this._productVisibilty === null) {
+		if (this._productVisibilty === undefined) {
 			return this._visibility
 		} else {
 			return this._productVisibilty.primaryKey

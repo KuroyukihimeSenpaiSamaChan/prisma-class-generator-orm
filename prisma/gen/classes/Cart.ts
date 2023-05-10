@@ -112,7 +112,7 @@ export class _Cart implements PrismaClass {
 		this._user_id = value.id
 	}
 	get user_id(): ForeignKey {
-		if (this._user === null) {
+		if (this._user === undefined) {
 			return this._user_id
 		} else {
 			return this._user.primaryKey
