@@ -84,5 +84,8 @@ export class FieldComponent extends BaseComponent implements Echoable {
 		isId: boolean
 	}) {
 		super(obj)
+		this.name = obj.name
+		this.useUndefinedDefault = obj.useUndefinedDefault
+		this.isId = obj.isId
 	}
 }

@@ -4,13 +4,36 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-export class _ProductVisibilty implements PrismaClass {
-	static prisma: Prisma.ProductVisibiltyDelegate<undefined>
-	get prisma(): Prisma.ProductVisibiltyDelegate<undefined> {
-		return _ProductVisibilty.prisma
+type _ProductVisibilityConstructor = {
+	id?: number
+	visibility?: string
+	products?: _Product[] | Product[] | RelationMany<_Product>
+}
+
+export class _ProductVisibility implements PrismaClass {
+	static prisma: Prisma.ProductVisibilityDelegate<undefined>
+	get prisma(): Prisma.ProductVisibilityDelegate<undefined> {
+		return _ProductVisibility.prisma
 	}
 	get prismaClient() {
 		return PrismaModel.prismaClient
+	}
+
+	static async initList() {
+		if (this.enumList === null) {
+			return
+		}
+
+		const models = await this.prisma.findMany()
+		this.enumList = []
+		for (const model of models) {
+			this.enumList.push(new _ProductVisibility(model))
+		}
+	}
+
+	private static enumList: _ProductVisibility[]
+	static get list(): _ProductVisibility[] {
+		return this.enumList
 	}
 
 	static getIncludes(
@@ -24,7 +47,7 @@ export class _ProductVisibilty implements PrismaClass {
 								number
 						  >
 			  },
-	): Prisma.ProductVisibiltyInclude {
+	): Prisma.ProductVisibilityInclude {
 		if (param === undefined) {
 			param = 0
 		}
@@ -74,16 +97,11 @@ export class _ProductVisibilty implements PrismaClass {
 		this._products = value
 	}
 
-	constructor(obj: {
-		id?: number
-		visibility?: string
-
-		products?: _Product[] | Product[] | RelationMany<_Product>
-	}) {
+	constructor(obj: _ProductVisibilityConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _ProductVisibilty>[0]) {
+	private init(obj: _ProductVisibilityConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -124,46 +142,46 @@ export class _ProductVisibilty implements PrismaClass {
 	}
 
 	static async all(
-		query?: Prisma.ProductVisibiltyFindFirstArgsBase,
-	): Promise<_ProductVisibilty[]> {
-		const models = await _ProductVisibilty.prisma.findMany(query)
+		query?: Prisma.ProductVisibilityFindFirstArgsBase,
+	): Promise<_ProductVisibility[]> {
+		const models = await _ProductVisibility.prisma.findMany(query)
 
 		return models.reduce((acc, m) => {
-			acc.push(new _ProductVisibilty(m))
+			acc.push(new _ProductVisibility(m))
 			return acc
-		}, [] as _ProductVisibilty[])
+		}, [] as _ProductVisibility[])
 	}
 
 	static async from(
-		query?: Prisma.ProductVisibiltyFindFirstArgsBase,
+		query?: Prisma.ProductVisibilityFindFirstArgsBase,
 		includes: boolean = true,
-	): Promise<_ProductVisibilty | null> {
+	): Promise<_ProductVisibility | null> {
 		if (includes) {
 			if (query === undefined) {
 				query = {
-					include: _ProductVisibilty.getIncludes(),
+					include: _ProductVisibility.getIncludes(),
 				}
 			} else if (
 				query.include === undefined &&
 				query.select === undefined
 			) {
-				query.include = _ProductVisibilty.getIncludes()
+				query.include = _ProductVisibility.getIncludes()
 			}
 		}
 
-		const dbQuery = await _ProductVisibilty.prisma.findFirst({
+		const dbQuery = await _ProductVisibility.prisma.findFirst({
 			...query,
 		})
 
 		if (dbQuery === null) return null
 
-		return new _ProductVisibilty(dbQuery)
+		return new _ProductVisibility(dbQuery)
 	}
 
 	async load(depth?: number): Promise<void>
 	async load(
 		filter?: Exclude<
-			Parameters<typeof _ProductVisibilty.getIncludes>[0],
+			Parameters<typeof _ProductVisibility.getIncludes>[0],
 			number
 		>,
 	): Promise<void>
@@ -171,7 +189,7 @@ export class _ProductVisibilty implements PrismaClass {
 		param?:
 			| number
 			| Exclude<
-					Parameters<typeof _ProductVisibilty.getIncludes>[0],
+					Parameters<typeof _ProductVisibility.getIncludes>[0],
 					number
 			  >,
 	): Promise<void> {
@@ -187,11 +205,11 @@ export class _ProductVisibilty implements PrismaClass {
 		}
 
 		if (this.id !== -1) {
-			const dbThis = await _ProductVisibilty.prisma.findUnique({
+			const dbThis = await _ProductVisibility.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _ProductVisibilty.getIncludes(param),
+				select: _ProductVisibility.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })
@@ -243,7 +261,7 @@ export class _ProductVisibilty implements PrismaClass {
 
 		if (this._id === -1) {
 			this._id = (
-				await tx.productVisibilty.create({
+				await tx.productVisibility.create({
 					data: {
 						...this.nonRelationsToJSON(),
 						id: undefined,
@@ -252,7 +270,7 @@ export class _ProductVisibilty implements PrismaClass {
 				})
 			).id
 		} else {
-			await tx.productVisibilty.update({
+			await tx.productVisibility.update({
 				where: { id: this._id },
 				data: {
 					...this.nonRelationsToJSON(),
@@ -267,23 +285,23 @@ export class _ProductVisibilty implements PrismaClass {
 	checkRequiredFields() {
 		if (this.visibility === undefined) {
 			throw new Error(
-				'Missing field on _ProductVisibilty.save(): visibility',
+				'Missing field on _ProductVisibility.save(): visibility',
 			)
 		}
 
 		if (this.products.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
-				"Can't save toMany fields on new _ProductVisibilty. Save it first, then add the toMany fields",
+				"Can't save toMany fields on new _ProductVisibility. Save it first, then add the toMany fields",
 			)
 		}
 	}
 
 	static async deleteAll(
-		query: Parameters<typeof _ProductVisibilty.prisma.deleteMany>[0],
+		query: Parameters<typeof _ProductVisibility.prisma.deleteMany>[0],
 	): Promise<false | number> {
 		let count: number
 		try {
-			count = (await _ProductVisibilty.prisma.deleteMany(query)).count
+			count = (await _ProductVisibility.prisma.deleteMany(query)).count
 		} catch (e) {
 			console.log(e)
 			return false

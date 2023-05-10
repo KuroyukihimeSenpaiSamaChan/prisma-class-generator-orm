@@ -7,7 +7,7 @@ exports.CONST_TEMPLATES = {
   import { PrismaModel } from './prisma-model'
 
   export class RelationMany<R extends PrismaClass>
-	implements PrismaClass, Iterable<R>
+    implements PrismaClass, Iterable<R>
   {
     private _toRemoveRelations: R[] = []
     constructor(private relations: R[] = []) { }
@@ -22,12 +22,14 @@ exports.CONST_TEMPLATES = {
 
     get(index: number): R {
       if (index < 0 || index >= this.relations.length) {
-        throw new RangeError("Index out of range")
+        throw new RangeError('Index out of range')
       }
 
       return this.relations[index]
     }
 
+    push(value: R)
+    push(values: R[])
     push(value: R | R[]) {
       if (Array.isArray(value)) {
         for (const val of value) {
@@ -40,7 +42,7 @@ exports.CONST_TEMPLATES = {
 
     reduce<Accumulator>(
       callback: (acc: Accumulator, elem: R) => Accumulator,
-      accumulator: Accumulator
+      accumulator: Accumulator,
     ): Accumulator {
       return this.relations.reduce(callback, accumulator)
     }
@@ -53,6 +55,17 @@ exports.CONST_TEMPLATES = {
       const relation = this.relations.splice(index, 1)[0]
       this._toRemoveRelations.push(relation)
       return relation
+    }
+
+    clear() {
+      while (this.length() > 0) {
+        this.remove(0)
+      }
+    }
+
+    replace(values: R[]) {
+      this.clear()
+      this.push(values)
     }
 
     get toRemoveRelations(): R[] {

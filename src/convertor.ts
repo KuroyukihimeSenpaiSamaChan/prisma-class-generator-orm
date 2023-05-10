@@ -126,6 +126,7 @@ export class PrismaConvertor {
 		if (postfix) {
 			className += postfix
 		}
+
 		const classComponent = new ClassComponent({ name: className })
 		if ((this._config.enums as string[]).includes(className)) {
 			classComponent.isEnum = true

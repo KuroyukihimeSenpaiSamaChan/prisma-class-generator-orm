@@ -4,6 +4,12 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _RoleConstructor = {
+	id?: number
+	label: string
+	users?: _User[] | User[] | RelationMany<_User>
+}
+
 export class _Role implements PrismaClass {
 	static prisma: Prisma.RoleDelegate<undefined>
 	get prisma(): Prisma.RoleDelegate<undefined> {
@@ -91,16 +97,11 @@ export class _Role implements PrismaClass {
 		this._users = value
 	}
 
-	constructor(obj: {
-		id?: number
-		label: string
-
-		users?: _User[] | User[] | RelationMany<_User>
-	}) {
+	constructor(obj: _RoleConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _Role>[0]) {
+	private init(obj: _RoleConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}

@@ -10,11 +10,13 @@ import { _Media } from './classes/Media'
 import { _Order } from './classes/Order'
 import { _Product } from './classes/Product'
 import { _ProductCategory } from './classes/ProductCategory'
-import { _ProductVisibilty } from './classes/ProductVisibilty'
+import { _ProductVisibility } from './classes/ProductVisibility'
 import { _ProductState } from './classes/ProductState'
 import { _ConditioningType } from './classes/ConditioningType'
 import { _SubOrder } from './classes/SubOrder'
 import { _TVAType } from './classes/TVAType'
+import { _Cart } from './classes/Cart'
+import { _CartProduct } from './classes/CartProduct'
 
 export abstract class PrismaModel {
 	static prismaClient: PrismaClient
@@ -40,15 +42,18 @@ export abstract class PrismaModel {
 		_Order.prisma = PrismaModel.prismaClient.order
 		_Product.prisma = PrismaModel.prismaClient.product
 		_ProductCategory.prisma = PrismaModel.prismaClient.productCategory
-		_ProductVisibilty.prisma = PrismaModel.prismaClient.productVisibilty
+		_ProductVisibility.prisma = PrismaModel.prismaClient.productVisibility
 		_ProductState.prisma = PrismaModel.prismaClient.productState
 		_ConditioningType.prisma = PrismaModel.prismaClient.conditioningType
 		_SubOrder.prisma = PrismaModel.prismaClient.subOrder
 		_TVAType.prisma = PrismaModel.prismaClient.tVAType
+		_Cart.prisma = PrismaModel.prismaClient.cart
+		_CartProduct.prisma = PrismaModel.prismaClient.cartProduct
 
 		await _Role.initList()
 		await _Expedition.initList()
 		await _ProductCategory.initList()
+		await _ProductVisibility.initList()
 		await _ProductState.initList()
 		await _ConditioningType.initList()
 		await _TVAType.initList()

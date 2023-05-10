@@ -1,19 +1,15 @@
 import { _User } from './User'
-import { Prisma, User } from '@prisma/client'
+import { _CartProduct } from './CartProduct'
+import { Prisma, User, CartProduct } from '@prisma/client'
 import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
-type _UserDeliveryConstructor<userType extends ForeignKey | undefined> = {
+type _CartConstructor<userType extends ForeignKey | undefined> = {
 	id?: number
-	address: string
-	additional_address?: string | null
-	zipcode: string
-	city: string
-	country: string
-	region: string
-	phone_number: string
-	company_name?: string | null
+	creation_date: number
+	modification_date: number
+	products?: _CartProduct[] | CartProduct[] | RelationMany<_CartProduct>
 } & (userType extends ForeignKey
 	? {
 			user_id: ForeignKey
@@ -24,10 +20,10 @@ type _UserDeliveryConstructor<userType extends ForeignKey | undefined> = {
 			user: User | _User
 	  })
 
-export class _UserDelivery implements PrismaClass {
-	static prisma: Prisma.UserDeliveryDelegate<undefined>
-	get prisma(): Prisma.UserDeliveryDelegate<undefined> {
-		return _UserDelivery.prisma
+export class _Cart implements PrismaClass {
+	static prisma: Prisma.CartDelegate<undefined>
+	get prisma(): Prisma.CartDelegate<undefined> {
+		return _Cart.prisma
 	}
 	get prismaClient() {
 		return PrismaModel.prismaClient
@@ -43,8 +39,14 @@ export class _UserDelivery implements PrismaClass {
 								Parameters<typeof _User.getIncludes>[0],
 								number
 						  >
+					products?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _CartProduct.getIncludes>[0],
+								number
+						  >
 			  },
-	): Prisma.UserDeliveryInclude {
+	): Prisma.CartInclude {
 		if (param === undefined) {
 			param = 0
 		}
@@ -53,10 +55,12 @@ export class _UserDelivery implements PrismaClass {
 			if (param <= 0) {
 				return {
 					user: true,
+					products: true,
 				}
 			}
 			return {
 				user: { include: _User.getIncludes(param - 1) },
+				products: { include: _CartProduct.getIncludes(param - 1) },
 			}
 		} else {
 			if (Object.keys(param).length === 0) {
@@ -69,6 +73,15 @@ export class _UserDelivery implements PrismaClass {
 						? true
 						: {
 								include: _User.getIncludes(param.user),
+						  }
+					: undefined,
+				products: Object.keys(param).includes('products')
+					? typeof param.products === 'boolean'
+						? true
+						: {
+								include: _CartProduct.getIncludes(
+									param.products,
+								),
 						  }
 					: undefined,
 			}
@@ -86,21 +99,9 @@ export class _UserDelivery implements PrismaClass {
 
 	private _user_id: ForeignKey
 
-	address: string
+	creation_date: number
 
-	additional_address: string | null
-
-	zipcode: string
-
-	city: string
-
-	country: string
-
-	region: string
-
-	phone_number: string
-
-	company_name: string | null
+	modification_date: number
 
 	private _user: _User
 	get user(): _User {
@@ -118,22 +119,24 @@ export class _UserDelivery implements PrismaClass {
 		}
 	}
 
-	constructor(obj: _UserDeliveryConstructor<ForeignKey | undefined>) {
+	private _products: RelationMany<_CartProduct>
+	public get products(): RelationMany<_CartProduct> {
+		return this._products
+	}
+	private set products(value: RelationMany<_CartProduct>) {
+		this._products = value
+	}
+
+	constructor(obj: _CartConstructor<ForeignKey | undefined>) {
 		this.init(obj)
 	}
 
-	private init(obj: _UserDeliveryConstructor<ForeignKey | undefined>) {
+	private init(obj: _CartConstructor<ForeignKey | undefined>) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
-		this.address = obj.address
-		this.additional_address = obj.additional_address ?? null
-		this.zipcode = obj.zipcode
-		this.city = obj.city
-		this.country = obj.country
-		this.region = obj.region
-		this.phone_number = obj.phone_number
-		this.company_name = obj.company_name ?? null
+		this.creation_date = obj.creation_date
+		this.modification_date = obj.modification_date
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -144,41 +147,30 @@ export class _UserDelivery implements PrismaClass {
 		} else if (obj.user_id !== undefined) {
 			this._user_id = obj.user_id
 		} else throw new Error('Invalid constructor.')
+
+		if (!obj.products || obj.products.length === 0) {
+			this.products = new RelationMany<_CartProduct>()
+		} else if (obj.products instanceof RelationMany) {
+			this.products = obj.products
+		} else if (obj.products[0] instanceof _CartProduct) {
+			this.products = new RelationMany<_CartProduct>(
+				obj.products as _CartProduct[],
+			)
+		} else {
+			const productsArray: _CartProduct[] = []
+			for (const value of obj.products as CartProduct[]) {
+				productsArray.push(new _CartProduct(value))
+			}
+			this.products = new RelationMany<_CartProduct>(productsArray)
+		}
 	}
 
-	update(obj: {
-		address?: string
-		additional_address?: string | null
-		zipcode?: string
-		city?: string
-		country?: string
-		region?: string
-		phone_number?: string
-		company_name?: string | null
-	}) {
-		if (obj.address !== undefined) {
-			this.address = obj.address
+	update(obj: { creation_date?: number; modification_date?: number }) {
+		if (obj.creation_date !== undefined) {
+			this.creation_date = obj.creation_date
 		}
-		if (obj.additional_address !== undefined) {
-			this.additional_address = obj.additional_address
-		}
-		if (obj.zipcode !== undefined) {
-			this.zipcode = obj.zipcode
-		}
-		if (obj.city !== undefined) {
-			this.city = obj.city
-		}
-		if (obj.country !== undefined) {
-			this.country = obj.country
-		}
-		if (obj.region !== undefined) {
-			this.region = obj.region
-		}
-		if (obj.phone_number !== undefined) {
-			this.phone_number = obj.phone_number
-		}
-		if (obj.company_name !== undefined) {
-			this.company_name = obj.company_name
+		if (obj.modification_date !== undefined) {
+			this.modification_date = obj.modification_date
 		}
 	}
 
@@ -186,80 +178,64 @@ export class _UserDelivery implements PrismaClass {
 		return {
 			id: this.id,
 			user_id: this.user_id,
-			address: this.address,
-			additional_address: this.additional_address,
-			zipcode: this.zipcode,
-			city: this.city,
-			country: this.country,
-			region: this.region,
-			phone_number: this.phone_number,
-			company_name: this.company_name,
+			creation_date: this.creation_date,
+			modification_date: this.modification_date,
 			user: this.user,
+			products: this.products,
 		}
 	}
 	nonRelationsToJSON() {
 		return {
 			id: this.id!,
 			user_id: this.user_id!,
-			address: this.address!,
-			additional_address: this.additional_address!,
-			zipcode: this.zipcode!,
-			city: this.city!,
-			country: this.country!,
-			region: this.region!,
-			phone_number: this.phone_number!,
-			company_name: this.company_name!,
+			creation_date: this.creation_date!,
+			modification_date: this.modification_date!,
 		}
 	}
 
-	static async all(
-		query?: Prisma.UserDeliveryFindFirstArgsBase,
-	): Promise<_UserDelivery[]> {
-		const models = await _UserDelivery.prisma.findMany(query)
+	static async all(query?: Prisma.CartFindFirstArgsBase): Promise<_Cart[]> {
+		const models = await _Cart.prisma.findMany(query)
 
 		return models.reduce((acc, m) => {
-			acc.push(new _UserDelivery(m))
+			acc.push(new _Cart(m))
 			return acc
-		}, [] as _UserDelivery[])
+		}, [] as _Cart[])
 	}
 
 	static async from(
-		query?: Prisma.UserDeliveryFindFirstArgsBase,
+		query?: Prisma.CartFindFirstArgsBase,
 		includes: boolean = true,
-	): Promise<_UserDelivery | null> {
+	): Promise<_Cart | null> {
 		if (includes) {
 			if (query === undefined) {
 				query = {
-					include: _UserDelivery.getIncludes(),
+					include: _Cart.getIncludes(),
 				}
 			} else if (
 				query.include === undefined &&
 				query.select === undefined
 			) {
-				query.include = _UserDelivery.getIncludes()
+				query.include = _Cart.getIncludes()
 			}
 		}
 
-		const dbQuery = await _UserDelivery.prisma.findFirst({
+		const dbQuery = await _Cart.prisma.findFirst({
 			...query,
 		})
 
 		if (dbQuery === null) return null
 
-		return new _UserDelivery(dbQuery)
+		return new _Cart(dbQuery)
 	}
 
 	async load(depth?: number): Promise<void>
 	async load(
-		filter?: Exclude<
-			Parameters<typeof _UserDelivery.getIncludes>[0],
-			number
-		>,
+		filter?: Exclude<Parameters<typeof _Cart.getIncludes>[0], number>,
 	): Promise<void>
 	async load(
 		param?:
 			| number
-			| Exclude<Parameters<typeof _UserDelivery.getIncludes>[0], number>,
+			| Exclude<Parameters<typeof _Cart.getIncludes>[0], number>,
 	): Promise<void> {
 		if (param === undefined) {
 			param = 0
@@ -273,11 +249,11 @@ export class _UserDelivery implements PrismaClass {
 		}
 
 		if (this.id !== -1) {
-			const dbThis = await _UserDelivery.prisma.findUnique({
+			const dbThis = await _Cart.prisma.findUnique({
 				where: {
 					id: this.id,
 				},
-				select: _UserDelivery.getIncludes(param),
+				select: _Cart.getIncludes(param),
 			})
 			if (dbThis !== null) {
 				this.init({ ...this.toJSON(), ...dbThis })
@@ -322,6 +298,9 @@ export class _UserDelivery implements PrismaClass {
 		}
 
 		// Relations toMany
+		const productsYield = this.products!.saveToTransaction(tx)
+		await productsYield.next()
+		saveYieldsArray.push(productsYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -331,7 +310,7 @@ export class _UserDelivery implements PrismaClass {
 
 		if (this._id === -1) {
 			this._id = (
-				await tx.userDelivery.create({
+				await tx.cart.create({
 					data: {
 						...this.nonRelationsToJSON(),
 						id: undefined,
@@ -340,7 +319,7 @@ export class _UserDelivery implements PrismaClass {
 				})
 			).id
 		} else {
-			await tx.userDelivery.update({
+			await tx.cart.update({
 				where: { id: this._id },
 				data: {
 					...this.nonRelationsToJSON(),
@@ -353,38 +332,30 @@ export class _UserDelivery implements PrismaClass {
 	}
 
 	checkRequiredFields() {
-		if (this.address === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): address')
+		if (this.creation_date === undefined) {
+			throw new Error('Missing field on _Cart.save(): creation_date')
 		}
-		if (this.zipcode === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): zipcode')
-		}
-		if (this.city === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): city')
-		}
-		if (this.country === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): country')
-		}
-		if (this.region === undefined) {
-			throw new Error('Missing field on _UserDelivery.save(): region')
-		}
-		if (this.phone_number === undefined) {
-			throw new Error(
-				'Missing field on _UserDelivery.save(): phone_number',
-			)
+		if (this.modification_date === undefined) {
+			throw new Error('Missing field on _Cart.save(): modification_date')
 		}
 
 		if (this.user === undefined || this.user === null) {
-			throw new Error("user can't be null or undefined in _UserDelivery.")
+			throw new Error("user can't be null or undefined in _Cart.")
+		}
+
+		if (this.products.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _Cart. Save it first, then add the toMany fields",
+			)
 		}
 	}
 
 	static async deleteAll(
-		query: Parameters<typeof _UserDelivery.prisma.deleteMany>[0],
+		query: Parameters<typeof _Cart.prisma.deleteMany>[0],
 	): Promise<false | number> {
 		let count: number
 		try {
-			count = (await _UserDelivery.prisma.deleteMany(query)).count
+			count = (await _Cart.prisma.deleteMany(query)).count
 		} catch (e) {
 			console.log(e)
 			return false

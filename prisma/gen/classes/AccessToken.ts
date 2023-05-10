@@ -4,6 +4,21 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _AccessTokenConstructor<userType extends ForeignKey | undefined> = {
+	id?: number
+	token: string
+	created_at?: number | null
+	expires_at?: number | null
+} & (userType extends ForeignKey
+	? {
+			user_id: ForeignKey
+			user?: User | _User
+	  }
+	: {
+			user_id?: ForeignKey
+			user: User | _User
+	  })
+
 export class _AccessToken implements PrismaClass {
 	static prisma: Prisma.AccessTokenDelegate<undefined>
 	get prisma(): Prisma.AccessTokenDelegate<undefined> {
@@ -88,24 +103,17 @@ export class _AccessToken implements PrismaClass {
 		}
 	}
 
-	constructor(obj: {
-		id?: number
-		user_id: ForeignKey
-		token: string
-		created_at: number | null
-		expires_at: number | null
-		user?: _User | User
-	}) {
+	constructor(obj: _AccessTokenConstructor<ForeignKey | undefined>) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _AccessToken>[0]) {
+	private init(obj: _AccessTokenConstructor<ForeignKey | undefined>) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
 		this.token = obj.token
-		this.created_at = obj.created_at
-		this.expires_at = obj.expires_at
+		this.created_at = obj.created_at ?? null
+		this.expires_at = obj.expires_at ?? null
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -118,7 +126,11 @@ export class _AccessToken implements PrismaClass {
 		} else throw new Error('Invalid constructor.')
 	}
 
-	update(obj: { token?: string; created_at?: number; expires_at?: number }) {
+	update(obj: {
+		token?: string
+		created_at?: number | null
+		expires_at?: number | null
+	}) {
 		if (obj.token !== undefined) {
 			this.token = obj.token
 		}

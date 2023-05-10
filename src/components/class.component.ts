@@ -18,15 +18,25 @@ export class ClassComponent extends BaseComponent implements Echoable {
 	enumTypes?: string[] = []
 	extra?: string = ''
 
+	constructor(obj?: { name: string }) {
+		super(obj)
+		this.name = obj.name
+	}
+
 	echo = () => {
 		let primaryKey = ''
 		// Generate the constructor for non-nullable fields
+		let constructorType = ''
 		let constructor = ''
 		{
 			let parameters = {
 				normal: '',
 				update: '',
-				toOne: '',
+				toOne: {
+					genericsDeclaration: '',
+					generics: '',
+					type: ''
+				},
 				toMany: '',
 			}
 			let initialiazers = {
@@ -40,7 +50,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			for (const _field of this.fields) {
 				toJSONRelations += `${_field.name}: this.${_field.name},`
 				// If field is normal
-				let fieldName = `${_field.name}${_field.default !== undefined ? '?' : ''}`
+				let fieldName = `${_field.name}${_field.default !== undefined || _field.nullable ? '?' : ''}`
 				if (_field.relation === undefined) {
 					toJSON += `${_field.name}: this.${_field.name}!,`
 					if (_field.isId) {
@@ -53,13 +63,15 @@ export class ClassComponent extends BaseComponent implements Echoable {
 						` + initialiazers.normal
 					}
 					else if (!_field.privateFromRelation) {
-						parameters.update += `${_field.name}?: ${_field.type},`
+						parameters.update += `${_field.name}?: ${_field.type}${_field.nullable ? ' | null' : ''},`
 						let opt = { parameter: '', initializer: '' }
 						if (_field.nullable) {
 							opt.parameter = ' | null'
 						}
 						if (_field.default) {
 							opt.initializer = ` ??  ${_field.default}`
+						} else if (_field.nullable) {
+							opt.initializer = ` ??  null`
 						}
 						parameters.normal += `${fieldName}: ${_field.type} ${opt.parameter},`
 						initialiazers.normal += `this.${_field.name} = obj.${_field.name} ${opt.initializer};`
@@ -68,13 +80,22 @@ export class ClassComponent extends BaseComponent implements Echoable {
 						}
 						`
 					}
-					else {
-						parameters.normal += `${fieldName}: ForeignKey,`
-					}
 				}
 				// If it is a relation toOne
 				else if (!isRelationMany(_field.relation) && _field.relation.hasOne === _field) {
-					parameters.toOne += `${_field.name}?: _${_field.type} | ${_field.type},`
+					parameters.toOne = {
+						genericsDeclaration: parameters.toOne.genericsDeclaration + `
+						ForeignKey | undefined,`,
+						generics: parameters.toOne.generics + `${_field.name}Type extends ForeignKey | undefined,
+						`,
+						type: parameters.toOne.type + ` & (${_field.name}Type extends ForeignKey ? {
+							${_field.relation.fromField}: ForeignKey,
+							${_field.name}?: ${_field.type} | _${_field.type}
+						} : {
+							${_field.relation.fromField}?: ForeignKey,
+							${_field.name}: ${_field.type} | _${_field.type}
+						})`
+					}
 					initialiazers.toOne += `
 					if (obj.${_field.name} !== undefined) {
 						if (obj.${_field.name} instanceof _${_field.type}) {
@@ -109,21 +130,37 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					`
 				}
 			}
-			constructor = `
-			constructor(obj:{
+
+			if (parameters.toOne.generics.length > 0) {
+				parameters.toOne.generics = `<
+					${parameters.toOne.generics}
+				>`
+			}
+
+			if (parameters.toOne.genericsDeclaration.length > 0) {
+				parameters.toOne.genericsDeclaration = `<
+					${parameters.toOne.genericsDeclaration}
+				>`
+			}
+
+			constructorType = `type _${this.name}Constructor${parameters.toOne.generics} = {
 				${parameters.normal}
-				${parameters.toOne}
 				${parameters.toMany}
-			}){
+			}${parameters.toOne.type}`
+
+
+
+			constructor = `
+			constructor(obj: _${this.name}Constructor${parameters.toOne.genericsDeclaration}){
 				this.init(obj)
 			}
 
-			private init(obj: ConstructorParameters<typeof _${this.name}>[0]){
+			private init(obj: _${this.name}Constructor${parameters.toOne.genericsDeclaration}){
 				${initialiazers.normal}
 				${initialiazers.toOne}
 				${initialiazers.toMany}
 			}
-
+			
 			update(obj: {
 				${parameters.update}
 			}){
@@ -299,6 +336,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			.replaceAll('#!{DELETE}', deleteMethod)
 			.replaceAll('#!{GET_INCLUDES}', getIncludes)
 			.replaceAll('#!{ENUM_LIST}', `${enumList}`)
+			.replaceAll('#!{CONSTRUCTOR_TYPE}', constructorType)
 			.replaceAll('#!{NAME}', `${this.name}`)
 			.replaceAll('#!{FIELDS}', fieldContent.join('\r\n'))
 			.replaceAll('#!{EXTRA}', this.extra)

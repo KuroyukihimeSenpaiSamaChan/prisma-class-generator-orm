@@ -4,6 +4,12 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _ProductStateConstructor = {
+	id?: number
+	state: string
+	products?: _Product[] | Product[] | RelationMany<_Product>
+}
+
 export class _ProductState implements PrismaClass {
 	static prisma: Prisma.ProductStateDelegate<undefined>
 	get prisma(): Prisma.ProductStateDelegate<undefined> {
@@ -91,16 +97,11 @@ export class _ProductState implements PrismaClass {
 		this._products = value
 	}
 
-	constructor(obj: {
-		id?: number
-		state: string
-
-		products?: _Product[] | Product[] | RelationMany<_Product>
-	}) {
+	constructor(obj: _ProductStateConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _ProductState>[0]) {
+	private init(obj: _ProductStateConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}

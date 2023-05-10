@@ -34,7 +34,7 @@
 		"email": "marechae02@gmail.com"
 	},
 	"dependencies": {
-		"@prisma/client": "^4.13.0",
+		"@prisma/client": "^4.14.0",
 		"@prisma/generator-helper": "^4.11.0",
 		"@prisma/internals": "^4.11.0",
 		"change-case": "^4.1.2",
@@ -45,7 +45,7 @@
 		"@types/jest": "^28.1.4",
 		"@types/node": "^18.0.0",
 		"@types/prettier": "^2.6.3",
-		"prisma": "^4.13.0",
+		"prisma": "^4.14.0",
 		"swagger-ui-express": "^4.4.0",
 		"ts-node": "^10.8.1",
 		"ts-toolbelt": "^9.6.0",

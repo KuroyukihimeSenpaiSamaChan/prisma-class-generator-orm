@@ -5,6 +5,14 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _TVATypeConstructor = {
+	id?: number
+	slug: string
+	amount?: number
+	products?: _Product[] | Product[] | RelationMany<_Product>
+	sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
+}
+
 export class _TVAType implements PrismaClass {
 	static prisma: Prisma.TVATypeDelegate<undefined>
 	get prisma(): Prisma.TVATypeDelegate<undefined> {
@@ -119,18 +127,11 @@ export class _TVAType implements PrismaClass {
 		this._sub_orders = value
 	}
 
-	constructor(obj: {
-		id?: number
-		slug: string
-		amount?: number
-
-		products?: _Product[] | Product[] | RelationMany<_Product>
-		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
-	}) {
+	constructor(obj: _TVATypeConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _TVAType>[0]) {
+	private init(obj: _TVATypeConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}

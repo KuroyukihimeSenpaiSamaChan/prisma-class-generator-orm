@@ -15,6 +15,62 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _SubOrderConstructor<
+	expeditionType extends ForeignKey | undefined,
+	orderType extends ForeignKey | undefined,
+	productType extends ForeignKey | undefined,
+	userType extends ForeignKey | undefined,
+	tva_typeType extends ForeignKey | undefined,
+> = {
+	id?: number
+	product_price: number
+	quantity: number
+} & (expeditionType extends ForeignKey
+	? {
+			expedition_id: ForeignKey
+			expedition?: Expedition | _Expedition
+	  }
+	: {
+			expedition_id?: ForeignKey
+			expedition: Expedition | _Expedition
+	  }) &
+	(orderType extends ForeignKey
+		? {
+				order_id: ForeignKey
+				order?: Order | _Order
+		  }
+		: {
+				order_id?: ForeignKey
+				order: Order | _Order
+		  }) &
+	(productType extends ForeignKey
+		? {
+				product_id: ForeignKey
+				product?: Product | _Product
+		  }
+		: {
+				product_id?: ForeignKey
+				product: Product | _Product
+		  }) &
+	(userType extends ForeignKey
+		? {
+				vendor_id: ForeignKey
+				user?: User | _User
+		  }
+		: {
+				vendor_id?: ForeignKey
+				user: User | _User
+		  }) &
+	(tva_typeType extends ForeignKey
+		? {
+				tva_id: ForeignKey
+				tva_type?: TVAType | _TVAType
+		  }
+		: {
+				tva_id?: ForeignKey
+				tva_type: TVAType | _TVAType
+		  })
+
 export class _SubOrder implements PrismaClass {
 	static prisma: Prisma.SubOrderDelegate<undefined>
 	get prisma(): Prisma.SubOrderDelegate<undefined> {
@@ -149,7 +205,7 @@ export class _SubOrder implements PrismaClass {
 
 	quantity: number
 
-	private _taxe_id: ForeignKey = 1
+	private _tva_id: ForeignKey = 1
 
 	private _expedition: _Expedition
 	get expedition(): _Expedition {
@@ -221,35 +277,37 @@ export class _SubOrder implements PrismaClass {
 	}
 	set tva_type(value: _TVAType) {
 		this._tva_type = value
-		this._taxe_id = value.id
+		this._tva_id = value.id
 	}
-	get taxe_id(): ForeignKey {
+	get tva_id(): ForeignKey {
 		if (this._tva_type === null) {
-			return this._taxe_id
+			return this._tva_id
 		} else {
 			return this._tva_type.primaryKey
 		}
 	}
 
-	constructor(obj: {
-		id?: number
-		order_id: ForeignKey
-		vendor_id: ForeignKey
-		expedition_id: ForeignKey
-		product_id: ForeignKey
-		product_price: number
-		quantity: number
-		taxe_id?: ForeignKey
-		expedition?: _Expedition | Expedition
-		order?: _Order | Order
-		product?: _Product | Product
-		user?: _User | User
-		tva_type?: _TVAType | TVAType
-	}) {
+	constructor(
+		obj: _SubOrderConstructor<
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined
+		>,
+	) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _SubOrder>[0]) {
+	private init(
+		obj: _SubOrderConstructor<
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined
+		>,
+	) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -302,8 +360,8 @@ export class _SubOrder implements PrismaClass {
 			} else {
 				this.tva_type = new _TVAType(obj.tva_type)
 			}
-		} else if (obj.taxe_id !== undefined) {
-			this._taxe_id = obj.taxe_id
+		} else if (obj.tva_id !== undefined) {
+			this._tva_id = obj.tva_id
 		} else throw new Error('Invalid constructor.')
 	}
 
@@ -325,7 +383,7 @@ export class _SubOrder implements PrismaClass {
 			product_id: this.product_id,
 			product_price: this.product_price,
 			quantity: this.quantity,
-			taxe_id: this.taxe_id,
+			tva_id: this.tva_id,
 			expedition: this.expedition,
 			order: this.order,
 			product: this.product,
@@ -342,7 +400,7 @@ export class _SubOrder implements PrismaClass {
 			product_id: this.product_id!,
 			product_price: this.product_price!,
 			quantity: this.quantity!,
-			taxe_id: this.taxe_id!,
+			tva_id: this.tva_id!,
 		}
 	}
 

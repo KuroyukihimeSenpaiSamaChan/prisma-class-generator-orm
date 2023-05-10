@@ -8,5 +8,8 @@ export declare class ClassComponent extends BaseComponent implements Echoable {
     relationTypes?: string[];
     enumTypes?: string[];
     extra?: string;
+    constructor(obj?: {
+        name: string;
+    });
     echo: () => string;
 }

@@ -5,6 +5,7 @@ import { _SubOrder } from './SubOrder'
 import { _UserBilling } from './UserBilling'
 import { _UserDelete } from './UserDelete'
 import { _UserDelivery } from './UserDelivery'
+import { _Cart } from './Cart'
 import { _Role } from './Role'
 import {
 	Prisma,
@@ -15,11 +16,36 @@ import {
 	UserBilling,
 	UserDelete,
 	UserDelivery,
+	Cart,
 	Role,
 } from '@prisma/client'
 import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
+
+type _UserConstructor = {
+	id?: number
+	user_pass: string
+	user_email: string
+	user_registered?: boolean
+	firstname: string
+	lastname: string
+	birthdate: number
+	token: string
+	deleting?: number | null
+	access_token?: _AccessToken[] | AccessToken[] | RelationMany<_AccessToken>
+	media?: _Media[] | Media[] | RelationMany<_Media>
+	product?: _Product[] | Product[] | RelationMany<_Product>
+	sub_order?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
+	user_billing?: _UserBilling[] | UserBilling[] | RelationMany<_UserBilling>
+	user_delete?: _UserDelete[] | UserDelete[] | RelationMany<_UserDelete>
+	user_delivery?:
+		| _UserDelivery[]
+		| UserDelivery[]
+		| RelationMany<_UserDelivery>
+	baskets?: _Cart[] | Cart[] | RelationMany<_Cart>
+	roles?: _Role[] | Role[] | RelationMany<_Role>
+}
 
 export class _User implements PrismaClass {
 	static prisma: Prisma.UserDelegate<undefined>
@@ -76,6 +102,12 @@ export class _User implements PrismaClass {
 								Parameters<typeof _UserDelivery.getIncludes>[0],
 								number
 						  >
+					baskets?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _Cart.getIncludes>[0],
+								number
+						  >
 					roles?:
 						| boolean
 						| Exclude<
@@ -98,6 +130,7 @@ export class _User implements PrismaClass {
 					user_billing: true,
 					user_delete: true,
 					user_delivery: true,
+					baskets: true,
 					roles: true,
 				}
 			}
@@ -111,6 +144,7 @@ export class _User implements PrismaClass {
 				user_delivery: {
 					include: _UserDelivery.getIncludes(param - 1),
 				},
+				baskets: { include: _Cart.getIncludes(param - 1) },
 				roles: { include: _Role.getIncludes(param - 1) },
 			}
 		} else {
@@ -174,6 +208,13 @@ export class _User implements PrismaClass {
 								include: _UserDelivery.getIncludes(
 									param.user_delivery,
 								),
+						  }
+					: undefined,
+				baskets: Object.keys(param).includes('baskets')
+					? typeof param.baskets === 'boolean'
+						? true
+						: {
+								include: _Cart.getIncludes(param.baskets),
 						  }
 					: undefined,
 				roles: Object.keys(param).includes('roles')
@@ -269,6 +310,14 @@ export class _User implements PrismaClass {
 		this._user_delivery = value
 	}
 
+	private _baskets: RelationMany<_Cart>
+	public get baskets(): RelationMany<_Cart> {
+		return this._baskets
+	}
+	private set baskets(value: RelationMany<_Cart>) {
+		this._baskets = value
+	}
+
 	private _roles: RelationMany<_Role>
 	public get roles(): RelationMany<_Role> {
 		return this._roles
@@ -277,39 +326,11 @@ export class _User implements PrismaClass {
 		this._roles = value
 	}
 
-	constructor(obj: {
-		id?: number
-		user_pass: string
-		user_email: string
-		user_registered?: boolean
-		firstname: string
-		lastname: string
-		birthdate: number
-		token: string
-		deleting: number | null
-
-		access_token?:
-			| _AccessToken[]
-			| AccessToken[]
-			| RelationMany<_AccessToken>
-		media?: _Media[] | Media[] | RelationMany<_Media>
-		product?: _Product[] | Product[] | RelationMany<_Product>
-		sub_order?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
-		user_billing?:
-			| _UserBilling[]
-			| UserBilling[]
-			| RelationMany<_UserBilling>
-		user_delete?: _UserDelete[] | UserDelete[] | RelationMany<_UserDelete>
-		user_delivery?:
-			| _UserDelivery[]
-			| UserDelivery[]
-			| RelationMany<_UserDelivery>
-		roles?: _Role[] | Role[] | RelationMany<_Role>
-	}) {
+	constructor(obj: _UserConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _User>[0]) {
+	private init(obj: _UserConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -320,7 +341,7 @@ export class _User implements PrismaClass {
 		this.lastname = obj.lastname
 		this.birthdate = obj.birthdate
 		this.token = obj.token
-		this.deleting = obj.deleting
+		this.deleting = obj.deleting ?? null
 
 		if (!obj.access_token || obj.access_token.length === 0) {
 			this.access_token = new RelationMany<_AccessToken>()
@@ -436,6 +457,20 @@ export class _User implements PrismaClass {
 			)
 		}
 
+		if (!obj.baskets || obj.baskets.length === 0) {
+			this.baskets = new RelationMany<_Cart>()
+		} else if (obj.baskets instanceof RelationMany) {
+			this.baskets = obj.baskets
+		} else if (obj.baskets[0] instanceof _Cart) {
+			this.baskets = new RelationMany<_Cart>(obj.baskets as _Cart[])
+		} else {
+			const basketsArray: _Cart[] = []
+			for (const value of obj.baskets as Cart[]) {
+				basketsArray.push(new _Cart(value))
+			}
+			this.baskets = new RelationMany<_Cart>(basketsArray)
+		}
+
 		if (!obj.roles || obj.roles.length === 0) {
 			this.roles = new RelationMany<_Role>()
 		} else if (obj.roles instanceof RelationMany) {
@@ -459,7 +494,7 @@ export class _User implements PrismaClass {
 		lastname?: string
 		birthdate?: number
 		token?: string
-		deleting?: number
+		deleting?: number | null
 	}) {
 		if (obj.user_pass !== undefined) {
 			this.user_pass = obj.user_pass
@@ -505,6 +540,7 @@ export class _User implements PrismaClass {
 			user_billing: this.user_billing,
 			user_delete: this.user_delete,
 			user_delivery: this.user_delivery,
+			baskets: this.baskets,
 			roles: this.roles,
 		}
 	}
@@ -650,6 +686,10 @@ export class _User implements PrismaClass {
 		await user_deliveryYield.next()
 		saveYieldsArray.push(user_deliveryYield)
 
+		const basketsYield = this.baskets!.saveToTransaction(tx)
+		await basketsYield.next()
+		saveYieldsArray.push(basketsYield)
+
 		yield new Promise<number>((resolve) => resolve(0))
 
 		for (const saveYield of saveYieldsArray) {
@@ -755,6 +795,11 @@ export class _User implements PrismaClass {
 			)
 		}
 		if (this.user_delivery.length() > 0 && this.primaryKey === -1) {
+			throw new Error(
+				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
+			)
+		}
+		if (this.baskets.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _User. Save it first, then add the toMany fields",
 			)

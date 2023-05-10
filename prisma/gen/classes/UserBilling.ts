@@ -4,6 +4,26 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _UserBillingConstructor<userType extends ForeignKey | undefined> = {
+	id?: number
+	address: string
+	additional_address?: string | null
+	zipcode: string
+	city: string
+	country: string
+	region: string
+	phone_number: string
+	company_name?: string | null
+} & (userType extends ForeignKey
+	? {
+			user_id: ForeignKey
+			user?: User | _User
+	  }
+	: {
+			user_id?: ForeignKey
+			user: User | _User
+	  })
+
 export class _UserBilling implements PrismaClass {
 	static prisma: Prisma.UserBillingDelegate<undefined>
 	get prisma(): Prisma.UserBillingDelegate<undefined> {
@@ -98,34 +118,22 @@ export class _UserBilling implements PrismaClass {
 		}
 	}
 
-	constructor(obj: {
-		id?: number
-		user_id: ForeignKey
-		address: string
-		additional_address: string | null
-		zipcode: string
-		city: string
-		country: string
-		region: string
-		phone_number: string
-		company_name: string | null
-		user?: _User | User
-	}) {
+	constructor(obj: _UserBillingConstructor<ForeignKey | undefined>) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _UserBilling>[0]) {
+	private init(obj: _UserBillingConstructor<ForeignKey | undefined>) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
 		this.address = obj.address
-		this.additional_address = obj.additional_address
+		this.additional_address = obj.additional_address ?? null
 		this.zipcode = obj.zipcode
 		this.city = obj.city
 		this.country = obj.country
 		this.region = obj.region
 		this.phone_number = obj.phone_number
-		this.company_name = obj.company_name
+		this.company_name = obj.company_name ?? null
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -140,13 +148,13 @@ export class _UserBilling implements PrismaClass {
 
 	update(obj: {
 		address?: string
-		additional_address?: string
+		additional_address?: string | null
 		zipcode?: string
 		city?: string
 		country?: string
 		region?: string
 		phone_number?: string
-		company_name?: string
+		company_name?: string | null
 	}) {
 		if (obj.address !== undefined) {
 			this.address = obj.address

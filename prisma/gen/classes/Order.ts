@@ -4,6 +4,21 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _OrderConstructor = {
+	id?: number
+	order_client_id: number
+	creation_date: number
+	modification_date: number
+	order_state: number
+	type: number
+	buyer_id: number
+	buyer_billing_id: number
+	buyer_delivery_id: number
+	expedition_id: number
+	order_total: number
+	sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
+}
+
 export class _Order implements PrismaClass {
 	static prisma: Prisma.OrderDelegate<undefined>
 	get prisma(): Prisma.OrderDelegate<undefined> {
@@ -94,25 +109,11 @@ export class _Order implements PrismaClass {
 		this._sub_orders = value
 	}
 
-	constructor(obj: {
-		id?: number
-		order_client_id: number
-		creation_date: number
-		modification_date: number
-		order_state: number
-		type: number
-		buyer_id: number
-		buyer_billing_id: number
-		buyer_delivery_id: number
-		expedition_id: number
-		order_total: number
-
-		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
-	}) {
+	constructor(obj: _OrderConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _Order>[0]) {
+	private init(obj: _OrderConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}

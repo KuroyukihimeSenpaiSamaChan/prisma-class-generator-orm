@@ -5,6 +5,25 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _MediaConstructor<userType extends ForeignKey | undefined> = {
+	id?: number
+	url: string
+	creation_date: number
+	modification_date: number
+	description?: string
+	name: string
+	product_image?: _Product[] | Product[] | RelationMany<_Product>
+	product_gallery?: _Product[] | Product[] | RelationMany<_Product>
+} & (userType extends ForeignKey
+	? {
+			user_id: ForeignKey
+			user?: User | _User
+	  }
+	: {
+			user_id?: ForeignKey
+			user: User | _User
+	  })
+
 export class _Media implements PrismaClass {
 	static prisma: Prisma.MediaDelegate<undefined>
 	get prisma(): Prisma.MediaDelegate<undefined> {
@@ -143,22 +162,11 @@ export class _Media implements PrismaClass {
 		this._product_gallery = value
 	}
 
-	constructor(obj: {
-		id?: number
-		url: string
-		creation_date: number
-		modification_date: number
-		user_id: ForeignKey
-		description?: string
-		name: string
-		user?: _User | User
-		product_image?: _Product[] | Product[] | RelationMany<_Product>
-		product_gallery?: _Product[] | Product[] | RelationMany<_Product>
-	}) {
+	constructor(obj: _MediaConstructor<ForeignKey | undefined>) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _Media>[0]) {
+	private init(obj: _MediaConstructor<ForeignKey | undefined>) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}

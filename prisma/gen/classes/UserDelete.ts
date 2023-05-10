@@ -4,6 +4,21 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _UserDeleteConstructor<userType extends ForeignKey | undefined> = {
+	id?: number
+	token: string
+	date: number
+	validated?: boolean
+} & (userType extends ForeignKey
+	? {
+			user_id: ForeignKey
+			user?: User | _User
+	  }
+	: {
+			user_id?: ForeignKey
+			user: User | _User
+	  })
+
 export class _UserDelete implements PrismaClass {
 	static prisma: Prisma.UserDeleteDelegate<undefined>
 	get prisma(): Prisma.UserDeleteDelegate<undefined> {
@@ -88,18 +103,11 @@ export class _UserDelete implements PrismaClass {
 		}
 	}
 
-	constructor(obj: {
-		id?: number
-		user_id: ForeignKey
-		token: string
-		date: number
-		validated?: boolean
-		user?: _User | User
-	}) {
+	constructor(obj: _UserDeleteConstructor<ForeignKey | undefined>) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _UserDelete>[0]) {
+	private init(obj: _UserDeleteConstructor<ForeignKey | undefined>) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}

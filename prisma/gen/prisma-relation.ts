@@ -23,6 +23,8 @@ export class RelationMany<R extends PrismaClass>
 		return this.relations[index]
 	}
 
+	push(value: R)
+	push(values: R[])
 	push(value: R | R[]) {
 		if (Array.isArray(value)) {
 			for (const val of value) {
@@ -48,6 +50,17 @@ export class RelationMany<R extends PrismaClass>
 		const relation = this.relations.splice(index, 1)[0]
 		this._toRemoveRelations.push(relation)
 		return relation
+	}
+
+	clear() {
+		while (this.length() > 0) {
+			this.remove(0)
+		}
+	}
+
+	replace(values: R[]) {
+		this.clear()
+		this.push(values)
 	}
 
 	get toRemoveRelations(): R[] {

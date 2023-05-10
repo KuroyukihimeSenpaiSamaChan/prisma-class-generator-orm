@@ -4,6 +4,8 @@ import { RelationMany } from '../prisma-relation';
 import { PrismaClass, ForeignKey } from '../prisma-class';
 import { PrismaModel } from '../prisma-model';
 
+#!{CONSTRUCTOR_TYPE}
+
 export class _#!{NAME} implements PrismaClass{
   static prisma: Prisma.#!{NAME}Delegate<undefined>
   get prisma(): Prisma.#!{NAME}Delegate<undefined> {

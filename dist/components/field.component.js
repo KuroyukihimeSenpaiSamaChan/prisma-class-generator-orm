@@ -71,6 +71,9 @@ class FieldComponent extends base_component_1.BaseComponent {
     };
     constructor(obj) {
         super(obj);
+        this.name = obj.name;
+        this.useUndefinedDefault = obj.useUndefinedDefault;
+        this.isId = obj.isId;
     }
 }
 exports.FieldComponent = FieldComponent;

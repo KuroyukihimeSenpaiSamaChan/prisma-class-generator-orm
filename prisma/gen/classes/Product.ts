@@ -1,25 +1,118 @@
+import { _CartProduct } from './CartProduct'
+import { _ConditioningType } from './ConditioningType'
 import { _Media } from './Media'
+import { _ProductState } from './ProductState'
 import { _TVAType } from './TVAType'
 import { _User } from './User'
-import { _ProductState } from './ProductState'
-import { _ProductVisibilty } from './ProductVisibilty'
-import { _ConditioningType } from './ConditioningType'
+import { _ProductVisibility } from './ProductVisibility'
 import { _SubOrder } from './SubOrder'
 import { _ProductCategory } from './ProductCategory'
 import {
 	Prisma,
+	CartProduct,
+	ConditioningType,
 	Media,
+	ProductState,
 	TVAType,
 	User,
-	ProductState,
-	ProductVisibilty,
-	ConditioningType,
+	ProductVisibility,
 	SubOrder,
 	ProductCategory,
 } from '@prisma/client'
 import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
+
+type _ProductConstructor<
+	productConditioningType extends ForeignKey | undefined,
+	mediaType extends ForeignKey | undefined,
+	productStateType extends ForeignKey | undefined,
+	tva_typeType extends ForeignKey | undefined,
+	userType extends ForeignKey | undefined,
+	productVisibiltyType extends ForeignKey | undefined,
+> = {
+	id?: number
+	product_name: string
+	vendor_sku: string
+	product_sku: string
+	price: number
+	price_promo: number
+	description: string
+	additional_description?: string | null
+	backorder: boolean
+	linked_products: string
+	product_keywords: string
+	creation_date: number
+	modification_date: number
+	has_tva: boolean
+	conditioningValue: string
+	dimensions?: string
+	marque?: string
+	slug: string
+	state_description?: string
+	quantity?: number
+	weight?: number
+	basketProducts?: _CartProduct[] | CartProduct[] | RelationMany<_CartProduct>
+	subOrders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
+	product_categories?:
+		| _ProductCategory[]
+		| ProductCategory[]
+		| RelationMany<_ProductCategory>
+	gallery?: _Media[] | Media[] | RelationMany<_Media>
+} & (productConditioningType extends ForeignKey
+	? {
+			conditioningType: ForeignKey
+			productConditioning?: ConditioningType | _ConditioningType
+	  }
+	: {
+			conditioningType?: ForeignKey
+			productConditioning: ConditioningType | _ConditioningType
+	  }) &
+	(mediaType extends ForeignKey
+		? {
+				product_image: ForeignKey
+				media?: Media | _Media
+		  }
+		: {
+				product_image?: ForeignKey
+				media: Media | _Media
+		  }) &
+	(productStateType extends ForeignKey
+		? {
+				state: ForeignKey
+				productState?: ProductState | _ProductState
+		  }
+		: {
+				state?: ForeignKey
+				productState: ProductState | _ProductState
+		  }) &
+	(tva_typeType extends ForeignKey
+		? {
+				tva: ForeignKey
+				tva_type?: TVAType | _TVAType
+		  }
+		: {
+				tva?: ForeignKey
+				tva_type: TVAType | _TVAType
+		  }) &
+	(userType extends ForeignKey
+		? {
+				vendor_id: ForeignKey
+				user?: User | _User
+		  }
+		: {
+				vendor_id?: ForeignKey
+				user: User | _User
+		  }) &
+	(productVisibiltyType extends ForeignKey
+		? {
+				visibility: ForeignKey
+				productVisibilty?: ProductVisibility | _ProductVisibility
+		  }
+		: {
+				visibility?: ForeignKey
+				productVisibilty: ProductVisibility | _ProductVisibility
+		  })
 
 export class _Product implements PrismaClass {
 	static prisma: Prisma.ProductDelegate<undefined>
@@ -34,10 +127,30 @@ export class _Product implements PrismaClass {
 		param?:
 			| number
 			| {
+					basketProducts?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _CartProduct.getIncludes>[0],
+								number
+						  >
+					productConditioning?:
+						| boolean
+						| Exclude<
+								Parameters<
+									typeof _ConditioningType.getIncludes
+								>[0],
+								number
+						  >
 					media?:
 						| boolean
 						| Exclude<
 								Parameters<typeof _Media.getIncludes>[0],
+								number
+						  >
+					productState?:
+						| boolean
+						| Exclude<
+								Parameters<typeof _ProductState.getIncludes>[0],
 								number
 						  >
 					tva_type?:
@@ -52,29 +165,15 @@ export class _Product implements PrismaClass {
 								Parameters<typeof _User.getIncludes>[0],
 								number
 						  >
-					productState?:
-						| boolean
-						| Exclude<
-								Parameters<typeof _ProductState.getIncludes>[0],
-								number
-						  >
 					productVisibilty?:
 						| boolean
 						| Exclude<
 								Parameters<
-									typeof _ProductVisibilty.getIncludes
+									typeof _ProductVisibility.getIncludes
 								>[0],
 								number
 						  >
-					productConditioning?:
-						| boolean
-						| Exclude<
-								Parameters<
-									typeof _ConditioningType.getIncludes
-								>[0],
-								number
-						  >
-					sub_orders?:
+					subOrders?:
 						| boolean
 						| Exclude<
 								Parameters<typeof _SubOrder.getIncludes>[0],
@@ -103,29 +202,33 @@ export class _Product implements PrismaClass {
 		if (typeof param === 'number') {
 			if (param <= 0) {
 				return {
+					basketProducts: true,
+					productConditioning: true,
 					media: true,
+					productState: true,
 					tva_type: true,
 					user: true,
-					productState: true,
 					productVisibilty: true,
-					productConditioning: true,
-					sub_orders: true,
+					subOrders: true,
 					product_categories: true,
 					gallery: true,
 				}
 			}
 			return {
-				media: { include: _Media.getIncludes(param - 1) },
-				tva_type: { include: _TVAType.getIncludes(param - 1) },
-				user: { include: _User.getIncludes(param - 1) },
-				productState: { include: _ProductState.getIncludes(param - 1) },
-				productVisibilty: {
-					include: _ProductVisibilty.getIncludes(param - 1),
+				basketProducts: {
+					include: _CartProduct.getIncludes(param - 1),
 				},
 				productConditioning: {
 					include: _ConditioningType.getIncludes(param - 1),
 				},
-				sub_orders: { include: _SubOrder.getIncludes(param - 1) },
+				media: { include: _Media.getIncludes(param - 1) },
+				productState: { include: _ProductState.getIncludes(param - 1) },
+				tva_type: { include: _TVAType.getIncludes(param - 1) },
+				user: { include: _User.getIncludes(param - 1) },
+				productVisibilty: {
+					include: _ProductVisibility.getIncludes(param - 1),
+				},
+				subOrders: { include: _SubOrder.getIncludes(param - 1) },
 				product_categories: {
 					include: _ProductCategory.getIncludes(param - 1),
 				},
@@ -137,11 +240,40 @@ export class _Product implements PrismaClass {
 			}
 
 			return {
+				basketProducts: Object.keys(param).includes('basketProducts')
+					? typeof param.basketProducts === 'boolean'
+						? true
+						: {
+								include: _CartProduct.getIncludes(
+									param.basketProducts,
+								),
+						  }
+					: undefined,
+				productConditioning: Object.keys(param).includes(
+					'productConditioning',
+				)
+					? typeof param.productConditioning === 'boolean'
+						? true
+						: {
+								include: _ConditioningType.getIncludes(
+									param.productConditioning,
+								),
+						  }
+					: undefined,
 				media: Object.keys(param).includes('media')
 					? typeof param.media === 'boolean'
 						? true
 						: {
 								include: _Media.getIncludes(param.media),
+						  }
+					: undefined,
+				productState: Object.keys(param).includes('productState')
+					? typeof param.productState === 'boolean'
+						? true
+						: {
+								include: _ProductState.getIncludes(
+									param.productState,
+								),
 						  }
 					: undefined,
 				tva_type: Object.keys(param).includes('tva_type')
@@ -158,44 +290,22 @@ export class _Product implements PrismaClass {
 								include: _User.getIncludes(param.user),
 						  }
 					: undefined,
-				productState: Object.keys(param).includes('productState')
-					? typeof param.productState === 'boolean'
-						? true
-						: {
-								include: _ProductState.getIncludes(
-									param.productState,
-								),
-						  }
-					: undefined,
 				productVisibilty: Object.keys(param).includes(
 					'productVisibilty',
 				)
 					? typeof param.productVisibilty === 'boolean'
 						? true
 						: {
-								include: _ProductVisibilty.getIncludes(
+								include: _ProductVisibility.getIncludes(
 									param.productVisibilty,
 								),
 						  }
 					: undefined,
-				productConditioning: Object.keys(param).includes(
-					'productConditioning',
-				)
-					? typeof param.productConditioning === 'boolean'
+				subOrders: Object.keys(param).includes('subOrders')
+					? typeof param.subOrders === 'boolean'
 						? true
 						: {
-								include: _ConditioningType.getIncludes(
-									param.productConditioning,
-								),
-						  }
-					: undefined,
-				sub_orders: Object.keys(param).includes('sub_orders')
-					? typeof param.sub_orders === 'boolean'
-						? true
-						: {
-								include: _SubOrder.getIncludes(
-									param.sub_orders,
-								),
+								include: _SubOrder.getIncludes(param.subOrders),
 						  }
 					: undefined,
 				product_categories: Object.keys(param).includes(
@@ -269,6 +379,42 @@ export class _Product implements PrismaClass {
 
 	conditioningValue: string
 
+	dimensions: string = '0x0x0'
+
+	marque: string = ''
+
+	slug: string
+
+	state_description: string = ''
+
+	quantity: number = 0
+
+	weight: number = 0
+
+	private _basketProducts: RelationMany<_CartProduct>
+	public get basketProducts(): RelationMany<_CartProduct> {
+		return this._basketProducts
+	}
+	private set basketProducts(value: RelationMany<_CartProduct>) {
+		this._basketProducts = value
+	}
+
+	private _productConditioning: _ConditioningType
+	get productConditioning(): _ConditioningType {
+		return this._productConditioning
+	}
+	set productConditioning(value: _ConditioningType) {
+		this._productConditioning = value
+		this._conditioningType = value.id
+	}
+	get conditioningType(): ForeignKey {
+		if (this._productConditioning === null) {
+			return this._conditioningType
+		} else {
+			return this._productConditioning.primaryKey
+		}
+	}
+
 	private _media: _Media
 	get media(): _Media {
 		return this._media
@@ -282,6 +428,22 @@ export class _Product implements PrismaClass {
 			return this._product_image
 		} else {
 			return this._media.primaryKey
+		}
+	}
+
+	private _productState: _ProductState
+	get productState(): _ProductState {
+		return this._productState
+	}
+	set productState(value: _ProductState) {
+		this._productState = value
+		this._state = value.id
+	}
+	get state(): ForeignKey {
+		if (this._productState === null) {
+			return this._state
+		} else {
+			return this._productState.primaryKey
 		}
 	}
 
@@ -317,27 +479,11 @@ export class _Product implements PrismaClass {
 		}
 	}
 
-	private _productState: _ProductState
-	get productState(): _ProductState {
-		return this._productState
-	}
-	set productState(value: _ProductState) {
-		this._productState = value
-		this._state = value.id
-	}
-	get state(): ForeignKey {
-		if (this._productState === null) {
-			return this._state
-		} else {
-			return this._productState.primaryKey
-		}
-	}
-
-	private _productVisibilty: _ProductVisibilty
-	get productVisibilty(): _ProductVisibilty {
+	private _productVisibilty: _ProductVisibility
+	get productVisibilty(): _ProductVisibility {
 		return this._productVisibilty
 	}
-	set productVisibilty(value: _ProductVisibilty) {
+	set productVisibilty(value: _ProductVisibility) {
 		this._productVisibilty = value
 		this._visibility = value.id
 	}
@@ -349,28 +495,12 @@ export class _Product implements PrismaClass {
 		}
 	}
 
-	private _productConditioning: _ConditioningType
-	get productConditioning(): _ConditioningType {
-		return this._productConditioning
+	private _subOrders: RelationMany<_SubOrder>
+	public get subOrders(): RelationMany<_SubOrder> {
+		return this._subOrders
 	}
-	set productConditioning(value: _ConditioningType) {
-		this._productConditioning = value
-		this._conditioningType = value.id
-	}
-	get conditioningType(): ForeignKey {
-		if (this._productConditioning === null) {
-			return this._conditioningType
-		} else {
-			return this._productConditioning.primaryKey
-		}
-	}
-
-	private _sub_orders: RelationMany<_SubOrder>
-	public get sub_orders(): RelationMany<_SubOrder> {
-		return this._sub_orders
-	}
-	private set sub_orders(value: RelationMany<_SubOrder>) {
-		this._sub_orders = value
+	private set subOrders(value: RelationMany<_SubOrder>) {
+		this._subOrders = value
 	}
 
 	private _product_categories: RelationMany<_ProductCategory>
@@ -389,45 +519,29 @@ export class _Product implements PrismaClass {
 		this._gallery = value
 	}
 
-	constructor(obj: {
-		id?: number
-		vendor_id: ForeignKey
-		state?: ForeignKey
-		tva: ForeignKey
-		product_name: string
-		vendor_sku: string
-		product_sku: string
-		price: number
-		price_promo: number
-		description: string
-		additional_description: string | null
-		backorder: boolean
-		linked_products: string
-		product_image: ForeignKey
-		product_keywords: string
-		creation_date: number
-		modification_date: number
-		has_tva: boolean
-		visibility?: ForeignKey
-		conditioningType: ForeignKey
-		conditioningValue: string
-		media?: _Media | Media
-		tva_type?: _TVAType | TVAType
-		user?: _User | User
-		productState?: _ProductState | ProductState
-		productVisibilty?: _ProductVisibilty | ProductVisibilty
-		productConditioning?: _ConditioningType | ConditioningType
-		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
-		product_categories?:
-			| _ProductCategory[]
-			| ProductCategory[]
-			| RelationMany<_ProductCategory>
-		gallery?: _Media[] | Media[] | RelationMany<_Media>
-	}) {
+	constructor(
+		obj: _ProductConstructor<
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined
+		>,
+	) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _Product>[0]) {
+	private init(
+		obj: _ProductConstructor<
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined,
+			ForeignKey | undefined
+		>,
+	) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
@@ -437,7 +551,7 @@ export class _Product implements PrismaClass {
 		this.price = obj.price
 		this.price_promo = obj.price_promo
 		this.description = obj.description
-		this.additional_description = obj.additional_description
+		this.additional_description = obj.additional_description ?? null
 		this.backorder = obj.backorder
 		this.linked_products = obj.linked_products
 		this.product_keywords = obj.product_keywords
@@ -445,6 +559,24 @@ export class _Product implements PrismaClass {
 		this.modification_date = obj.modification_date
 		this.has_tva = obj.has_tva
 		this.conditioningValue = obj.conditioningValue
+		this.dimensions = obj.dimensions ?? '0x0x0'
+		this.marque = obj.marque ?? ''
+		this.slug = obj.slug
+		this.state_description = obj.state_description ?? ''
+		this.quantity = obj.quantity ?? 0
+		this.weight = obj.weight ?? 0
+
+		if (obj.productConditioning !== undefined) {
+			if (obj.productConditioning instanceof _ConditioningType) {
+				this.productConditioning = obj.productConditioning
+			} else {
+				this.productConditioning = new _ConditioningType(
+					obj.productConditioning,
+				)
+			}
+		} else if (obj.conditioningType !== undefined) {
+			this._conditioningType = obj.conditioningType
+		} else throw new Error('Invalid constructor.')
 
 		if (obj.media !== undefined) {
 			if (obj.media instanceof _Media) {
@@ -454,6 +586,16 @@ export class _Product implements PrismaClass {
 			}
 		} else if (obj.product_image !== undefined) {
 			this._product_image = obj.product_image
+		} else throw new Error('Invalid constructor.')
+
+		if (obj.productState !== undefined) {
+			if (obj.productState instanceof _ProductState) {
+				this.productState = obj.productState
+			} else {
+				this.productState = new _ProductState(obj.productState)
+			}
+		} else if (obj.state !== undefined) {
+			this._state = obj.state
 		} else throw new Error('Invalid constructor.')
 
 		if (obj.tva_type !== undefined) {
@@ -476,21 +618,11 @@ export class _Product implements PrismaClass {
 			this._vendor_id = obj.vendor_id
 		} else throw new Error('Invalid constructor.')
 
-		if (obj.productState !== undefined) {
-			if (obj.productState instanceof _ProductState) {
-				this.productState = obj.productState
-			} else {
-				this.productState = new _ProductState(obj.productState)
-			}
-		} else if (obj.state !== undefined) {
-			this._state = obj.state
-		} else throw new Error('Invalid constructor.')
-
 		if (obj.productVisibilty !== undefined) {
-			if (obj.productVisibilty instanceof _ProductVisibilty) {
+			if (obj.productVisibilty instanceof _ProductVisibility) {
 				this.productVisibilty = obj.productVisibilty
 			} else {
-				this.productVisibilty = new _ProductVisibilty(
+				this.productVisibilty = new _ProductVisibility(
 					obj.productVisibilty,
 				)
 			}
@@ -498,32 +630,38 @@ export class _Product implements PrismaClass {
 			this._visibility = obj.visibility
 		} else throw new Error('Invalid constructor.')
 
-		if (obj.productConditioning !== undefined) {
-			if (obj.productConditioning instanceof _ConditioningType) {
-				this.productConditioning = obj.productConditioning
-			} else {
-				this.productConditioning = new _ConditioningType(
-					obj.productConditioning,
-				)
-			}
-		} else if (obj.conditioningType !== undefined) {
-			this._conditioningType = obj.conditioningType
-		} else throw new Error('Invalid constructor.')
-
-		if (!obj.sub_orders || obj.sub_orders.length === 0) {
-			this.sub_orders = new RelationMany<_SubOrder>()
-		} else if (obj.sub_orders instanceof RelationMany) {
-			this.sub_orders = obj.sub_orders
-		} else if (obj.sub_orders[0] instanceof _SubOrder) {
-			this.sub_orders = new RelationMany<_SubOrder>(
-				obj.sub_orders as _SubOrder[],
+		if (!obj.basketProducts || obj.basketProducts.length === 0) {
+			this.basketProducts = new RelationMany<_CartProduct>()
+		} else if (obj.basketProducts instanceof RelationMany) {
+			this.basketProducts = obj.basketProducts
+		} else if (obj.basketProducts[0] instanceof _CartProduct) {
+			this.basketProducts = new RelationMany<_CartProduct>(
+				obj.basketProducts as _CartProduct[],
 			)
 		} else {
-			const sub_ordersArray: _SubOrder[] = []
-			for (const value of obj.sub_orders as SubOrder[]) {
-				sub_ordersArray.push(new _SubOrder(value))
+			const basketProductsArray: _CartProduct[] = []
+			for (const value of obj.basketProducts as CartProduct[]) {
+				basketProductsArray.push(new _CartProduct(value))
 			}
-			this.sub_orders = new RelationMany<_SubOrder>(sub_ordersArray)
+			this.basketProducts = new RelationMany<_CartProduct>(
+				basketProductsArray,
+			)
+		}
+
+		if (!obj.subOrders || obj.subOrders.length === 0) {
+			this.subOrders = new RelationMany<_SubOrder>()
+		} else if (obj.subOrders instanceof RelationMany) {
+			this.subOrders = obj.subOrders
+		} else if (obj.subOrders[0] instanceof _SubOrder) {
+			this.subOrders = new RelationMany<_SubOrder>(
+				obj.subOrders as _SubOrder[],
+			)
+		} else {
+			const subOrdersArray: _SubOrder[] = []
+			for (const value of obj.subOrders as SubOrder[]) {
+				subOrdersArray.push(new _SubOrder(value))
+			}
+			this.subOrders = new RelationMany<_SubOrder>(subOrdersArray)
 		}
 
 		if (!obj.product_categories || obj.product_categories.length === 0) {
@@ -566,7 +704,7 @@ export class _Product implements PrismaClass {
 		price?: number
 		price_promo?: number
 		description?: string
-		additional_description?: string
+		additional_description?: string | null
 		backorder?: boolean
 		linked_products?: string
 		product_keywords?: string
@@ -574,6 +712,12 @@ export class _Product implements PrismaClass {
 		modification_date?: number
 		has_tva?: boolean
 		conditioningValue?: string
+		dimensions?: string
+		marque?: string
+		slug?: string
+		state_description?: string
+		quantity?: number
+		weight?: number
 	}) {
 		if (obj.product_name !== undefined) {
 			this.product_name = obj.product_name
@@ -617,6 +761,24 @@ export class _Product implements PrismaClass {
 		if (obj.conditioningValue !== undefined) {
 			this.conditioningValue = obj.conditioningValue
 		}
+		if (obj.dimensions !== undefined) {
+			this.dimensions = obj.dimensions
+		}
+		if (obj.marque !== undefined) {
+			this.marque = obj.marque
+		}
+		if (obj.slug !== undefined) {
+			this.slug = obj.slug
+		}
+		if (obj.state_description !== undefined) {
+			this.state_description = obj.state_description
+		}
+		if (obj.quantity !== undefined) {
+			this.quantity = obj.quantity
+		}
+		if (obj.weight !== undefined) {
+			this.weight = obj.weight
+		}
 	}
 
 	toJSON() {
@@ -642,13 +804,20 @@ export class _Product implements PrismaClass {
 			visibility: this.visibility,
 			conditioningType: this.conditioningType,
 			conditioningValue: this.conditioningValue,
+			dimensions: this.dimensions,
+			marque: this.marque,
+			slug: this.slug,
+			state_description: this.state_description,
+			quantity: this.quantity,
+			weight: this.weight,
+			basketProducts: this.basketProducts,
+			productConditioning: this.productConditioning,
 			media: this.media,
+			productState: this.productState,
 			tva_type: this.tva_type,
 			user: this.user,
-			productState: this.productState,
 			productVisibilty: this.productVisibilty,
-			productConditioning: this.productConditioning,
-			sub_orders: this.sub_orders,
+			subOrders: this.subOrders,
 			product_categories: this.product_categories,
 			gallery: this.gallery,
 		}
@@ -676,6 +845,12 @@ export class _Product implements PrismaClass {
 			visibility: this.visibility!,
 			conditioningType: this.conditioningType!,
 			conditioningValue: this.conditioningValue!,
+			dimensions: this.dimensions!,
+			marque: this.marque!,
+			slug: this.slug!,
+			state_description: this.state_description!,
+			quantity: this.quantity!,
+			weight: this.weight!,
 		}
 	}
 
@@ -779,10 +954,29 @@ export class _Product implements PrismaClass {
 		const saveYieldsArray: AsyncGenerator<number, number, unknown>[] = []
 
 		// Relations toOne
+		if (
+			typeof this.productConditioning !== 'number' &&
+			!this.productConditioning!.saving
+		) {
+			const productConditioningYield =
+				this.productConditioning!.saveToTransaction(tx)
+			await productConditioningYield.next()
+			saveYieldsArray.push(productConditioningYield)
+		}
+
 		if (typeof this.media !== 'number' && !this.media!.saving) {
 			const mediaYield = this.media!.saveToTransaction(tx)
 			await mediaYield.next()
 			saveYieldsArray.push(mediaYield)
+		}
+
+		if (
+			typeof this.productState !== 'number' &&
+			!this.productState!.saving
+		) {
+			const productStateYield = this.productState!.saveToTransaction(tx)
+			await productStateYield.next()
+			saveYieldsArray.push(productStateYield)
 		}
 
 		if (typeof this.tva_type !== 'number' && !this.tva_type!.saving) {
@@ -798,15 +992,6 @@ export class _Product implements PrismaClass {
 		}
 
 		if (
-			typeof this.productState !== 'number' &&
-			!this.productState!.saving
-		) {
-			const productStateYield = this.productState!.saveToTransaction(tx)
-			await productStateYield.next()
-			saveYieldsArray.push(productStateYield)
-		}
-
-		if (
 			typeof this.productVisibilty !== 'number' &&
 			!this.productVisibilty!.saving
 		) {
@@ -816,20 +1001,14 @@ export class _Product implements PrismaClass {
 			saveYieldsArray.push(productVisibiltyYield)
 		}
 
-		if (
-			typeof this.productConditioning !== 'number' &&
-			!this.productConditioning!.saving
-		) {
-			const productConditioningYield =
-				this.productConditioning!.saveToTransaction(tx)
-			await productConditioningYield.next()
-			saveYieldsArray.push(productConditioningYield)
-		}
-
 		// Relations toMany
-		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
-		await sub_ordersYield.next()
-		saveYieldsArray.push(sub_ordersYield)
+		const basketProductsYield = this.basketProducts!.saveToTransaction(tx)
+		await basketProductsYield.next()
+		saveYieldsArray.push(basketProductsYield)
+
+		const subOrdersYield = this.subOrders!.saveToTransaction(tx)
+		await subOrdersYield.next()
+		saveYieldsArray.push(subOrdersYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
@@ -950,20 +1129,48 @@ export class _Product implements PrismaClass {
 				'Missing field on _Product.save(): conditioningValue',
 			)
 		}
+		if (this.dimensions === undefined) {
+			throw new Error('Missing field on _Product.save(): dimensions')
+		}
+		if (this.marque === undefined) {
+			throw new Error('Missing field on _Product.save(): marque')
+		}
+		if (this.slug === undefined) {
+			throw new Error('Missing field on _Product.save(): slug')
+		}
+		if (this.state_description === undefined) {
+			throw new Error(
+				'Missing field on _Product.save(): state_description',
+			)
+		}
+		if (this.quantity === undefined) {
+			throw new Error('Missing field on _Product.save(): quantity')
+		}
+		if (this.weight === undefined) {
+			throw new Error('Missing field on _Product.save(): weight')
+		}
 
+		if (
+			this.productConditioning === undefined ||
+			this.productConditioning === null
+		) {
+			throw new Error(
+				"productConditioning can't be null or undefined in _Product.",
+			)
+		}
 		if (this.media === undefined || this.media === null) {
 			throw new Error("media can't be null or undefined in _Product.")
+		}
+		if (this.productState === undefined || this.productState === null) {
+			throw new Error(
+				"productState can't be null or undefined in _Product.",
+			)
 		}
 		if (this.tva_type === undefined || this.tva_type === null) {
 			throw new Error("tva_type can't be null or undefined in _Product.")
 		}
 		if (this.user === undefined || this.user === null) {
 			throw new Error("user can't be null or undefined in _Product.")
-		}
-		if (this.productState === undefined || this.productState === null) {
-			throw new Error(
-				"productState can't be null or undefined in _Product.",
-			)
 		}
 		if (
 			this.productVisibilty === undefined ||
@@ -973,16 +1180,13 @@ export class _Product implements PrismaClass {
 				"productVisibilty can't be null or undefined in _Product.",
 			)
 		}
-		if (
-			this.productConditioning === undefined ||
-			this.productConditioning === null
-		) {
+
+		if (this.basketProducts.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
-				"productConditioning can't be null or undefined in _Product.",
+				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
 			)
 		}
-
-		if (this.sub_orders.length() > 0 && this.primaryKey === -1) {
+		if (this.subOrders.length() > 0 && this.primaryKey === -1) {
 			throw new Error(
 				"Can't save toMany fields on new _Product. Save it first, then add the toMany fields",
 			)

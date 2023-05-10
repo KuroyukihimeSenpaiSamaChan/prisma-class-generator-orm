@@ -4,6 +4,15 @@ import { RelationMany } from '../prisma-relation'
 import { PrismaClass, ForeignKey } from '../prisma-class'
 import { PrismaModel } from '../prisma-model'
 
+type _ExpeditionConstructor = {
+	id?: number
+	name: number
+	slug: number
+	max_weight: number
+	price: number
+	sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
+}
+
 export class _Expedition implements PrismaClass {
 	static prisma: Prisma.ExpeditionDelegate<undefined>
 	get prisma(): Prisma.ExpeditionDelegate<undefined> {
@@ -99,19 +108,11 @@ export class _Expedition implements PrismaClass {
 		this._sub_orders = value
 	}
 
-	constructor(obj: {
-		id?: number
-		name: number
-		slug: number
-		max_weight: number
-		price: number
-
-		sub_orders?: _SubOrder[] | SubOrder[] | RelationMany<_SubOrder>
-	}) {
+	constructor(obj: _ExpeditionConstructor) {
 		this.init(obj)
 	}
 
-	private init(obj: ConstructorParameters<typeof _Expedition>[0]) {
+	private init(obj: _ExpeditionConstructor) {
 		if (obj.id !== undefined) {
 			this._id = obj.id
 		}
