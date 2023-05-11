@@ -261,7 +261,10 @@ export class _ConditioningType implements PrismaClass {
 			await saveYield.next()
 		}
 
-		if (this._isSaved) {
+		let areRelationsSaved = true
+		areRelationsSaved = areRelationsSaved && this.products.isSaved
+
+		if (this._isSaved && areRelationsSaved) {
 			this._saving = false
 			return new Promise<number>((resolve) => resolve(this._id))
 		}

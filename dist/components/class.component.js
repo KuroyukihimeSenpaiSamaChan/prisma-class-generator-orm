@@ -180,6 +180,7 @@ class ClassComponent extends base_component_1.BaseComponent {
 
 				`;
             }
+            let manySaved = '';
             let checkToMany = '';
             let toMany = '';
             for (const _field of this.fields.filter(elem => elem.relation && !(0, convertor_1.isRelationMany)(elem.relation) && elem.relation.hasMany === elem)) {
@@ -191,6 +192,8 @@ class ClassComponent extends base_component_1.BaseComponent {
 				await ${_field.name}Yield.next()
 				saveYieldsArray.push(${_field.name}Yield)
 				
+				`;
+                manySaved += `areRelationsSaved = areRelationsSaved && this.${_field.name}.isSaved
 				`;
             }
             let connectGenerate = '';
@@ -230,6 +233,8 @@ class ClassComponent extends base_component_1.BaseComponent {
 					connect: ${_field.name}Connections,
 					disconnect: ${_field.name}Disconnections
 				},`;
+                manySaved += `areRelationsSaved = areRelationsSaved && this.${_field.name}.isSaved
+				`;
             }
             saveMethod = load_save_template_1.SAVE_TEMPLATE.replaceAll('#!{CHECK_FIELDS}', checkRequireds)
                 .replaceAll('#!{CHECK_TO_ONE}', checkToOne)
@@ -240,7 +245,8 @@ class ClassComponent extends base_component_1.BaseComponent {
                 .replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
                 .replaceAll('#!{CONNECT_GEN}', connectGenerate)
                 .replaceAll('#!{CONNECT_SAVE}', connectSave)
-                .replaceAll('#!{CONNECT_UPDATE}', connectUpdate);
+                .replaceAll('#!{CONNECT_UPDATE}', connectUpdate)
+                .replaceAll('#!{MANY_SAVED}', manySaved);
             deleteMethod = load_save_template_1.DELETE_TEMPLATE.replaceAll('#!{ID}', primaryKey)
                 .replaceAll('#!{CLASS}', `${this.name}`);
         }

@@ -762,7 +762,18 @@ export class _User implements PrismaClass {
 			await saveYield.next()
 		}
 
-		if (this._isSaved) {
+		let areRelationsSaved = true
+		areRelationsSaved = areRelationsSaved && this.access_token.isSaved
+		areRelationsSaved = areRelationsSaved && this.media.isSaved
+		areRelationsSaved = areRelationsSaved && this.product.isSaved
+		areRelationsSaved = areRelationsSaved && this.sub_order.isSaved
+		areRelationsSaved = areRelationsSaved && this.user_billing.isSaved
+		areRelationsSaved = areRelationsSaved && this.user_delete.isSaved
+		areRelationsSaved = areRelationsSaved && this.user_delivery.isSaved
+		areRelationsSaved = areRelationsSaved && this.baskets.isSaved
+		areRelationsSaved = areRelationsSaved && this.roles.isSaved
+
+		if (this._isSaved && areRelationsSaved) {
 			this._saving = false
 			return new Promise<number>((resolve) => resolve(this._id))
 		}

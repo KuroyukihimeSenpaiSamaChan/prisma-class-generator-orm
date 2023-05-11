@@ -68,7 +68,10 @@ async *saveToTransaction(
     await saveYield.next()
   }
 
-  if(this._isSaved){
+  let areRelationsSaved = true
+  #!{MANY_SAVED}
+
+  if(this._isSaved && areRelationsSaved){
     this._saving = false
     return new Promise<number>((resolve) => resolve(this._#!{ID})) 
   }

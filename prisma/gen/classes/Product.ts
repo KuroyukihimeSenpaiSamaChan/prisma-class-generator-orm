@@ -1169,7 +1169,13 @@ export class _Product implements PrismaClass {
 			await saveYield.next()
 		}
 
-		if (this._isSaved) {
+		let areRelationsSaved = true
+		areRelationsSaved = areRelationsSaved && this.basketProducts.isSaved
+		areRelationsSaved = areRelationsSaved && this.subOrders.isSaved
+		areRelationsSaved = areRelationsSaved && this.product_categories.isSaved
+		areRelationsSaved = areRelationsSaved && this.gallery.isSaved
+
+		if (this._isSaved && areRelationsSaved) {
 			this._saving = false
 			return new Promise<number>((resolve) => resolve(this._id))
 		}

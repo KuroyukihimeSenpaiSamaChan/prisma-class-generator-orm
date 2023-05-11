@@ -10,7 +10,9 @@ export class RelationMany<R extends PrismaClass>
 	}
 
 	private _toRemoveRelations: R[] = []
-	constructor(private relations: R[] = []) {}
+	constructor(private relations: R[] = []) {
+		this._isSaved = true
+	}
 
 	[Symbol.iterator](): RelationIterator<R> {
 		return new RelationIterator<R>(this.relations)
@@ -28,15 +30,30 @@ export class RelationMany<R extends PrismaClass>
 		return this.relations[index]
 	}
 
+	findByPrimaryKey(primaryKey: number): R | null {
+		for (const relation of this.relations) {
+			if (primaryKey === relation.primaryKey) {
+				return relation
+			}
+		}
+		return null
+	}
+
 	push(value: R): void
 	push(values: R[]): void
 	push(value: R | R[]): void {
 		if (Array.isArray(value)) {
 			for (const val of value) {
-				this.relations.push(val)
+				if (this.findByPrimaryKey(val.primaryKey) !== null) {
+					this.relations.push(val)
+					this._isSaved = false
+				}
 			}
 		} else {
-			this.relations.push(value)
+			if (this.findByPrimaryKey(val.primaryKey) !== null) {
+				this.relations.push(val)
+				this._isSaved = false
+			}
 		}
 	}
 

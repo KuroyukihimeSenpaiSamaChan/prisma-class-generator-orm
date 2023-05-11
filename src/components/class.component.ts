@@ -199,6 +199,8 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				`
 			}
 
+			let manySaved = ''
+
 			let checkToMany = ''
 			let toMany = ''
 			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasMany === elem)) {
@@ -210,6 +212,9 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				await ${_field.name}Yield.next()
 				saveYieldsArray.push(${_field.name}Yield)
 				
+				`
+
+				manySaved += `areRelationsSaved = areRelationsSaved && this.${_field.name}.isSaved
 				`
 			}
 
@@ -250,6 +255,9 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					connect: ${_field.name}Connections,
 					disconnect: ${_field.name}Disconnections
 				},`
+
+				manySaved += `areRelationsSaved = areRelationsSaved && this.${_field.name}.isSaved
+				`
 			}
 
 			saveMethod = SAVE_TEMPLATE.replaceAll(
@@ -263,6 +271,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				.replaceAll('#!{CONNECT_GEN}', connectGenerate)
 				.replaceAll('#!{CONNECT_SAVE}', connectSave)
 				.replaceAll('#!{CONNECT_UPDATE}', connectUpdate)
+				.replaceAll('#!{MANY_SAVED}', manySaved)
 
 			deleteMethod = DELETE_TEMPLATE.replaceAll(
 				'#!{ID}', primaryKey)
