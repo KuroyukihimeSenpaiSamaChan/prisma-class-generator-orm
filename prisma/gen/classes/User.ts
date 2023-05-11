@@ -56,6 +56,11 @@ export class _User implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -228,7 +233,9 @@ export class _User implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -244,22 +251,54 @@ export class _User implements PrismaClass {
 		return this._id
 	}
 
-	user_pass: string
+	private _user_pass: string
+	set user_pass(value: string) {
+		this._user_pass = value
+		this._isSaved = false
+	}
 
 	// UNIQUE
-	user_email: string
+	private _user_email: string
+	set user_email(value: string) {
+		this._user_email = value
+		this._isSaved = false
+	}
 
-	user_registered: boolean = false
+	private _user_registered: boolean = false
+	set user_registered(value: boolean) {
+		this._user_registered = value
+		this._isSaved = false
+	}
 
-	firstname: string
+	private _firstname: string
+	set firstname(value: string) {
+		this._firstname = value
+		this._isSaved = false
+	}
 
-	lastname: string
+	private _lastname: string
+	set lastname(value: string) {
+		this._lastname = value
+		this._isSaved = false
+	}
 
-	birthdate: number
+	private _birthdate: number
+	set birthdate(value: number) {
+		this._birthdate = value
+		this._isSaved = false
+	}
 
-	token: string
+	private _token: string
+	set token(value: string) {
+		this._token = value
+		this._isSaved = false
+	}
 
-	deleting: number | null
+	private _deleting: number | null
+	set deleting(value: number | null) {
+		this._deleting = value
+		this._isSaved = false
+	}
 
 	private _access_token: RelationMany<_AccessToken>
 	public get access_token(): RelationMany<_AccessToken> {
@@ -267,6 +306,7 @@ export class _User implements PrismaClass {
 	}
 	private set access_token(value: RelationMany<_AccessToken>) {
 		this._access_token = value
+		this._isSaved = false
 	}
 
 	private _media: RelationMany<_Media>
@@ -275,6 +315,7 @@ export class _User implements PrismaClass {
 	}
 	private set media(value: RelationMany<_Media>) {
 		this._media = value
+		this._isSaved = false
 	}
 
 	private _product: RelationMany<_Product>
@@ -283,6 +324,7 @@ export class _User implements PrismaClass {
 	}
 	private set product(value: RelationMany<_Product>) {
 		this._product = value
+		this._isSaved = false
 	}
 
 	private _sub_order: RelationMany<_SubOrder>
@@ -291,6 +333,7 @@ export class _User implements PrismaClass {
 	}
 	private set sub_order(value: RelationMany<_SubOrder>) {
 		this._sub_order = value
+		this._isSaved = false
 	}
 
 	private _user_billing: RelationMany<_UserBilling>
@@ -299,6 +342,7 @@ export class _User implements PrismaClass {
 	}
 	private set user_billing(value: RelationMany<_UserBilling>) {
 		this._user_billing = value
+		this._isSaved = false
 	}
 
 	private _user_delete: RelationMany<_UserDelete>
@@ -307,6 +351,7 @@ export class _User implements PrismaClass {
 	}
 	private set user_delete(value: RelationMany<_UserDelete>) {
 		this._user_delete = value
+		this._isSaved = false
 	}
 
 	private _user_delivery: RelationMany<_UserDelivery>
@@ -315,6 +360,7 @@ export class _User implements PrismaClass {
 	}
 	private set user_delivery(value: RelationMany<_UserDelivery>) {
 		this._user_delivery = value
+		this._isSaved = false
 	}
 
 	private _baskets: RelationMany<_Cart>
@@ -323,6 +369,7 @@ export class _User implements PrismaClass {
 	}
 	private set baskets(value: RelationMany<_Cart>) {
 		this._baskets = value
+		this._isSaved = false
 	}
 
 	private _roles: RelationMany<_Role>
@@ -331,6 +378,7 @@ export class _User implements PrismaClass {
 	}
 	private set roles(value: RelationMany<_Role>) {
 		this._roles = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _UserConstructor) {
@@ -338,17 +386,14 @@ export class _User implements PrismaClass {
 	}
 
 	private init(obj: _UserConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.user_pass = obj.user_pass
-		this.user_email = obj.user_email
-		this.user_registered = obj.user_registered ?? false
-		this.firstname = obj.firstname
-		this.lastname = obj.lastname
-		this.birthdate = obj.birthdate
-		this.token = obj.token
-		this.deleting = obj.deleting ?? null
+		this._user_pass = obj.user_pass
+		this._user_email = obj.user_email
+		this._user_registered = obj.user_registered ?? false
+		this._firstname = obj.firstname
+		this._lastname = obj.lastname
+		this._birthdate = obj.birthdate
+		this._token = obj.token
+		this._deleting = obj.deleting ?? null
 
 		if (!obj.access_token || obj.access_token.length === 0) {
 			this.access_token = new RelationMany<_AccessToken>()
@@ -491,6 +536,11 @@ export class _User implements PrismaClass {
 			}
 			this.roles = new RelationMany<_Role>(rolesArray)
 		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
+		}
 	}
 
 	update(obj: {
@@ -576,21 +626,7 @@ export class _User implements PrismaClass {
 
 	static async from(
 		query?: Prisma.UserFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_User | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _User.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _User.getIncludes()
-			}
-		}
-
 		const dbQuery = await _User.prisma.findFirst({
 			...query,
 		})
@@ -703,6 +739,11 @@ export class _User implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		const rolesConnections: Prisma.Enumerable<Prisma.RoleWhereUniqueInput> =
 			[]
 		for (const relation of this.roles) {
@@ -745,6 +786,7 @@ export class _User implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

@@ -18,7 +18,6 @@ class FieldComponent extends base_component_1.BaseComponent {
         let name = this.name;
         let type = this.type;
         if (this.privateFromRelation) {
-            name = `private _${name}`;
             type = 'ForeignKey';
         }
         let decorators = '';

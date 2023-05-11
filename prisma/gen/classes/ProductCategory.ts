@@ -20,16 +20,17 @@ export class _ProductCategory implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static async initList() {
 		if (this.enumList === null) {
 			return
 		}
 
-		const models = await this.prisma.findMany()
-		this.enumList = []
-		for (const model of models) {
-			this.enumList.push(new _ProductCategory(model))
-		}
+		this.enumList = await this.all()
 	}
 
 	private static enumList: _ProductCategory[]
@@ -79,7 +80,9 @@ export class _ProductCategory implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -95,9 +98,17 @@ export class _ProductCategory implements PrismaClass {
 		return this._id
 	}
 
-	category_name: string
+	private _category_name: string
+	set category_name(value: string) {
+		this._category_name = value
+		this._isSaved = false
+	}
 
-	category_slug: string
+	private _category_slug: string
+	set category_slug(value: string) {
+		this._category_slug = value
+		this._isSaved = false
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -105,6 +116,7 @@ export class _ProductCategory implements PrismaClass {
 	}
 	private set products(value: RelationMany<_Product>) {
 		this._products = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _ProductCategoryConstructor) {
@@ -112,11 +124,8 @@ export class _ProductCategory implements PrismaClass {
 	}
 
 	private init(obj: _ProductCategoryConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.category_name = obj.category_name
-		this.category_slug = obj.category_slug
+		this._category_name = obj.category_name
+		this._category_slug = obj.category_slug
 
 		if (!obj.products || obj.products.length === 0) {
 			this.products = new RelationMany<_Product>()
@@ -132,6 +141,11 @@ export class _ProductCategory implements PrismaClass {
 				productsArray.push(new _Product(value))
 			}
 			this.products = new RelationMany<_Product>(productsArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -173,21 +187,7 @@ export class _ProductCategory implements PrismaClass {
 
 	static async from(
 		query?: Prisma.ProductCategoryFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_ProductCategory | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _ProductCategory.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _ProductCategory.getIncludes()
-			}
-		}
-
 		const dbQuery = await _ProductCategory.prisma.findFirst({
 			...query,
 		})
@@ -275,6 +275,11 @@ export class _ProductCategory implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		const productsConnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
 			[]
 		for (const relation of this.products) {
@@ -317,6 +322,7 @@ export class _ProductCategory implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

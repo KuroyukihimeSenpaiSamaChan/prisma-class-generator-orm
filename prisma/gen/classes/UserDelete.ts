@@ -30,6 +30,11 @@ export class _UserDelete implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -72,7 +77,9 @@ export class _UserDelete implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -89,12 +96,28 @@ export class _UserDelete implements PrismaClass {
 	}
 
 	private _user_id: ForeignKey
+	set user_id(value: ForeignKey) {
+		this._user_id = value
+		this._isSaved = false
+	}
 
-	token: string
+	private _token: string
+	set token(value: string) {
+		this._token = value
+		this._isSaved = false
+	}
 
-	date: number
+	private _date: number
+	set date(value: number) {
+		this._date = value
+		this._isSaved = false
+	}
 
-	validated: boolean = false
+	private _validated: boolean = false
+	set validated(value: boolean) {
+		this._validated = value
+		this._isSaved = false
+	}
 
 	private _user: _User
 	get user(): _User {
@@ -103,6 +126,7 @@ export class _UserDelete implements PrismaClass {
 	set user(value: _User) {
 		this._user = value
 		this._user_id = value.id
+		this._isSaved = false
 	}
 	get user_id(): ForeignKey {
 		if (!this._user) {
@@ -117,12 +141,9 @@ export class _UserDelete implements PrismaClass {
 	}
 
 	private init(obj: _UserDeleteConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.token = obj.token
-		this.date = obj.date
-		this.validated = obj.validated ?? false
+		this._token = obj.token
+		this._date = obj.date
+		this._validated = obj.validated ?? false
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -133,6 +154,11 @@ export class _UserDelete implements PrismaClass {
 		} else if (obj.user_id !== undefined) {
 			this._user_id = obj.user_id
 		} else throw new Error('Invalid constructor.')
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
+		}
 	}
 
 	update(obj: { token?: string; date?: number; validated?: boolean }) {
@@ -180,21 +206,7 @@ export class _UserDelete implements PrismaClass {
 
 	static async from(
 		query?: Prisma.UserDeleteFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_UserDelete | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _UserDelete.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _UserDelete.getIncludes()
-			}
-		}
-
 		const dbQuery = await _UserDelete.prisma.findFirst({
 			...query,
 		})
@@ -281,6 +293,11 @@ export class _UserDelete implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.userDelete.create({
@@ -301,6 +318,7 @@ export class _UserDelete implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

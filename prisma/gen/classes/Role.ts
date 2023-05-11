@@ -19,16 +19,17 @@ export class _Role implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static async initList() {
 		if (this.enumList === null) {
 			return
 		}
 
-		const models = await this.prisma.findMany()
-		this.enumList = []
-		for (const model of models) {
-			this.enumList.push(new _Role(model))
-		}
+		this.enumList = await this.all()
 	}
 
 	private static enumList: _Role[]
@@ -78,7 +79,9 @@ export class _Role implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -94,7 +97,11 @@ export class _Role implements PrismaClass {
 		return this._id
 	}
 
-	label: string
+	private _label: string
+	set label(value: string) {
+		this._label = value
+		this._isSaved = false
+	}
 
 	private _users: RelationMany<_User>
 	public get users(): RelationMany<_User> {
@@ -102,6 +109,7 @@ export class _Role implements PrismaClass {
 	}
 	private set users(value: RelationMany<_User>) {
 		this._users = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _RoleConstructor) {
@@ -109,10 +117,7 @@ export class _Role implements PrismaClass {
 	}
 
 	private init(obj: _RoleConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.label = obj.label
+		this._label = obj.label
 
 		if (!obj.users || obj.users.length === 0) {
 			this.users = new RelationMany<_User>()
@@ -126,6 +131,11 @@ export class _Role implements PrismaClass {
 				usersArray.push(new _User(value))
 			}
 			this.users = new RelationMany<_User>(usersArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -153,21 +163,7 @@ export class _Role implements PrismaClass {
 
 	static async from(
 		query?: Prisma.RoleFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_Role | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _Role.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _Role.getIncludes()
-			}
-		}
-
 		const dbQuery = await _Role.prisma.findFirst({
 			...query,
 		})
@@ -249,6 +245,11 @@ export class _Role implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		const usersConnections: Prisma.Enumerable<Prisma.UserWhereUniqueInput> =
 			[]
 		for (const relation of this.users) {
@@ -291,6 +292,7 @@ export class _Role implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

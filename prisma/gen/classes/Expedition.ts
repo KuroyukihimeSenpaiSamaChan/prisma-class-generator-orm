@@ -22,16 +22,17 @@ export class _Expedition implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static async initList() {
 		if (this.enumList === null) {
 			return
 		}
 
-		const models = await this.prisma.findMany()
-		this.enumList = []
-		for (const model of models) {
-			this.enumList.push(new _Expedition(model))
-		}
+		this.enumList = await this.all()
 	}
 
 	private static enumList: _Expedition[]
@@ -83,7 +84,9 @@ export class _Expedition implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -99,13 +102,29 @@ export class _Expedition implements PrismaClass {
 		return this._id
 	}
 
-	name: number
+	private _name: number
+	set name(value: number) {
+		this._name = value
+		this._isSaved = false
+	}
 
-	slug: number
+	private _slug: number
+	set slug(value: number) {
+		this._slug = value
+		this._isSaved = false
+	}
 
-	max_weight: number
+	private _max_weight: number
+	set max_weight(value: number) {
+		this._max_weight = value
+		this._isSaved = false
+	}
 
-	price: number
+	private _price: number
+	set price(value: number) {
+		this._price = value
+		this._isSaved = false
+	}
 
 	private _sub_orders: RelationMany<_SubOrder>
 	public get sub_orders(): RelationMany<_SubOrder> {
@@ -113,6 +132,7 @@ export class _Expedition implements PrismaClass {
 	}
 	private set sub_orders(value: RelationMany<_SubOrder>) {
 		this._sub_orders = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _ExpeditionConstructor) {
@@ -120,13 +140,10 @@ export class _Expedition implements PrismaClass {
 	}
 
 	private init(obj: _ExpeditionConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.name = obj.name
-		this.slug = obj.slug
-		this.max_weight = obj.max_weight
-		this.price = obj.price
+		this._name = obj.name
+		this._slug = obj.slug
+		this._max_weight = obj.max_weight
+		this._price = obj.price
 
 		if (!obj.sub_orders || obj.sub_orders.length === 0) {
 			this.sub_orders = new RelationMany<_SubOrder>()
@@ -142,6 +159,11 @@ export class _Expedition implements PrismaClass {
 				sub_ordersArray.push(new _SubOrder(value))
 			}
 			this.sub_orders = new RelationMany<_SubOrder>(sub_ordersArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -198,21 +220,7 @@ export class _Expedition implements PrismaClass {
 
 	static async from(
 		query?: Prisma.ExpeditionFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_Expedition | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _Expedition.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _Expedition.getIncludes()
-			}
-		}
-
 		const dbQuery = await _Expedition.prisma.findFirst({
 			...query,
 		})
@@ -297,6 +305,11 @@ export class _Expedition implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.expedition.create({
@@ -317,6 +330,7 @@ export class _Expedition implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

@@ -80,6 +80,11 @@ export class _SubOrder implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -184,7 +189,9 @@ export class _SubOrder implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -201,18 +208,46 @@ export class _SubOrder implements PrismaClass {
 	}
 
 	private _order_id: ForeignKey
+	set order_id(value: ForeignKey) {
+		this._order_id = value
+		this._isSaved = false
+	}
 
 	private _vendor_id: ForeignKey
+	set vendor_id(value: ForeignKey) {
+		this._vendor_id = value
+		this._isSaved = false
+	}
 
 	private _expedition_id: ForeignKey
+	set expedition_id(value: ForeignKey) {
+		this._expedition_id = value
+		this._isSaved = false
+	}
 
 	private _product_id: ForeignKey
+	set product_id(value: ForeignKey) {
+		this._product_id = value
+		this._isSaved = false
+	}
 
-	product_price: number
+	private _product_price: number
+	set product_price(value: number) {
+		this._product_price = value
+		this._isSaved = false
+	}
 
-	quantity: number
+	private _quantity: number
+	set quantity(value: number) {
+		this._quantity = value
+		this._isSaved = false
+	}
 
 	private _tva_id: ForeignKey = 1
+	set tva_id(value: ForeignKey) {
+		this._tva_id = value
+		this._isSaved = false
+	}
 
 	private _expedition: _Expedition
 	get expedition(): _Expedition {
@@ -221,6 +256,7 @@ export class _SubOrder implements PrismaClass {
 	set expedition(value: _Expedition) {
 		this._expedition = value
 		this._expedition_id = value.id
+		this._isSaved = false
 	}
 	get expedition_id(): ForeignKey {
 		if (!this._expedition) {
@@ -237,6 +273,7 @@ export class _SubOrder implements PrismaClass {
 	set order(value: _Order) {
 		this._order = value
 		this._order_id = value.id
+		this._isSaved = false
 	}
 	get order_id(): ForeignKey {
 		if (!this._order) {
@@ -253,6 +290,7 @@ export class _SubOrder implements PrismaClass {
 	set product(value: _Product) {
 		this._product = value
 		this._product_id = value.id
+		this._isSaved = false
 	}
 	get product_id(): ForeignKey {
 		if (!this._product) {
@@ -269,6 +307,7 @@ export class _SubOrder implements PrismaClass {
 	set user(value: _User) {
 		this._user = value
 		this._vendor_id = value.id
+		this._isSaved = false
 	}
 	get vendor_id(): ForeignKey {
 		if (!this._user) {
@@ -285,6 +324,7 @@ export class _SubOrder implements PrismaClass {
 	set tva_type(value: _TVAType) {
 		this._tva_type = value
 		this._tva_id = value.id
+		this._isSaved = false
 	}
 	get tva_id(): ForeignKey {
 		if (!this._tva_type) {
@@ -299,11 +339,8 @@ export class _SubOrder implements PrismaClass {
 	}
 
 	private init(obj: _SubOrderConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.product_price = obj.product_price
-		this.quantity = obj.quantity
+		this._product_price = obj.product_price
+		this._quantity = obj.quantity
 
 		if (obj.expedition !== undefined) {
 			if (obj.expedition instanceof _Expedition) {
@@ -354,6 +391,11 @@ export class _SubOrder implements PrismaClass {
 		} else if (obj.tva_id !== undefined) {
 			this._tva_id = obj.tva_id
 		} else throw new Error('Invalid constructor.')
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
+		}
 	}
 
 	update(obj: { product_price?: number; quantity?: number }) {
@@ -408,21 +450,7 @@ export class _SubOrder implements PrismaClass {
 
 	static async from(
 		query?: Prisma.SubOrderFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_SubOrder | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _SubOrder.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _SubOrder.getIncludes()
-			}
-		}
-
 		const dbQuery = await _SubOrder.prisma.findFirst({
 			...query,
 		})
@@ -533,6 +561,11 @@ export class _SubOrder implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.subOrder.create({
@@ -553,6 +586,7 @@ export class _SubOrder implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

@@ -6,6 +6,8 @@ export const CONST_TEMPLATES = {
   export class RelationMany<R extends PrismaClass>
     implements PrismaClass, Iterable<R>
   {
+    private _isSaved = false
+
     private _toRemoveRelations: R[] = []
     constructor(private relations: R[] = []) { }
 
@@ -163,6 +165,7 @@ export const CONST_TEMPLATES = {
         | number
         | any,
     ): Promise<void>
+    isSaved: boolean
     save(): Promise<boolean>
     saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]): AsyncGenerator<number, number, unknown>
   }

@@ -35,6 +35,11 @@ export class _Media implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -111,7 +116,9 @@ export class _Media implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -127,17 +134,41 @@ export class _Media implements PrismaClass {
 		return this._id
 	}
 
-	url: string
+	private _url: string
+	set url(value: string) {
+		this._url = value
+		this._isSaved = false
+	}
 
-	creation_date: number
+	private _creation_date: number
+	set creation_date(value: number) {
+		this._creation_date = value
+		this._isSaved = false
+	}
 
-	modification_date: number
+	private _modification_date: number
+	set modification_date(value: number) {
+		this._modification_date = value
+		this._isSaved = false
+	}
 
 	private _user_id: ForeignKey
+	set user_id(value: ForeignKey) {
+		this._user_id = value
+		this._isSaved = false
+	}
 
-	description: string = ''
+	private _description: string = ''
+	set description(value: string) {
+		this._description = value
+		this._isSaved = false
+	}
 
-	name: string
+	private _name: string
+	set name(value: string) {
+		this._name = value
+		this._isSaved = false
+	}
 
 	private _user: _User
 	get user(): _User {
@@ -146,6 +177,7 @@ export class _Media implements PrismaClass {
 	set user(value: _User) {
 		this._user = value
 		this._user_id = value.id
+		this._isSaved = false
 	}
 	get user_id(): ForeignKey {
 		if (!this._user) {
@@ -161,6 +193,7 @@ export class _Media implements PrismaClass {
 	}
 	private set product_image(value: RelationMany<_Product>) {
 		this._product_image = value
+		this._isSaved = false
 	}
 
 	private _product_gallery: RelationMany<_Product>
@@ -169,6 +202,7 @@ export class _Media implements PrismaClass {
 	}
 	private set product_gallery(value: RelationMany<_Product>) {
 		this._product_gallery = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _MediaConstructor) {
@@ -176,14 +210,11 @@ export class _Media implements PrismaClass {
 	}
 
 	private init(obj: _MediaConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.url = obj.url
-		this.creation_date = obj.creation_date
-		this.modification_date = obj.modification_date
-		this.description = obj.description ?? ''
-		this.name = obj.name
+		this._url = obj.url
+		this._creation_date = obj.creation_date
+		this._modification_date = obj.modification_date
+		this._description = obj.description ?? ''
+		this._name = obj.name
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -227,6 +258,11 @@ export class _Media implements PrismaClass {
 			this.product_gallery = new RelationMany<_Product>(
 				product_galleryArray,
 			)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -291,21 +327,7 @@ export class _Media implements PrismaClass {
 
 	static async from(
 		query?: Prisma.MediaFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_Media | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _Media.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _Media.getIncludes()
-			}
-		}
-
 		const dbQuery = await _Media.prisma.findFirst({
 			...query,
 		})
@@ -395,6 +417,11 @@ export class _Media implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		const product_galleryConnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
 			[]
 		for (const relation of this.product_gallery) {
@@ -437,6 +464,7 @@ export class _Media implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

@@ -12,6 +12,11 @@ export class _#!{NAME} implements PrismaClass{
     return _#!{NAME}.prisma
   }
   get prismaClient() { return PrismaModel.prismaClient }
+  
+  private _isSaved = false
+  get isSaved(): boolean {
+    return this._isSaved
+  }
 
 #!{ENUM_LIST}
 

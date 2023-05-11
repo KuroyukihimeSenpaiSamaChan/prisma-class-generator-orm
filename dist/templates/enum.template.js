@@ -7,11 +7,7 @@ static async initList() {
     return
   }
   
-  const models = await this.prisma.findMany()
-  this.enumList = []
-  for (const model of models) {
-    this.enumList.push(new _#!{NAME}(model))
-  }
+  this.enumList = await this.all()
 }
 
 private static enumList: _#!{NAME}[]

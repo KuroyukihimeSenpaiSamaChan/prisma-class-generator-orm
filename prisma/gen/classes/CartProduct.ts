@@ -39,6 +39,11 @@ export class _CartProduct implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -96,7 +101,9 @@ export class _CartProduct implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -113,10 +120,22 @@ export class _CartProduct implements PrismaClass {
 	}
 
 	private _basket_id: ForeignKey
+	set basket_id(value: ForeignKey) {
+		this._basket_id = value
+		this._isSaved = false
+	}
 
 	private _product_id: ForeignKey
+	set product_id(value: ForeignKey) {
+		this._product_id = value
+		this._isSaved = false
+	}
 
-	quantity: number
+	private _quantity: number
+	set quantity(value: number) {
+		this._quantity = value
+		this._isSaved = false
+	}
 
 	private _basket: _Cart
 	get basket(): _Cart {
@@ -125,6 +144,7 @@ export class _CartProduct implements PrismaClass {
 	set basket(value: _Cart) {
 		this._basket = value
 		this._basket_id = value.id
+		this._isSaved = false
 	}
 	get basket_id(): ForeignKey {
 		if (!this._basket) {
@@ -141,6 +161,7 @@ export class _CartProduct implements PrismaClass {
 	set product(value: _Product) {
 		this._product = value
 		this._product_id = value.id
+		this._isSaved = false
 	}
 	get product_id(): ForeignKey {
 		if (!this._product) {
@@ -155,10 +176,7 @@ export class _CartProduct implements PrismaClass {
 	}
 
 	private init(obj: _CartProductConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.quantity = obj.quantity
+		this._quantity = obj.quantity
 
 		if (obj.basket !== undefined) {
 			if (obj.basket instanceof _Cart) {
@@ -179,6 +197,11 @@ export class _CartProduct implements PrismaClass {
 		} else if (obj.product_id !== undefined) {
 			this._product_id = obj.product_id
 		} else throw new Error('Invalid constructor.')
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
+		}
 	}
 
 	update(obj: { quantity?: number }) {
@@ -219,21 +242,7 @@ export class _CartProduct implements PrismaClass {
 
 	static async from(
 		query?: Prisma.CartProductFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_CartProduct | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _CartProduct.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _CartProduct.getIncludes()
-			}
-		}
-
 		const dbQuery = await _CartProduct.prisma.findFirst({
 			...query,
 		})
@@ -329,6 +338,11 @@ export class _CartProduct implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.cartProduct.create({
@@ -349,6 +363,7 @@ export class _CartProduct implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

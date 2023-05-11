@@ -30,6 +30,11 @@ export class _AccessToken implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -72,7 +77,9 @@ export class _AccessToken implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -89,12 +96,28 @@ export class _AccessToken implements PrismaClass {
 	}
 
 	private _user_id: ForeignKey
+	set user_id(value: ForeignKey) {
+		this._user_id = value
+		this._isSaved = false
+	}
 
-	token: string
+	private _token: string
+	set token(value: string) {
+		this._token = value
+		this._isSaved = false
+	}
 
-	created_at: number | null
+	private _created_at: number | null
+	set created_at(value: number | null) {
+		this._created_at = value
+		this._isSaved = false
+	}
 
-	expires_at: number | null
+	private _expires_at: number | null
+	set expires_at(value: number | null) {
+		this._expires_at = value
+		this._isSaved = false
+	}
 
 	private _user: _User
 	get user(): _User {
@@ -103,6 +126,7 @@ export class _AccessToken implements PrismaClass {
 	set user(value: _User) {
 		this._user = value
 		this._user_id = value.id
+		this._isSaved = false
 	}
 	get user_id(): ForeignKey {
 		if (!this._user) {
@@ -117,12 +141,9 @@ export class _AccessToken implements PrismaClass {
 	}
 
 	private init(obj: _AccessTokenConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.token = obj.token
-		this.created_at = obj.created_at ?? null
-		this.expires_at = obj.expires_at ?? null
+		this._token = obj.token
+		this._created_at = obj.created_at ?? null
+		this._expires_at = obj.expires_at ?? null
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -133,6 +154,11 @@ export class _AccessToken implements PrismaClass {
 		} else if (obj.user_id !== undefined) {
 			this._user_id = obj.user_id
 		} else throw new Error('Invalid constructor.')
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
+		}
 	}
 
 	update(obj: {
@@ -184,21 +210,7 @@ export class _AccessToken implements PrismaClass {
 
 	static async from(
 		query?: Prisma.AccessTokenFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_AccessToken | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _AccessToken.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _AccessToken.getIncludes()
-			}
-		}
-
 		const dbQuery = await _AccessToken.prisma.findFirst({
 			...query,
 		})
@@ -288,6 +300,11 @@ export class _AccessToken implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.accessToken.create({
@@ -308,6 +325,7 @@ export class _AccessToken implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

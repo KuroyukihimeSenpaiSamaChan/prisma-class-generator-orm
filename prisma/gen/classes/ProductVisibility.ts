@@ -19,16 +19,17 @@ export class _ProductVisibility implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static async initList() {
 		if (this.enumList === null) {
 			return
 		}
 
-		const models = await this.prisma.findMany()
-		this.enumList = []
-		for (const model of models) {
-			this.enumList.push(new _ProductVisibility(model))
-		}
+		this.enumList = await this.all()
 	}
 
 	private static enumList: _ProductVisibility[]
@@ -78,7 +79,9 @@ export class _ProductVisibility implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -94,7 +97,11 @@ export class _ProductVisibility implements PrismaClass {
 		return this._id
 	}
 
-	visibility: string = 'a'
+	private _visibility: string = 'a'
+	set visibility(value: string) {
+		this._visibility = value
+		this._isSaved = false
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -102,6 +109,7 @@ export class _ProductVisibility implements PrismaClass {
 	}
 	private set products(value: RelationMany<_Product>) {
 		this._products = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _ProductVisibilityConstructor) {
@@ -109,10 +117,7 @@ export class _ProductVisibility implements PrismaClass {
 	}
 
 	private init(obj: _ProductVisibilityConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.visibility = obj.visibility ?? 'a'
+		this._visibility = obj.visibility ?? 'a'
 
 		if (!obj.products || obj.products.length === 0) {
 			this.products = new RelationMany<_Product>()
@@ -128,6 +133,11 @@ export class _ProductVisibility implements PrismaClass {
 				productsArray.push(new _Product(value))
 			}
 			this.products = new RelationMany<_Product>(productsArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -161,21 +171,7 @@ export class _ProductVisibility implements PrismaClass {
 
 	static async from(
 		query?: Prisma.ProductVisibilityFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_ProductVisibility | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _ProductVisibility.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _ProductVisibility.getIncludes()
-			}
-		}
-
 		const dbQuery = await _ProductVisibility.prisma.findFirst({
 			...query,
 		})
@@ -266,6 +262,11 @@ export class _ProductVisibility implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.productVisibility.create({
@@ -286,6 +287,7 @@ export class _ProductVisibility implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

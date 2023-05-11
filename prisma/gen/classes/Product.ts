@@ -127,6 +127,11 @@ export class _Product implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -334,7 +339,9 @@ export class _Product implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -351,56 +358,160 @@ export class _Product implements PrismaClass {
 	}
 
 	private _vendor_id: ForeignKey
+	set vendor_id(value: ForeignKey) {
+		this._vendor_id = value
+		this._isSaved = false
+	}
 
 	private _state: ForeignKey = 1
+	set state(value: ForeignKey) {
+		this._state = value
+		this._isSaved = false
+	}
 
 	private _tva: ForeignKey
+	set tva(value: ForeignKey) {
+		this._tva = value
+		this._isSaved = false
+	}
 
-	product_name: string
+	private _product_name: string
+	set product_name(value: string) {
+		this._product_name = value
+		this._isSaved = false
+	}
 
-	vendor_sku: string
+	private _vendor_sku: string
+	set vendor_sku(value: string) {
+		this._vendor_sku = value
+		this._isSaved = false
+	}
 
-	product_sku: string
+	private _product_sku: string
+	set product_sku(value: string) {
+		this._product_sku = value
+		this._isSaved = false
+	}
 
-	price: number
+	private _price: number
+	set price(value: number) {
+		this._price = value
+		this._isSaved = false
+	}
 
-	price_promo: number
+	private _price_promo: number
+	set price_promo(value: number) {
+		this._price_promo = value
+		this._isSaved = false
+	}
 
-	description: string
+	private _description: string
+	set description(value: string) {
+		this._description = value
+		this._isSaved = false
+	}
 
-	additional_description: string | null
+	private _additional_description: string | null
+	set additional_description(value: string | null) {
+		this._additional_description = value
+		this._isSaved = false
+	}
 
-	backorder: boolean
+	private _backorder: boolean
+	set backorder(value: boolean) {
+		this._backorder = value
+		this._isSaved = false
+	}
 
-	linked_products: string
+	private _linked_products: string
+	set linked_products(value: string) {
+		this._linked_products = value
+		this._isSaved = false
+	}
 
 	private _product_image: ForeignKey
+	set product_image(value: ForeignKey) {
+		this._product_image = value
+		this._isSaved = false
+	}
 
-	product_keywords: string
+	private _product_keywords: string
+	set product_keywords(value: string) {
+		this._product_keywords = value
+		this._isSaved = false
+	}
 
-	creation_date: number
+	private _creation_date: number
+	set creation_date(value: number) {
+		this._creation_date = value
+		this._isSaved = false
+	}
 
-	modification_date: number
+	private _modification_date: number
+	set modification_date(value: number) {
+		this._modification_date = value
+		this._isSaved = false
+	}
 
-	has_tva: boolean
+	private _has_tva: boolean
+	set has_tva(value: boolean) {
+		this._has_tva = value
+		this._isSaved = false
+	}
 
 	private _visibility: ForeignKey = 1
+	set visibility(value: ForeignKey) {
+		this._visibility = value
+		this._isSaved = false
+	}
 
 	private _conditioningType: ForeignKey
+	set conditioningType(value: ForeignKey) {
+		this._conditioningType = value
+		this._isSaved = false
+	}
 
-	conditioningValue: string
+	private _conditioningValue: string
+	set conditioningValue(value: string) {
+		this._conditioningValue = value
+		this._isSaved = false
+	}
 
-	dimensions: string = '0x0x0'
+	private _dimensions: string = '0x0x0'
+	set dimensions(value: string) {
+		this._dimensions = value
+		this._isSaved = false
+	}
 
-	marque: string = ''
+	private _marque: string = ''
+	set marque(value: string) {
+		this._marque = value
+		this._isSaved = false
+	}
 
-	slug: string
+	private _slug: string
+	set slug(value: string) {
+		this._slug = value
+		this._isSaved = false
+	}
 
-	state_description: string = ''
+	private _state_description: string = ''
+	set state_description(value: string) {
+		this._state_description = value
+		this._isSaved = false
+	}
 
-	quantity: number = 0
+	private _quantity: number = 0
+	set quantity(value: number) {
+		this._quantity = value
+		this._isSaved = false
+	}
 
-	weight: number = 0
+	private _weight: number = 0
+	set weight(value: number) {
+		this._weight = value
+		this._isSaved = false
+	}
 
 	private _basketProducts: RelationMany<_CartProduct>
 	public get basketProducts(): RelationMany<_CartProduct> {
@@ -408,6 +519,7 @@ export class _Product implements PrismaClass {
 	}
 	private set basketProducts(value: RelationMany<_CartProduct>) {
 		this._basketProducts = value
+		this._isSaved = false
 	}
 
 	private _productConditioning: _ConditioningType
@@ -417,6 +529,7 @@ export class _Product implements PrismaClass {
 	set productConditioning(value: _ConditioningType) {
 		this._productConditioning = value
 		this._conditioningType = value.id
+		this._isSaved = false
 	}
 	get conditioningType(): ForeignKey {
 		if (!this._productConditioning) {
@@ -433,6 +546,7 @@ export class _Product implements PrismaClass {
 	set media(value: _Media) {
 		this._media = value
 		this._product_image = value.id
+		this._isSaved = false
 	}
 	get product_image(): ForeignKey {
 		if (!this._media) {
@@ -449,6 +563,7 @@ export class _Product implements PrismaClass {
 	set productState(value: _ProductState) {
 		this._productState = value
 		this._state = value.id
+		this._isSaved = false
 	}
 	get state(): ForeignKey {
 		if (!this._productState) {
@@ -465,6 +580,7 @@ export class _Product implements PrismaClass {
 	set tva_type(value: _TVAType) {
 		this._tva_type = value
 		this._tva = value.id
+		this._isSaved = false
 	}
 	get tva(): ForeignKey {
 		if (!this._tva_type) {
@@ -481,6 +597,7 @@ export class _Product implements PrismaClass {
 	set user(value: _User) {
 		this._user = value
 		this._vendor_id = value.id
+		this._isSaved = false
 	}
 	get vendor_id(): ForeignKey {
 		if (!this._user) {
@@ -497,6 +614,7 @@ export class _Product implements PrismaClass {
 	set productVisibilty(value: _ProductVisibility) {
 		this._productVisibilty = value
 		this._visibility = value.id
+		this._isSaved = false
 	}
 	get visibility(): ForeignKey {
 		if (!this._productVisibilty) {
@@ -512,6 +630,7 @@ export class _Product implements PrismaClass {
 	}
 	private set subOrders(value: RelationMany<_SubOrder>) {
 		this._subOrders = value
+		this._isSaved = false
 	}
 
 	private _product_categories: RelationMany<_ProductCategory>
@@ -520,6 +639,7 @@ export class _Product implements PrismaClass {
 	}
 	private set product_categories(value: RelationMany<_ProductCategory>) {
 		this._product_categories = value
+		this._isSaved = false
 	}
 
 	private _gallery: RelationMany<_Media>
@@ -528,6 +648,7 @@ export class _Product implements PrismaClass {
 	}
 	private set gallery(value: RelationMany<_Media>) {
 		this._gallery = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _ProductConstructor) {
@@ -535,29 +656,26 @@ export class _Product implements PrismaClass {
 	}
 
 	private init(obj: _ProductConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.product_name = obj.product_name
-		this.vendor_sku = obj.vendor_sku
-		this.product_sku = obj.product_sku
-		this.price = obj.price
-		this.price_promo = obj.price_promo
-		this.description = obj.description
-		this.additional_description = obj.additional_description ?? null
-		this.backorder = obj.backorder
-		this.linked_products = obj.linked_products
-		this.product_keywords = obj.product_keywords
-		this.creation_date = obj.creation_date
-		this.modification_date = obj.modification_date
-		this.has_tva = obj.has_tva
-		this.conditioningValue = obj.conditioningValue
-		this.dimensions = obj.dimensions ?? '0x0x0'
-		this.marque = obj.marque ?? ''
-		this.slug = obj.slug
-		this.state_description = obj.state_description ?? ''
-		this.quantity = obj.quantity ?? 0
-		this.weight = obj.weight ?? 0
+		this._product_name = obj.product_name
+		this._vendor_sku = obj.vendor_sku
+		this._product_sku = obj.product_sku
+		this._price = obj.price
+		this._price_promo = obj.price_promo
+		this._description = obj.description
+		this._additional_description = obj.additional_description ?? null
+		this._backorder = obj.backorder
+		this._linked_products = obj.linked_products
+		this._product_keywords = obj.product_keywords
+		this._creation_date = obj.creation_date
+		this._modification_date = obj.modification_date
+		this._has_tva = obj.has_tva
+		this._conditioningValue = obj.conditioningValue
+		this._dimensions = obj.dimensions ?? '0x0x0'
+		this._marque = obj.marque ?? ''
+		this._slug = obj.slug
+		this._state_description = obj.state_description ?? ''
+		this._quantity = obj.quantity ?? 0
+		this._weight = obj.weight ?? 0
 
 		if (obj.productConditioning !== undefined) {
 			if (obj.productConditioning instanceof _ConditioningType) {
@@ -687,6 +805,11 @@ export class _Product implements PrismaClass {
 				galleryArray.push(new _Media(value))
 			}
 			this.gallery = new RelationMany<_Media>(galleryArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -860,21 +983,7 @@ export class _Product implements PrismaClass {
 
 	static async from(
 		query?: Prisma.ProductFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_Product | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _Product.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _Product.getIncludes()
-			}
-		}
-
 		const dbQuery = await _Product.prisma.findFirst({
 			...query,
 		})
@@ -1000,6 +1109,11 @@ export class _Product implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		const product_categoriesConnections: Prisma.Enumerable<Prisma.ProductCategoryWhereUniqueInput> =
 			[]
 		for (const relation of this.product_categories) {
@@ -1064,6 +1178,7 @@ export class _Product implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

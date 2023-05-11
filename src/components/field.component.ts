@@ -23,7 +23,6 @@ export class FieldComponent extends BaseComponent implements Echoable {
 
 		let type = this.type
 		if (this.privateFromRelation) {
-			name = `private _${name}`
 			type = 'ForeignKey'
 		}
 

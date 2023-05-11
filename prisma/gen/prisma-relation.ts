@@ -4,6 +4,8 @@ import { PrismaModel } from './prisma-model'
 export class RelationMany<R extends PrismaClass>
 	implements PrismaClass, Iterable<R>
 {
+	private _isSaved = false
+
 	private _toRemoveRelations: R[] = []
 	constructor(private relations: R[] = []) {}
 

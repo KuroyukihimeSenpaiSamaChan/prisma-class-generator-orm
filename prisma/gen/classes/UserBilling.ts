@@ -35,6 +35,11 @@ export class _UserBilling implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -77,7 +82,9 @@ export class _UserBilling implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -94,22 +101,58 @@ export class _UserBilling implements PrismaClass {
 	}
 
 	private _user_id: ForeignKey
+	set user_id(value: ForeignKey) {
+		this._user_id = value
+		this._isSaved = false
+	}
 
-	address: string
+	private _address: string
+	set address(value: string) {
+		this._address = value
+		this._isSaved = false
+	}
 
-	additional_address: string | null
+	private _additional_address: string | null
+	set additional_address(value: string | null) {
+		this._additional_address = value
+		this._isSaved = false
+	}
 
-	zipcode: string
+	private _zipcode: string
+	set zipcode(value: string) {
+		this._zipcode = value
+		this._isSaved = false
+	}
 
-	city: string
+	private _city: string
+	set city(value: string) {
+		this._city = value
+		this._isSaved = false
+	}
 
-	country: string
+	private _country: string
+	set country(value: string) {
+		this._country = value
+		this._isSaved = false
+	}
 
-	region: string
+	private _region: string
+	set region(value: string) {
+		this._region = value
+		this._isSaved = false
+	}
 
-	phone_number: string
+	private _phone_number: string
+	set phone_number(value: string) {
+		this._phone_number = value
+		this._isSaved = false
+	}
 
-	company_name: string | null
+	private _company_name: string | null
+	set company_name(value: string | null) {
+		this._company_name = value
+		this._isSaved = false
+	}
 
 	private _user: _User
 	get user(): _User {
@@ -118,6 +161,7 @@ export class _UserBilling implements PrismaClass {
 	set user(value: _User) {
 		this._user = value
 		this._user_id = value.id
+		this._isSaved = false
 	}
 	get user_id(): ForeignKey {
 		if (!this._user) {
@@ -132,17 +176,14 @@ export class _UserBilling implements PrismaClass {
 	}
 
 	private init(obj: _UserBillingConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.address = obj.address
-		this.additional_address = obj.additional_address ?? null
-		this.zipcode = obj.zipcode
-		this.city = obj.city
-		this.country = obj.country
-		this.region = obj.region
-		this.phone_number = obj.phone_number
-		this.company_name = obj.company_name ?? null
+		this._address = obj.address
+		this._additional_address = obj.additional_address ?? null
+		this._zipcode = obj.zipcode
+		this._city = obj.city
+		this._country = obj.country
+		this._region = obj.region
+		this._phone_number = obj.phone_number
+		this._company_name = obj.company_name ?? null
 
 		if (obj.user !== undefined) {
 			if (obj.user instanceof _User) {
@@ -153,6 +194,11 @@ export class _UserBilling implements PrismaClass {
 		} else if (obj.user_id !== undefined) {
 			this._user_id = obj.user_id
 		} else throw new Error('Invalid constructor.')
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
+		}
 	}
 
 	update(obj: {
@@ -234,21 +280,7 @@ export class _UserBilling implements PrismaClass {
 
 	static async from(
 		query?: Prisma.UserBillingFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_UserBilling | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _UserBilling.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _UserBilling.getIncludes()
-			}
-		}
-
 		const dbQuery = await _UserBilling.prisma.findFirst({
 			...query,
 		})
@@ -338,6 +370,11 @@ export class _UserBilling implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.userBilling.create({
@@ -358,6 +395,7 @@ export class _UserBilling implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

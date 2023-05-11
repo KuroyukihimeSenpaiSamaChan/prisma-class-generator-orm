@@ -1,5 +1,9 @@
 export const FIELD_TEMPLATE = `	#!{DECORATORS}
-	#!{NAME}: #!{TYPE} #!{DEFAULT}
+	private _#!{NAME}: #!{TYPE} #!{DEFAULT}
+	set #!{NAME}(value: #!{TYPE}) {
+		this._#!{NAME} = value
+		this._isSaved = false
+	}
 `
 
 export const FIELD_ID_TEMPLATE = ` #!{DECORATORS}
@@ -20,6 +24,7 @@ get #!{NAME}(): _#!{TYPE} #!{NULLABLE} {
 set #!{NAME}(value: _#!{TYPE}) {
 	this._#!{NAME} = value
 	this._#!{FOREIGNKEY} = value.id
+	this._isSaved = false
 }
 get #!{FOREIGNKEY}(): ForeignKey {
 	if(!this._#!{NAME}){
@@ -37,5 +42,6 @@ public get #!{NAME}(): RelationMany<_#!{TYPE}> {
 }
 private set #!{NAME}(value: RelationMany<_#!{TYPE}>) {
 	this._#!{NAME} = value
+	this._isSaved = false
 }
 `

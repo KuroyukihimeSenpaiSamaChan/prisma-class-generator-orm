@@ -69,6 +69,11 @@ async *saveToTransaction(
   for (const saveYield of saveYieldsArray) {
     await saveYield.next()
   }
+
+  if(this._isSaved){
+    this._saving = false
+    return new Promise<number>((resolve) => resolve(this._#!{ID})) 
+  }
   
   #!{CONNECT_GEN}
 
@@ -92,6 +97,7 @@ async *saveToTransaction(
   }
 
   this._saving = false
+  this._isSaved = true
   return new Promise<number>((resolve) => resolve(this._#!{ID}))
 }
 

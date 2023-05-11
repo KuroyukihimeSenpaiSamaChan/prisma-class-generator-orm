@@ -30,7 +30,8 @@ static getIncludes(
     }
 
     // @ts-ignore
-    Object.keys(query).forEach(key => query[key] === undefined && delete query[key])
+    Object.keys(query).forEach(
+      key => query[key as keyof typeof query] === undefined && delete query[key as keyof typeof query])
 
     return query
   }

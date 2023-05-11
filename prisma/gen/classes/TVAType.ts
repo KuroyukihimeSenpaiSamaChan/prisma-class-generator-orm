@@ -22,16 +22,17 @@ export class _TVAType implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static async initList() {
 		if (this.enumList === null) {
 			return
 		}
 
-		const models = await this.prisma.findMany()
-		this.enumList = []
-		for (const model of models) {
-			this.enumList.push(new _TVAType(model))
-		}
+		this.enumList = await this.all()
 	}
 
 	private static enumList: _TVAType[]
@@ -98,7 +99,9 @@ export class _TVAType implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -114,9 +117,17 @@ export class _TVAType implements PrismaClass {
 		return this._id
 	}
 
-	slug: string
+	private _slug: string
+	set slug(value: string) {
+		this._slug = value
+		this._isSaved = false
+	}
 
-	amount: number = 0
+	private _amount: number = 0
+	set amount(value: number) {
+		this._amount = value
+		this._isSaved = false
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -124,6 +135,7 @@ export class _TVAType implements PrismaClass {
 	}
 	private set products(value: RelationMany<_Product>) {
 		this._products = value
+		this._isSaved = false
 	}
 
 	private _sub_orders: RelationMany<_SubOrder>
@@ -132,6 +144,7 @@ export class _TVAType implements PrismaClass {
 	}
 	private set sub_orders(value: RelationMany<_SubOrder>) {
 		this._sub_orders = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _TVATypeConstructor) {
@@ -139,11 +152,8 @@ export class _TVAType implements PrismaClass {
 	}
 
 	private init(obj: _TVATypeConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.slug = obj.slug
-		this.amount = obj.amount ?? 0
+		this._slug = obj.slug
+		this._amount = obj.amount ?? 0
 
 		if (!obj.products || obj.products.length === 0) {
 			this.products = new RelationMany<_Product>()
@@ -175,6 +185,11 @@ export class _TVAType implements PrismaClass {
 				sub_ordersArray.push(new _SubOrder(value))
 			}
 			this.sub_orders = new RelationMany<_SubOrder>(sub_ordersArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -213,21 +228,7 @@ export class _TVAType implements PrismaClass {
 
 	static async from(
 		query?: Prisma.TVATypeFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_TVAType | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _TVAType.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _TVAType.getIncludes()
-			}
-		}
-
 		const dbQuery = await _TVAType.prisma.findFirst({
 			...query,
 		})
@@ -316,6 +317,11 @@ export class _TVAType implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.tVAType.create({
@@ -336,6 +342,7 @@ export class _TVAType implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

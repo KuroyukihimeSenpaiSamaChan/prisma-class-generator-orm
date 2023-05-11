@@ -36,6 +36,7 @@ class ClassComponent extends base_component_1.BaseComponent {
             };
             let initialiazers = {
                 normal: '',
+                id: '',
                 update: '',
                 toOne: '',
                 toMany: ''
@@ -50,11 +51,12 @@ class ClassComponent extends base_component_1.BaseComponent {
                     if (_field.isId) {
                         primaryKey = _field.name;
                         parameters.normal = `${_field.name}?: ${_field.type},` + parameters.normal;
-                        initialiazers.normal = `
+                        initialiazers.id = `
 						if(obj.${_field.name} !== undefined){
 							this._${_field.name} = obj.${_field.name}
+							this._isSaved = true
 						}
-						` + initialiazers.normal;
+						`;
                     }
                     else if (!_field.privateFromRelation) {
                         parameters.update += `${_field.name}?: ${_field.type}${_field.nullable ? ' | null' : ''},`;
@@ -69,7 +71,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                             opt.initializer = ` ??  null`;
                         }
                         parameters.normal += `${fieldName}: ${_field.type} ${opt.parameter},`;
-                        initialiazers.normal += `this.${_field.name} = obj.${_field.name} ${opt.initializer};`;
+                        initialiazers.normal += `this._${_field.name} = obj.${_field.name} ${opt.initializer};`;
                         initialiazers.update += `if(obj.${_field.name} !== undefined){
 							this.${_field.name} = obj.${_field.name}
 						}
@@ -146,6 +148,7 @@ class ClassComponent extends base_component_1.BaseComponent {
 				${initialiazers.normal}
 				${initialiazers.toOne}
 				${initialiazers.toMany}
+				${initialiazers.id}
 			}
 			
 			update(obj: {

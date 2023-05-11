@@ -28,6 +28,11 @@ export class _Order implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static getIncludes(
 		param?:
 			| number
@@ -72,7 +77,9 @@ export class _Order implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -88,25 +95,65 @@ export class _Order implements PrismaClass {
 		return this._id
 	}
 
-	order_client_id: number
+	private _order_client_id: number
+	set order_client_id(value: number) {
+		this._order_client_id = value
+		this._isSaved = false
+	}
 
-	creation_date: number
+	private _creation_date: number
+	set creation_date(value: number) {
+		this._creation_date = value
+		this._isSaved = false
+	}
 
-	modification_date: number
+	private _modification_date: number
+	set modification_date(value: number) {
+		this._modification_date = value
+		this._isSaved = false
+	}
 
-	order_state: number
+	private _order_state: number
+	set order_state(value: number) {
+		this._order_state = value
+		this._isSaved = false
+	}
 
-	type: number
+	private _type: number
+	set type(value: number) {
+		this._type = value
+		this._isSaved = false
+	}
 
-	buyer_id: number
+	private _buyer_id: number
+	set buyer_id(value: number) {
+		this._buyer_id = value
+		this._isSaved = false
+	}
 
-	buyer_billing_id: number
+	private _buyer_billing_id: number
+	set buyer_billing_id(value: number) {
+		this._buyer_billing_id = value
+		this._isSaved = false
+	}
 
-	buyer_delivery_id: number
+	private _buyer_delivery_id: number
+	set buyer_delivery_id(value: number) {
+		this._buyer_delivery_id = value
+		this._isSaved = false
+	}
 
-	expedition_id: number
+	private _expedition_id: number
+	set expedition_id(value: number) {
+		this._expedition_id = value
+		this._isSaved = false
+	}
 
-	order_total: number
+	private _order_total: number
+	set order_total(value: number) {
+		this._order_total = value
+		this._isSaved = false
+	}
 
 	private _sub_orders: RelationMany<_SubOrder>
 	public get sub_orders(): RelationMany<_SubOrder> {
@@ -114,6 +161,7 @@ export class _Order implements PrismaClass {
 	}
 	private set sub_orders(value: RelationMany<_SubOrder>) {
 		this._sub_orders = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _OrderConstructor) {
@@ -121,19 +169,16 @@ export class _Order implements PrismaClass {
 	}
 
 	private init(obj: _OrderConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.order_client_id = obj.order_client_id
-		this.creation_date = obj.creation_date
-		this.modification_date = obj.modification_date
-		this.order_state = obj.order_state
-		this.type = obj.type
-		this.buyer_id = obj.buyer_id
-		this.buyer_billing_id = obj.buyer_billing_id
-		this.buyer_delivery_id = obj.buyer_delivery_id
-		this.expedition_id = obj.expedition_id
-		this.order_total = obj.order_total
+		this._order_client_id = obj.order_client_id
+		this._creation_date = obj.creation_date
+		this._modification_date = obj.modification_date
+		this._order_state = obj.order_state
+		this._type = obj.type
+		this._buyer_id = obj.buyer_id
+		this._buyer_billing_id = obj.buyer_billing_id
+		this._buyer_delivery_id = obj.buyer_delivery_id
+		this._expedition_id = obj.expedition_id
+		this._order_total = obj.order_total
 
 		if (!obj.sub_orders || obj.sub_orders.length === 0) {
 			this.sub_orders = new RelationMany<_SubOrder>()
@@ -149,6 +194,11 @@ export class _Order implements PrismaClass {
 				sub_ordersArray.push(new _SubOrder(value))
 			}
 			this.sub_orders = new RelationMany<_SubOrder>(sub_ordersArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -239,21 +289,7 @@ export class _Order implements PrismaClass {
 
 	static async from(
 		query?: Prisma.OrderFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_Order | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _Order.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _Order.getIncludes()
-			}
-		}
-
 		const dbQuery = await _Order.prisma.findFirst({
 			...query,
 		})
@@ -338,6 +374,11 @@ export class _Order implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.order.create({
@@ -358,6 +399,7 @@ export class _Order implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

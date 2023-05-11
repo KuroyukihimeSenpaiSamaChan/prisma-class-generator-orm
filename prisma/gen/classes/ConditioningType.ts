@@ -19,16 +19,17 @@ export class _ConditioningType implements PrismaClass {
 		return PrismaModel.prismaClient
 	}
 
+	private _isSaved = false
+	get isSaved(): boolean {
+		return this._isSaved
+	}
+
 	static async initList() {
 		if (this.enumList === null) {
 			return
 		}
 
-		const models = await this.prisma.findMany()
-		this.enumList = []
-		for (const model of models) {
-			this.enumList.push(new _ConditioningType(model))
-		}
+		this.enumList = await this.all()
 	}
 
 	private static enumList: _ConditioningType[]
@@ -78,7 +79,9 @@ export class _ConditioningType implements PrismaClass {
 
 			// @ts-ignore
 			Object.keys(query).forEach(
-				(key) => query[key] === undefined && delete query[key],
+				(key) =>
+					query[key as keyof typeof query] === undefined &&
+					delete query[key as keyof typeof query],
 			)
 
 			return query
@@ -94,7 +97,11 @@ export class _ConditioningType implements PrismaClass {
 		return this._id
 	}
 
-	label: string
+	private _label: string
+	set label(value: string) {
+		this._label = value
+		this._isSaved = false
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {
@@ -102,6 +109,7 @@ export class _ConditioningType implements PrismaClass {
 	}
 	private set products(value: RelationMany<_Product>) {
 		this._products = value
+		this._isSaved = false
 	}
 
 	constructor(obj: _ConditioningTypeConstructor) {
@@ -109,10 +117,7 @@ export class _ConditioningType implements PrismaClass {
 	}
 
 	private init(obj: _ConditioningTypeConstructor) {
-		if (obj.id !== undefined) {
-			this._id = obj.id
-		}
-		this.label = obj.label
+		this._label = obj.label
 
 		if (!obj.products || obj.products.length === 0) {
 			this.products = new RelationMany<_Product>()
@@ -128,6 +133,11 @@ export class _ConditioningType implements PrismaClass {
 				productsArray.push(new _Product(value))
 			}
 			this.products = new RelationMany<_Product>(productsArray)
+		}
+
+		if (obj.id !== undefined) {
+			this._id = obj.id
+			this._isSaved = true
 		}
 	}
 
@@ -157,21 +167,7 @@ export class _ConditioningType implements PrismaClass {
 
 	static async from(
 		query?: Prisma.ConditioningTypeFindFirstArgsBase,
-		includes: boolean = true,
 	): Promise<_ConditioningType | null> {
-		if (includes) {
-			if (query === undefined) {
-				query = {
-					include: _ConditioningType.getIncludes(),
-				}
-			} else if (
-				query.include === undefined &&
-				query.select === undefined
-			) {
-				query.include = _ConditioningType.getIncludes()
-			}
-		}
-
 		const dbQuery = await _ConditioningType.prisma.findFirst({
 			...query,
 		})
@@ -262,6 +258,11 @@ export class _ConditioningType implements PrismaClass {
 			await saveYield.next()
 		}
 
+		if (this._isSaved) {
+			this._saving = false
+			return new Promise<number>((resolve) => resolve(this._id))
+		}
+
 		if (this._id === -1) {
 			this._id = (
 				await tx.conditioningType.create({
@@ -282,6 +283,7 @@ export class _ConditioningType implements PrismaClass {
 		}
 
 		this._saving = false
+		this._isSaved = true
 		return new Promise<number>((resolve) => resolve(this._id))
 	}
 

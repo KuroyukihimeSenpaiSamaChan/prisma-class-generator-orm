@@ -41,6 +41,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			}
 			let initialiazers = {
 				normal: '',
+				id: '',
 				update: '',
 				toOne: '',
 				toMany: ''
@@ -56,11 +57,12 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					if (_field.isId) {
 						primaryKey = _field.name
 						parameters.normal = `${_field.name}?: ${_field.type},` + parameters.normal;
-						initialiazers.normal = `
+						initialiazers.id = `
 						if(obj.${_field.name} !== undefined){
 							this._${_field.name} = obj.${_field.name}
+							this._isSaved = true
 						}
-						` + initialiazers.normal
+						`
 					}
 					else if (!_field.privateFromRelation) {
 						parameters.update += `${_field.name}?: ${_field.type}${_field.nullable ? ' | null' : ''},`
@@ -74,7 +76,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 							opt.initializer = ` ??  null`
 						}
 						parameters.normal += `${fieldName}: ${_field.type} ${opt.parameter},`
-						initialiazers.normal += `this.${_field.name} = obj.${_field.name} ${opt.initializer};`
+						initialiazers.normal += `this._${_field.name} = obj.${_field.name} ${opt.initializer};`
 						initialiazers.update += `if(obj.${_field.name} !== undefined){
 							this.${_field.name} = obj.${_field.name}
 						}
@@ -159,6 +161,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				${initialiazers.normal}
 				${initialiazers.toOne}
 				${initialiazers.toMany}
+				${initialiazers.id}
 			}
 			
 			update(obj: {
@@ -183,30 +186,10 @@ export class ClassComponent extends BaseComponent implements Echoable {
 		let deleteMethod = ''
 		{
 			let checkRequireds = ''
-			// for (const _field of this.fields.filter((elem) => !elem.isId && !elem.nullable && elem.relation === undefined && !elem.privateFromRelation)) {
-			// 	if (this.name === "Product") {
-			// 		console.log(_field)
-			// 	}
-			// 	checkRequireds += `if(this.${_field.name} === undefined){
-			// 		throw new Error("Missing field on _${this.name}.save(): ${_field.name}")
-			// 	}`
-			// }
 
 			let checkToOne = ''
 			let toOne = ''
 			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasOne === elem)) {
-				// if (!_field.nullable) {
-				// 	const fieldForeignKey = _field.relation
-				// 	// Seems useless, but needed for typing
-				// 	if (isRelationMany(fieldForeignKey)) {
-				// 		continue
-				// 	}
-				// 	checkToOne += `if(!this.${_field.name} && this.${fieldForeignKey.fromField}){
-				// 		throw new Error("${_field.name} can't be null or undefined in _${this.name}.")
-				// 	}
-				// 	`
-				// }
-				//this.${_field.name} !== undefined && this.${_field.name} !== null && 
 				toOne += `if(this.${_field.name} && !this.${_field.name}.saving){
 					const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
 					await ${_field.name}Yield.next()
