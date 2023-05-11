@@ -50,8 +50,8 @@ export const CONST_TEMPLATES = {
           }
         }
       } else {
-        if(this.findByPrimaryKey(val.primaryKey) !== null){
-          this.relations.push(val)
+        if(this.findByPrimaryKey(value.primaryKey) !== null){
+          this.relations.push(value)
           this._isSaved = false
         }
       }
