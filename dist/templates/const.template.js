@@ -109,7 +109,7 @@ exports.CONST_TEMPLATES = {
       yield new Promise<number>((resolve) => resolve(0))
 
       for (const saveYield of saveYieldsArray) {
-        saveYield.next()
+        await saveYield.next()
       }
       return new Promise<number>((resolve) => resolve(1))
     }
