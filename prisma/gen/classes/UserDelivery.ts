@@ -65,7 +65,7 @@ export class _UserDelivery implements PrismaClass {
 				return {}
 			}
 
-			return {
+			const query = {
 				user: Object.keys(param).includes('user')
 					? typeof param.user === 'boolean'
 						? true
@@ -74,6 +74,13 @@ export class _UserDelivery implements PrismaClass {
 						  }
 					: undefined,
 			}
+
+			// @ts-ignore
+			Object.keys(query).forEach(
+				(key) => query[key] === undefined && delete query[key],
+			)
+
+			return query
 		}
 	}
 

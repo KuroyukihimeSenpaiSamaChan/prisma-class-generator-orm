@@ -152,7 +152,7 @@ export class _User implements PrismaClass {
 				return {}
 			}
 
-			return {
+			const query = {
 				access_token: Object.keys(param).includes('access_token')
 					? typeof param.access_token === 'boolean'
 						? true
@@ -225,6 +225,13 @@ export class _User implements PrismaClass {
 						  }
 					: undefined,
 			}
+
+			// @ts-ignore
+			Object.keys(query).forEach(
+				(key) => query[key] === undefined && delete query[key],
+			)
+
+			return query
 		}
 	}
 

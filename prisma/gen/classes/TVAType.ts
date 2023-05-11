@@ -77,7 +77,7 @@ export class _TVAType implements PrismaClass {
 				return {}
 			}
 
-			return {
+			const query = {
 				products: Object.keys(param).includes('products')
 					? typeof param.products === 'boolean'
 						? true
@@ -95,6 +95,13 @@ export class _TVAType implements PrismaClass {
 						  }
 					: undefined,
 			}
+
+			// @ts-ignore
+			Object.keys(query).forEach(
+				(key) => query[key] === undefined && delete query[key],
+			)
+
+			return query
 		}
 	}
 

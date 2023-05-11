@@ -69,7 +69,7 @@ export class _Expedition implements PrismaClass {
 				return {}
 			}
 
-			return {
+			const query = {
 				sub_orders: Object.keys(param).includes('sub_orders')
 					? typeof param.sub_orders === 'boolean'
 						? true
@@ -80,6 +80,13 @@ export class _Expedition implements PrismaClass {
 						  }
 					: undefined,
 			}
+
+			// @ts-ignore
+			Object.keys(query).forEach(
+				(key) => query[key] === undefined && delete query[key],
+			)
+
+			return query
 		}
 	}
 

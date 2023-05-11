@@ -243,7 +243,7 @@ export class _Product implements PrismaClass {
 				return {}
 			}
 
-			return {
+			const query = {
 				basketProducts: Object.keys(param).includes('basketProducts')
 					? typeof param.basketProducts === 'boolean'
 						? true
@@ -331,6 +331,13 @@ export class _Product implements PrismaClass {
 						  }
 					: undefined,
 			}
+
+			// @ts-ignore
+			Object.keys(query).forEach(
+				(key) => query[key] === undefined && delete query[key],
+			)
+
+			return query
 		}
 	}
 

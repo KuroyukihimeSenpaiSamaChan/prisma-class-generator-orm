@@ -25,9 +25,14 @@ static getIncludes(
       return {}
     }
 
-    return {
+    const query = {
       #!{INCLUDE_FILTER}
     }
+
+    // @ts-ignore
+    Object.keys(query).forEach(key => query[key] === undefined && delete query[key])
+
+    return query
   }
 }
 `;

@@ -77,7 +77,7 @@ export class _CartProduct implements PrismaClass {
 				return {}
 			}
 
-			return {
+			const query = {
 				basket: Object.keys(param).includes('basket')
 					? typeof param.basket === 'boolean'
 						? true
@@ -93,6 +93,13 @@ export class _CartProduct implements PrismaClass {
 						  }
 					: undefined,
 			}
+
+			// @ts-ignore
+			Object.keys(query).forEach(
+				(key) => query[key] === undefined && delete query[key],
+			)
+
+			return query
 		}
 	}
 
