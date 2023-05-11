@@ -321,15 +321,19 @@ export class _Order implements PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		const sub_ordersYield = this.sub_orders.saveToTransaction(tx)
 		await sub_ordersYield.next()
 		saveYieldsArray.push(sub_ordersYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`order going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`order coming back`)
 
 		if (this._id === -1) {
 			this._id = (

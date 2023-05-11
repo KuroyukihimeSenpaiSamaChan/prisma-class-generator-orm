@@ -979,19 +979,23 @@ export class _Product implements PrismaClass {
 		}
 
 		// Relations toMany
-		const basketProductsYield = this.basketProducts!.saveToTransaction(tx)
+		const basketProductsYield = this.basketProducts.saveToTransaction(tx)
 		await basketProductsYield.next()
 		saveYieldsArray.push(basketProductsYield)
 
-		const subOrdersYield = this.subOrders!.saveToTransaction(tx)
+		const subOrdersYield = this.subOrders.saveToTransaction(tx)
 		await subOrdersYield.next()
 		saveYieldsArray.push(subOrdersYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`product going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`product coming back`)
 
 		const product_categoriesConnections: Prisma.Enumerable<Prisma.ProductCategoryWhereUniqueInput> =
 			[]
@@ -1003,7 +1007,7 @@ export class _Product implements PrismaClass {
 		const product_categoriesDisconnections: Prisma.Enumerable<Prisma.ProductCategoryWhereUniqueInput> =
 			[]
 		for (const relation of this.product_categories.toRemoveRelations) {
-			product_categoriesConnections.push({
+			product_categoriesDisconnections.push({
 				id: relation.primaryKey,
 			})
 		}
@@ -1018,7 +1022,7 @@ export class _Product implements PrismaClass {
 		const galleryDisconnections: Prisma.Enumerable<Prisma.MediaWhereUniqueInput> =
 			[]
 		for (const relation of this.gallery.toRemoveRelations) {
-			galleryConnections.push({
+			galleryDisconnections.push({
 				id: relation.primaryKey,
 			})
 		}

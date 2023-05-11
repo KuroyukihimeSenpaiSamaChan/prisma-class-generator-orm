@@ -238,9 +238,13 @@ export class _Role implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`role going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`role coming back`)
 
 		const usersConnections: Prisma.Enumerable<Prisma.UserWhereUniqueInput> =
 			[]
@@ -252,7 +256,7 @@ export class _Role implements PrismaClass {
 		const usersDisconnections: Prisma.Enumerable<Prisma.UserWhereUniqueInput> =
 			[]
 		for (const relation of this.users.toRemoveRelations) {
-			usersConnections.push({
+			usersDisconnections.push({
 				id: relation.primaryKey,
 			})
 		}

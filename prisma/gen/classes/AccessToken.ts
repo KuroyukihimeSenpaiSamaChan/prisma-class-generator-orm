@@ -277,9 +277,13 @@ export class _AccessToken implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`accessToken going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`accessToken coming back`)
 
 		if (this._id === -1) {
 			this._id = (

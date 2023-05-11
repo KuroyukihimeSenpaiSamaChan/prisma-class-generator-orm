@@ -270,9 +270,13 @@ export class _UserDelete implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`userDelete going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`userDelete coming back`)
 
 		if (this._id === -1) {
 			this._id = (

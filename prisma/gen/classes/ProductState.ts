@@ -242,15 +242,19 @@ export class _ProductState implements PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const productsYield = this.products!.saveToTransaction(tx)
+		const productsYield = this.products.saveToTransaction(tx)
 		await productsYield.next()
 		saveYieldsArray.push(productsYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`productState going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`productState coming back`)
 
 		if (this._id === -1) {
 			this._id = (

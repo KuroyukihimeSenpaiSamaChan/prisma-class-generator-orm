@@ -264,9 +264,13 @@ export class _ProductCategory implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`productCategory going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`productCategory coming back`)
 
 		const productsConnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
 			[]
@@ -278,7 +282,7 @@ export class _ProductCategory implements PrismaClass {
 		const productsDisconnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
 			[]
 		for (const relation of this.products.toRemoveRelations) {
-			productsConnections.push({
+			productsDisconnections.push({
 				id: relation.primaryKey,
 			})
 		}

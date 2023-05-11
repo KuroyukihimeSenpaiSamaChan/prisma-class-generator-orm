@@ -318,9 +318,13 @@ export class _CartProduct implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`cartProduct going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`cartProduct coming back`)
 
 		if (this._id === -1) {
 			this._id = (

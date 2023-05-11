@@ -658,43 +658,47 @@ export class _User implements PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const access_tokenYield = this.access_token!.saveToTransaction(tx)
+		const access_tokenYield = this.access_token.saveToTransaction(tx)
 		await access_tokenYield.next()
 		saveYieldsArray.push(access_tokenYield)
 
-		const mediaYield = this.media!.saveToTransaction(tx)
+		const mediaYield = this.media.saveToTransaction(tx)
 		await mediaYield.next()
 		saveYieldsArray.push(mediaYield)
 
-		const productYield = this.product!.saveToTransaction(tx)
+		const productYield = this.product.saveToTransaction(tx)
 		await productYield.next()
 		saveYieldsArray.push(productYield)
 
-		const sub_orderYield = this.sub_order!.saveToTransaction(tx)
+		const sub_orderYield = this.sub_order.saveToTransaction(tx)
 		await sub_orderYield.next()
 		saveYieldsArray.push(sub_orderYield)
 
-		const user_billingYield = this.user_billing!.saveToTransaction(tx)
+		const user_billingYield = this.user_billing.saveToTransaction(tx)
 		await user_billingYield.next()
 		saveYieldsArray.push(user_billingYield)
 
-		const user_deleteYield = this.user_delete!.saveToTransaction(tx)
+		const user_deleteYield = this.user_delete.saveToTransaction(tx)
 		await user_deleteYield.next()
 		saveYieldsArray.push(user_deleteYield)
 
-		const user_deliveryYield = this.user_delivery!.saveToTransaction(tx)
+		const user_deliveryYield = this.user_delivery.saveToTransaction(tx)
 		await user_deliveryYield.next()
 		saveYieldsArray.push(user_deliveryYield)
 
-		const basketsYield = this.baskets!.saveToTransaction(tx)
+		const basketsYield = this.baskets.saveToTransaction(tx)
 		await basketsYield.next()
 		saveYieldsArray.push(basketsYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`user going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`user coming back`)
 
 		const rolesConnections: Prisma.Enumerable<Prisma.RoleWhereUniqueInput> =
 			[]
@@ -706,7 +710,7 @@ export class _User implements PrismaClass {
 		const rolesDisconnections: Prisma.Enumerable<Prisma.RoleWhereUniqueInput> =
 			[]
 		for (const relation of this.roles.toRemoveRelations) {
-			rolesConnections.push({
+			rolesDisconnections.push({
 				id: relation.primaryKey,
 			})
 		}

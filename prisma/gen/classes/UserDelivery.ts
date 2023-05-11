@@ -327,9 +327,13 @@ export class _UserDelivery implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`userDelivery going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`userDelivery coming back`)
 
 		if (this._id === -1) {
 			this._id = (

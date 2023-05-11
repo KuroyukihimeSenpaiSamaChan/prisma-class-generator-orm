@@ -64,9 +64,13 @@ async *saveToTransaction(
 
   yield new Promise<number>((resolve) => resolve(0))
 
+  console.log(\`#!{P_NAME} going deep\`)
+
   for (const saveYield of saveYieldsArray) {
     await saveYield.next()
   }
+
+  console.log(\`#!{P_NAME} coming back\`)
   
   #!{CONNECT_GEN}
 

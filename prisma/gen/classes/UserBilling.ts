@@ -327,9 +327,13 @@ export class _UserBilling implements PrismaClass {
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`userBilling going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`userBilling coming back`)
 
 		if (this._id === -1) {
 			this._id = (

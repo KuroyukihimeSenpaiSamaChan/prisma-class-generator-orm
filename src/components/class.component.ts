@@ -223,7 +223,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}
 				`
-				toMany += `const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+				toMany += `const ${_field.name}Yield = this.${_field.name}.saveToTransaction(tx)
 				await ${_field.name}Yield.next()
 				saveYieldsArray.push(${_field.name}Yield)
 				
@@ -252,7 +252,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				`
 				connectGenerate += `const ${_field.name}Disconnections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
 				for(const relation of this.${_field.name}.toRemoveRelations){
-					${_field.name}Connections.push({
+					${_field.name}Disconnections.push({
 						id: relation.primaryKey,
 					})
 				}

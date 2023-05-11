@@ -378,15 +378,19 @@ export class _Media implements PrismaClass {
 		}
 
 		// Relations toMany
-		const product_imageYield = this.product_image!.saveToTransaction(tx)
+		const product_imageYield = this.product_image.saveToTransaction(tx)
 		await product_imageYield.next()
 		saveYieldsArray.push(product_imageYield)
 
 		yield new Promise<number>((resolve) => resolve(0))
 
+		console.log(`media going deep`)
+
 		for (const saveYield of saveYieldsArray) {
 			await saveYield.next()
 		}
+
+		console.log(`media coming back`)
 
 		const product_galleryConnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
 			[]
@@ -398,7 +402,7 @@ export class _Media implements PrismaClass {
 		const product_galleryDisconnections: Prisma.Enumerable<Prisma.ProductWhereUniqueInput> =
 			[]
 		for (const relation of this.product_gallery.toRemoveRelations) {
-			product_galleryConnections.push({
+			product_galleryDisconnections.push({
 				id: relation.primaryKey,
 			})
 		}
