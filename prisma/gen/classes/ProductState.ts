@@ -102,6 +102,9 @@ export class _ProductState implements PrismaClass {
 		this._state = value
 		this._isSaved = false
 	}
+	get state(): string {
+		return this._state
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {

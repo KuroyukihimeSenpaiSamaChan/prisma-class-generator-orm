@@ -136,6 +136,9 @@ export class _CartProduct implements PrismaClass {
 		this._quantity = value
 		this._isSaved = false
 	}
+	get quantity(): number {
+		return this._quantity
+	}
 
 	private _basket: _Cart
 	get basket(): _Cart {

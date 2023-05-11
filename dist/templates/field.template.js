@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FIELD_TO_MANY_TEMPLATE = exports.FIELD_TO_ONE_TEMPLATE = exports.FIELD_ID_TEMPLATE = exports.FIELD_TEMPLATE = void 0;
+exports.FIELD_TO_MANY_TEMPLATE = exports.FIELD_TO_ONE_TEMPLATE = exports.FIELD_ID_TEMPLATE = exports.FIELD_TEMPLATE_GETTER = exports.FIELD_TEMPLATE = void 0;
 exports.FIELD_TEMPLATE = `	#!{DECORATORS}
 	private _#!{NAME}: #!{TYPE} #!{DEFAULT}
 	set #!{NAME}(value: #!{TYPE}) {
@@ -8,6 +8,9 @@ exports.FIELD_TEMPLATE = `	#!{DECORATORS}
 		this._isSaved = false
 	}
 `;
+exports.FIELD_TEMPLATE_GETTER = `get #!{NAME}(): #!{TYPE}{
+	return this._#!{NAME}
+}`;
 exports.FIELD_ID_TEMPLATE = ` #!{DECORATORS}
 	private _#!{NAME}: #!{TYPE} = -1
 	get #!{NAME}(): #!{TYPE} {

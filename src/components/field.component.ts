@@ -1,6 +1,6 @@
 import {
 	FIELD_ID_TEMPLATE,
-	FIELD_TEMPLATE, FIELD_TO_MANY_TEMPLATE, FIELD_TO_ONE_TEMPLATE
+	FIELD_TEMPLATE, FIELD_TEMPLATE_GETTER, FIELD_TO_MANY_TEMPLATE, FIELD_TO_ONE_TEMPLATE
 } from '../templates/field.template'
 import { Echoable } from '../interfaces/echoable'
 import { BaseComponent } from './base.component'
@@ -53,6 +53,9 @@ export class FieldComponent extends BaseComponent implements Echoable {
 		if (!this.relation) {
 			if (this.nullable) type += ' | null'
 			template = FIELD_TEMPLATE
+			if (!this.privateFromRelation) {
+				template += FIELD_TEMPLATE_GETTER
+			}
 		} else {
 			if (!isRelationMany(this.relation)) {
 				if (this.relation.hasOne === this) {

@@ -236,11 +236,17 @@ export class _SubOrder implements PrismaClass {
 		this._product_price = value
 		this._isSaved = false
 	}
+	get product_price(): number {
+		return this._product_price
+	}
 
 	private _quantity: number
 	set quantity(value: number) {
 		this._quantity = value
 		this._isSaved = false
+	}
+	get quantity(): number {
+		return this._quantity
 	}
 
 	private _tva_id: ForeignKey = 1

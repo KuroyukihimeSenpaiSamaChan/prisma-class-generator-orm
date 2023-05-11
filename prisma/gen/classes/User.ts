@@ -256,12 +256,17 @@ export class _User implements PrismaClass {
 		this._user_pass = value
 		this._isSaved = false
 	}
-
+	get user_pass(): string {
+		return this._user_pass
+	}
 	// UNIQUE
 	private _user_email: string
 	set user_email(value: string) {
 		this._user_email = value
 		this._isSaved = false
+	}
+	get user_email(): string {
+		return this._user_email
 	}
 
 	private _user_registered: boolean = false
@@ -269,11 +274,17 @@ export class _User implements PrismaClass {
 		this._user_registered = value
 		this._isSaved = false
 	}
+	get user_registered(): boolean {
+		return this._user_registered
+	}
 
 	private _firstname: string
 	set firstname(value: string) {
 		this._firstname = value
 		this._isSaved = false
+	}
+	get firstname(): string {
+		return this._firstname
 	}
 
 	private _lastname: string
@@ -281,11 +292,17 @@ export class _User implements PrismaClass {
 		this._lastname = value
 		this._isSaved = false
 	}
+	get lastname(): string {
+		return this._lastname
+	}
 
 	private _birthdate: number
 	set birthdate(value: number) {
 		this._birthdate = value
 		this._isSaved = false
+	}
+	get birthdate(): number {
+		return this._birthdate
 	}
 
 	private _token: string
@@ -293,11 +310,17 @@ export class _User implements PrismaClass {
 		this._token = value
 		this._isSaved = false
 	}
+	get token(): string {
+		return this._token
+	}
 
 	private _deleting: number | null
 	set deleting(value: number | null) {
 		this._deleting = value
 		this._isSaved = false
+	}
+	get deleting(): number | null {
+		return this._deleting
 	}
 
 	private _access_token: RelationMany<_AccessToken>

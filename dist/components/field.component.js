@@ -43,6 +43,9 @@ class FieldComponent extends base_component_1.BaseComponent {
             if (this.nullable)
                 type += ' | null';
             template = field_template_1.FIELD_TEMPLATE;
+            if (!this.privateFromRelation) {
+                template += field_template_1.FIELD_TEMPLATE_GETTER;
+            }
         }
         else {
             if (!(0, convertor_1.isRelationMany)(this.relation)) {

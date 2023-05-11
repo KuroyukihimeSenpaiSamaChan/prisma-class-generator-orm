@@ -102,6 +102,9 @@ export class _Role implements PrismaClass {
 		this._label = value
 		this._isSaved = false
 	}
+	get label(): string {
+		return this._label
+	}
 
 	private _users: RelationMany<_User>
 	public get users(): RelationMany<_User> {

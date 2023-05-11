@@ -380,11 +380,17 @@ export class _Product implements PrismaClass {
 		this._product_name = value
 		this._isSaved = false
 	}
+	get product_name(): string {
+		return this._product_name
+	}
 
 	private _vendor_sku: string
 	set vendor_sku(value: string) {
 		this._vendor_sku = value
 		this._isSaved = false
+	}
+	get vendor_sku(): string {
+		return this._vendor_sku
 	}
 
 	private _product_sku: string
@@ -392,11 +398,17 @@ export class _Product implements PrismaClass {
 		this._product_sku = value
 		this._isSaved = false
 	}
+	get product_sku(): string {
+		return this._product_sku
+	}
 
 	private _price: number
 	set price(value: number) {
 		this._price = value
 		this._isSaved = false
+	}
+	get price(): number {
+		return this._price
 	}
 
 	private _price_promo: number
@@ -404,11 +416,17 @@ export class _Product implements PrismaClass {
 		this._price_promo = value
 		this._isSaved = false
 	}
+	get price_promo(): number {
+		return this._price_promo
+	}
 
 	private _description: string
 	set description(value: string) {
 		this._description = value
 		this._isSaved = false
+	}
+	get description(): string {
+		return this._description
 	}
 
 	private _additional_description: string | null
@@ -416,17 +434,26 @@ export class _Product implements PrismaClass {
 		this._additional_description = value
 		this._isSaved = false
 	}
+	get additional_description(): string | null {
+		return this._additional_description
+	}
 
 	private _backorder: boolean
 	set backorder(value: boolean) {
 		this._backorder = value
 		this._isSaved = false
 	}
+	get backorder(): boolean {
+		return this._backorder
+	}
 
 	private _linked_products: string
 	set linked_products(value: string) {
 		this._linked_products = value
 		this._isSaved = false
+	}
+	get linked_products(): string {
+		return this._linked_products
 	}
 
 	private _product_image: ForeignKey
@@ -440,11 +467,17 @@ export class _Product implements PrismaClass {
 		this._product_keywords = value
 		this._isSaved = false
 	}
+	get product_keywords(): string {
+		return this._product_keywords
+	}
 
 	private _creation_date: number
 	set creation_date(value: number) {
 		this._creation_date = value
 		this._isSaved = false
+	}
+	get creation_date(): number {
+		return this._creation_date
 	}
 
 	private _modification_date: number
@@ -452,11 +485,17 @@ export class _Product implements PrismaClass {
 		this._modification_date = value
 		this._isSaved = false
 	}
+	get modification_date(): number {
+		return this._modification_date
+	}
 
 	private _has_tva: boolean
 	set has_tva(value: boolean) {
 		this._has_tva = value
 		this._isSaved = false
+	}
+	get has_tva(): boolean {
+		return this._has_tva
 	}
 
 	private _visibility: ForeignKey = 1
@@ -476,11 +515,17 @@ export class _Product implements PrismaClass {
 		this._conditioningValue = value
 		this._isSaved = false
 	}
+	get conditioningValue(): string {
+		return this._conditioningValue
+	}
 
 	private _dimensions: string = '0x0x0'
 	set dimensions(value: string) {
 		this._dimensions = value
 		this._isSaved = false
+	}
+	get dimensions(): string {
+		return this._dimensions
 	}
 
 	private _marque: string = ''
@@ -488,11 +533,17 @@ export class _Product implements PrismaClass {
 		this._marque = value
 		this._isSaved = false
 	}
+	get marque(): string {
+		return this._marque
+	}
 
 	private _slug: string
 	set slug(value: string) {
 		this._slug = value
 		this._isSaved = false
+	}
+	get slug(): string {
+		return this._slug
 	}
 
 	private _state_description: string = ''
@@ -500,17 +551,26 @@ export class _Product implements PrismaClass {
 		this._state_description = value
 		this._isSaved = false
 	}
+	get state_description(): string {
+		return this._state_description
+	}
 
 	private _quantity: number = 0
 	set quantity(value: number) {
 		this._quantity = value
 		this._isSaved = false
 	}
+	get quantity(): number {
+		return this._quantity
+	}
 
 	private _weight: number = 0
 	set weight(value: number) {
 		this._weight = value
 		this._isSaved = false
+	}
+	get weight(): number {
+		return this._weight
 	}
 
 	private _basketProducts: RelationMany<_CartProduct>

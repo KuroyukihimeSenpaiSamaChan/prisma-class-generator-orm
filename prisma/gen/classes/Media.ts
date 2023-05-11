@@ -139,17 +139,26 @@ export class _Media implements PrismaClass {
 		this._url = value
 		this._isSaved = false
 	}
+	get url(): string {
+		return this._url
+	}
 
 	private _creation_date: number
 	set creation_date(value: number) {
 		this._creation_date = value
 		this._isSaved = false
 	}
+	get creation_date(): number {
+		return this._creation_date
+	}
 
 	private _modification_date: number
 	set modification_date(value: number) {
 		this._modification_date = value
 		this._isSaved = false
+	}
+	get modification_date(): number {
+		return this._modification_date
 	}
 
 	private _user_id: ForeignKey
@@ -163,11 +172,17 @@ export class _Media implements PrismaClass {
 		this._description = value
 		this._isSaved = false
 	}
+	get description(): string {
+		return this._description
+	}
 
 	private _name: string
 	set name(value: string) {
 		this._name = value
 		this._isSaved = false
+	}
+	get name(): string {
+		return this._name
 	}
 
 	private _user: _User

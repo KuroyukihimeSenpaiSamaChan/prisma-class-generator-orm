@@ -106,17 +106,26 @@ export class _UserDelete implements PrismaClass {
 		this._token = value
 		this._isSaved = false
 	}
+	get token(): string {
+		return this._token
+	}
 
 	private _date: number
 	set date(value: number) {
 		this._date = value
 		this._isSaved = false
 	}
+	get date(): number {
+		return this._date
+	}
 
 	private _validated: boolean = false
 	set validated(value: boolean) {
 		this._validated = value
 		this._isSaved = false
+	}
+	get validated(): boolean {
+		return this._validated
 	}
 
 	private _user: _User

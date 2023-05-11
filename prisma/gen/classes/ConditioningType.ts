@@ -102,6 +102,9 @@ export class _ConditioningType implements PrismaClass {
 		this._label = value
 		this._isSaved = false
 	}
+	get label(): string {
+		return this._label
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {

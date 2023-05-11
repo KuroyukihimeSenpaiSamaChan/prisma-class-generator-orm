@@ -106,17 +106,26 @@ export class _AccessToken implements PrismaClass {
 		this._token = value
 		this._isSaved = false
 	}
+	get token(): string {
+		return this._token
+	}
 
 	private _created_at: number | null
 	set created_at(value: number | null) {
 		this._created_at = value
 		this._isSaved = false
 	}
+	get created_at(): number | null {
+		return this._created_at
+	}
 
 	private _expires_at: number | null
 	set expires_at(value: number | null) {
 		this._expires_at = value
 		this._isSaved = false
+	}
+	get expires_at(): number | null {
+		return this._expires_at
 	}
 
 	private _user: _User

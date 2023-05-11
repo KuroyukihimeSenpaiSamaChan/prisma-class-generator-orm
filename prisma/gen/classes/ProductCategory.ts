@@ -103,11 +103,17 @@ export class _ProductCategory implements PrismaClass {
 		this._category_name = value
 		this._isSaved = false
 	}
+	get category_name(): string {
+		return this._category_name
+	}
 
 	private _category_slug: string
 	set category_slug(value: string) {
 		this._category_slug = value
 		this._isSaved = false
+	}
+	get category_slug(): string {
+		return this._category_slug
 	}
 
 	private _products: RelationMany<_Product>

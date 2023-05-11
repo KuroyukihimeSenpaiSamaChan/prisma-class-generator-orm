@@ -102,6 +102,9 @@ export class _ProductVisibility implements PrismaClass {
 		this._visibility = value
 		this._isSaved = false
 	}
+	get visibility(): string {
+		return this._visibility
+	}
 
 	private _products: RelationMany<_Product>
 	public get products(): RelationMany<_Product> {

@@ -124,11 +124,17 @@ export class _Cart implements PrismaClass {
 		this._creation_date = value
 		this._isSaved = false
 	}
+	get creation_date(): number {
+		return this._creation_date
+	}
 
 	private _modification_date: number
 	set modification_date(value: number) {
 		this._modification_date = value
 		this._isSaved = false
+	}
+	get modification_date(): number {
+		return this._modification_date
 	}
 
 	private _user: _User

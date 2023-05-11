@@ -122,11 +122,17 @@ export class _TVAType implements PrismaClass {
 		this._slug = value
 		this._isSaved = false
 	}
+	get slug(): string {
+		return this._slug
+	}
 
 	private _amount: number = 0
 	set amount(value: number) {
 		this._amount = value
 		this._isSaved = false
+	}
+	get amount(): number {
+		return this._amount
 	}
 
 	private _products: RelationMany<_Product>

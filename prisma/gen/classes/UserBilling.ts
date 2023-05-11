@@ -111,11 +111,17 @@ export class _UserBilling implements PrismaClass {
 		this._address = value
 		this._isSaved = false
 	}
+	get address(): string {
+		return this._address
+	}
 
 	private _additional_address: string | null
 	set additional_address(value: string | null) {
 		this._additional_address = value
 		this._isSaved = false
+	}
+	get additional_address(): string | null {
+		return this._additional_address
 	}
 
 	private _zipcode: string
@@ -123,11 +129,17 @@ export class _UserBilling implements PrismaClass {
 		this._zipcode = value
 		this._isSaved = false
 	}
+	get zipcode(): string {
+		return this._zipcode
+	}
 
 	private _city: string
 	set city(value: string) {
 		this._city = value
 		this._isSaved = false
+	}
+	get city(): string {
+		return this._city
 	}
 
 	private _country: string
@@ -135,11 +147,17 @@ export class _UserBilling implements PrismaClass {
 		this._country = value
 		this._isSaved = false
 	}
+	get country(): string {
+		return this._country
+	}
 
 	private _region: string
 	set region(value: string) {
 		this._region = value
 		this._isSaved = false
+	}
+	get region(): string {
+		return this._region
 	}
 
 	private _phone_number: string
@@ -147,11 +165,17 @@ export class _UserBilling implements PrismaClass {
 		this._phone_number = value
 		this._isSaved = false
 	}
+	get phone_number(): string {
+		return this._phone_number
+	}
 
 	private _company_name: string | null
 	set company_name(value: string | null) {
 		this._company_name = value
 		this._isSaved = false
+	}
+	get company_name(): string | null {
+		return this._company_name
 	}
 
 	private _user: _User

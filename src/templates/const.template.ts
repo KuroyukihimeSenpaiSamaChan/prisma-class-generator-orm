@@ -7,6 +7,7 @@ export const CONST_TEMPLATES = {
     implements PrismaClass, Iterable<R>
   {
     private _isSaved = false
+    get isSaved(): boolean { return this._isSaved }
 
     private _toRemoveRelations: R[] = []
     constructor(private relations: R[] = []) { }

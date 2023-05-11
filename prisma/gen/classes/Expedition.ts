@@ -107,11 +107,17 @@ export class _Expedition implements PrismaClass {
 		this._name = value
 		this._isSaved = false
 	}
+	get name(): number {
+		return this._name
+	}
 
 	private _slug: number
 	set slug(value: number) {
 		this._slug = value
 		this._isSaved = false
+	}
+	get slug(): number {
+		return this._slug
 	}
 
 	private _max_weight: number
@@ -119,11 +125,17 @@ export class _Expedition implements PrismaClass {
 		this._max_weight = value
 		this._isSaved = false
 	}
+	get max_weight(): number {
+		return this._max_weight
+	}
 
 	private _price: number
 	set price(value: number) {
 		this._price = value
 		this._isSaved = false
+	}
+	get price(): number {
+		return this._price
 	}
 
 	private _sub_orders: RelationMany<_SubOrder>

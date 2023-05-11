@@ -100,11 +100,17 @@ export class _Order implements PrismaClass {
 		this._order_client_id = value
 		this._isSaved = false
 	}
+	get order_client_id(): number {
+		return this._order_client_id
+	}
 
 	private _creation_date: number
 	set creation_date(value: number) {
 		this._creation_date = value
 		this._isSaved = false
+	}
+	get creation_date(): number {
+		return this._creation_date
 	}
 
 	private _modification_date: number
@@ -112,11 +118,17 @@ export class _Order implements PrismaClass {
 		this._modification_date = value
 		this._isSaved = false
 	}
+	get modification_date(): number {
+		return this._modification_date
+	}
 
 	private _order_state: number
 	set order_state(value: number) {
 		this._order_state = value
 		this._isSaved = false
+	}
+	get order_state(): number {
+		return this._order_state
 	}
 
 	private _type: number
@@ -124,11 +136,17 @@ export class _Order implements PrismaClass {
 		this._type = value
 		this._isSaved = false
 	}
+	get type(): number {
+		return this._type
+	}
 
 	private _buyer_id: number
 	set buyer_id(value: number) {
 		this._buyer_id = value
 		this._isSaved = false
+	}
+	get buyer_id(): number {
+		return this._buyer_id
 	}
 
 	private _buyer_billing_id: number
@@ -136,11 +154,17 @@ export class _Order implements PrismaClass {
 		this._buyer_billing_id = value
 		this._isSaved = false
 	}
+	get buyer_billing_id(): number {
+		return this._buyer_billing_id
+	}
 
 	private _buyer_delivery_id: number
 	set buyer_delivery_id(value: number) {
 		this._buyer_delivery_id = value
 		this._isSaved = false
+	}
+	get buyer_delivery_id(): number {
+		return this._buyer_delivery_id
 	}
 
 	private _expedition_id: number
@@ -148,11 +172,17 @@ export class _Order implements PrismaClass {
 		this._expedition_id = value
 		this._isSaved = false
 	}
+	get expedition_id(): number {
+		return this._expedition_id
+	}
 
 	private _order_total: number
 	set order_total(value: number) {
 		this._order_total = value
 		this._isSaved = false
+	}
+	get order_total(): number {
+		return this._order_total
 	}
 
 	private _sub_orders: RelationMany<_SubOrder>
