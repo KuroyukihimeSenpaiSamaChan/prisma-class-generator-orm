@@ -71,6 +71,7 @@ export const CONST_TEMPLATES = {
 
       const relation = this.relations.splice(index, 1)[0]
       this._toRemoveRelations.push(relation)
+      this._isSaved = false
       return relation
     }
 
