@@ -12,6 +12,8 @@ exports.CONST_TEMPLATES = {
     private _isSaved = false
     get isSaved(): boolean { return this._isSaved }
 
+    get primaryKey(): number { return 0 }
+
     private _toRemoveRelations: R[] = []
     constructor(private relations: R[] = []) { 
       this._isSaved = true
@@ -47,16 +49,15 @@ exports.CONST_TEMPLATES = {
     push(value: R | R[]): void {
       if (Array.isArray(value)) {
         for (const val of value) {
-          if(this.findByPrimaryKey(val.primaryKey) !== null){
+          if(this.findByPrimaryKey(val.primaryKey) === null){
             this.relations.push(val)
             this._isSaved = false
           }
         }
-      } else {
-        if(this.findByPrimaryKey(value.primaryKey) !== null){
-          this.relations.push(value)
-          this._isSaved = false
-        }
+      }
+      else if(this.findByPrimaryKey(value.primaryKey) === null){
+        this.relations.push(value)
+        this._isSaved = false
       }
     }
 
@@ -181,12 +182,14 @@ exports.CONST_TEMPLATES = {
     PRISMA_CLASS: `import { PrismaModel } from "./prisma-model"
 
   export interface PrismaClass {
+    isSaved: boolean
+    primaryKey: number
+
     load(
       param?:
         | number
         | any,
     ): Promise<void>
-    isSaved: boolean
     save(): Promise<boolean>
     saveToTransaction(tx: Parameters<Parameters<typeof PrismaModel.prismaClient.$transaction>[0]>[0]): AsyncGenerator<number, number, unknown>
   }

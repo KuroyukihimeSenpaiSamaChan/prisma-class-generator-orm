@@ -27,6 +27,7 @@ class PrismaConvertor {
     static instance;
     _config;
     _dmmf;
+    test = false;
     _classesRelations;
     get dmmf() {
         return this._dmmf;
@@ -70,6 +71,7 @@ class PrismaConvertor {
         const relationTypes = (0, util_1.uniquify)(model.fields
             .filter((field) => field.relationName && model.name !== field.type)
             .map((v) => v.type));
+        this.test = className === 'CartProduct';
         const enums = model.fields.filter((field) => field.kind === 'enum');
         const fields = {};
         classComponent.fields = model.fields
@@ -89,6 +91,7 @@ class PrismaConvertor {
             extractRelationFields === true
                 ? []
                 : enums.map((field) => field.type.toString());
+        this.test = false;
         return classComponent;
     };
     getClasses = () => {

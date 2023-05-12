@@ -69,6 +69,8 @@ export class PrismaConvertor {
 	private _config: PrismaClassGeneratorConfig
 	private _dmmf: DMMF.Document
 
+	test = false
+
 	_classesRelations: {
 		[key: string]: FieldRelationNormal | FieldRelationMany
 	}
@@ -141,6 +143,8 @@ export class PrismaConvertor {
 				.map((v) => v.type),
 		)
 
+		this.test = className === 'CartProduct'
+		// this.test = className === 'Product'
 		const enums = model.fields.filter((field) => field.kind === 'enum')
 		const fields = {}
 		classComponent.fields = model.fields
@@ -162,6 +166,7 @@ export class PrismaConvertor {
 				? []
 				: enums.map((field) => field.type.toString())
 
+		this.test = false
 		return classComponent
 	}
 

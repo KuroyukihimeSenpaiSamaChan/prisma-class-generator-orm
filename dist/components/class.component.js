@@ -183,12 +183,13 @@ class ClassComponent extends base_component_1.BaseComponent {
             let manySaved = '';
             let checkToMany = '';
             let toMany = '';
+            let toManyRemove = '';
             for (const _field of this.fields.filter(elem => elem.relation && !(0, convertor_1.isRelationMany)(elem.relation) && elem.relation.hasMany === elem)) {
                 checkToMany += `if(this.${_field.name}.length > 0 && this.primaryKey === -1){
 					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}
 				`;
-                toMany += `const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+                toMany += `const ${_field.name}Yield = this.${_field.name}.saveToTransaction(tx)
 				await ${_field.name}Yield.next()
 				saveYieldsArray.push(${_field.name}Yield)
 				
@@ -203,13 +204,11 @@ class ClassComponent extends base_component_1.BaseComponent {
                 let toRelation;
                 if (!(0, convertor_1.isRelationMany)(_field.relation))
                     continue;
+                if (_field.relation.A === _field) {
+                    toRelation = _field.relation.B;
+                }
                 else {
-                    if (_field.relation.A === _field) {
-                        toRelation = _field.relation.B;
-                    }
-                    else {
-                        toRelation = _field.relation.A;
-                    }
+                    toRelation = _field.relation.A;
                 }
                 connectGenerate += `const ${_field.name}Connections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
 				for(const relation of this.${_field.name}){
@@ -243,6 +242,7 @@ class ClassComponent extends base_component_1.BaseComponent {
                 .replaceAll('#!{TO_MANY}', toMany)
                 .replaceAll('#!{ID}', primaryKey)
                 .replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
+                .replaceAll('#!{MANY_REMOVE}', toManyRemove)
                 .replaceAll('#!{CONNECT_GEN}', connectGenerate)
                 .replaceAll('#!{CONNECT_SAVE}', connectSave)
                 .replaceAll('#!{CONNECT_UPDATE}', connectUpdate)

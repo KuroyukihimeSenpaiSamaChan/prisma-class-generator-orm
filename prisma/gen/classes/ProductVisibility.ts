@@ -255,7 +255,7 @@ export class _ProductVisibility implements PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const productsYield = this.products!.saveToTransaction(tx)
+		const productsYield = this.products.saveToTransaction(tx)
 		await productsYield.next()
 		saveYieldsArray.push(productsYield)
 

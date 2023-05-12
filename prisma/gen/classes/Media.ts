@@ -422,7 +422,7 @@ export class _Media implements PrismaClass {
 		}
 
 		// Relations toMany
-		const product_imageYield = this.product_image!.saveToTransaction(tx)
+		const product_imageYield = this.product_image.saveToTransaction(tx)
 		await product_imageYield.next()
 		saveYieldsArray.push(product_imageYield)
 

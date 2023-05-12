@@ -28,6 +28,7 @@ export declare class PrismaConvertor {
     static instance: PrismaConvertor;
     private _config;
     private _dmmf;
+    test: boolean;
     _classesRelations: {
         [key: string]: FieldRelationNormal | FieldRelationMany;
     };

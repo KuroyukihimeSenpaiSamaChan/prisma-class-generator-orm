@@ -307,7 +307,7 @@ export class _Expedition implements PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		const sub_ordersYield = this.sub_orders.saveToTransaction(tx)
 		await sub_ordersYield.next()
 		saveYieldsArray.push(sub_ordersYield)
 

@@ -1155,11 +1155,11 @@ export class _Product implements PrismaClass {
 		}
 
 		// Relations toMany
-		const basketProductsYield = this.basketProducts!.saveToTransaction(tx)
+		const basketProductsYield = this.basketProducts.saveToTransaction(tx)
 		await basketProductsYield.next()
 		saveYieldsArray.push(basketProductsYield)
 
-		const subOrdersYield = this.subOrders!.saveToTransaction(tx)
+		const subOrdersYield = this.subOrders.saveToTransaction(tx)
 		await subOrdersYield.next()
 		saveYieldsArray.push(subOrdersYield)
 

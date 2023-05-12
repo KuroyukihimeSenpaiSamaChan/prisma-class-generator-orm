@@ -46,6 +46,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				toOne: '',
 				toMany: ''
 			}
+
 			let toJSONRelations = ''
 			let toJSON = ''
 			for (const _field of this.fields) {
@@ -203,12 +204,13 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 			let checkToMany = ''
 			let toMany = ''
+			let toManyRemove = ''
 			for (const _field of this.fields.filter(elem => elem.relation && !isRelationMany(elem.relation) && elem.relation.hasMany === elem)) {
 				checkToMany += `if(this.${_field.name}.length > 0 && this.primaryKey === -1){
 					throw new Error("Can't save toMany fields on new _${this.name}. Save it first, then add the toMany fields")
 				}
 				`
-				toMany += `const ${_field.name}Yield = this.${_field.name}!.saveToTransaction(tx)
+				toMany += `const ${_field.name}Yield = this.${_field.name}.saveToTransaction(tx)
 				await ${_field.name}Yield.next()
 				saveYieldsArray.push(${_field.name}Yield)
 				
@@ -216,6 +218,20 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 				manySaved += `areRelationsSaved = areRelationsSaved && this.${_field.name}.isSaved
 				`
+
+				// if (this.name !== 'Product') continue
+				// // Needed for typing
+				// if (isRelationMany(_field.relation)) continue
+				// const fieldRelation = _field.relation.hasOne
+				// console.log(fieldRelation)
+				// if (fieldRelation.nullable) {
+				// 	toManyRemove += `//for (const relation of this.${_field.name}.toRemoveRelations) {
+				// 		//relation.${fieldRelation}
+				// 	//}
+				// 	`
+				// } else {
+
+				// }
 			}
 
 			let connectGenerate = ''
@@ -224,12 +240,11 @@ export class ClassComponent extends BaseComponent implements Echoable {
 			for (const _field of this.fields.filter(elem => isRelationMany(elem.relation))) {
 				let toRelation: FieldComponent
 				if (!isRelationMany(_field.relation)) continue
-				else {
-					if (_field.relation.A === _field) {
-						toRelation = _field.relation.B
-					} else {
-						toRelation = _field.relation.A
-					}
+
+				if (_field.relation.A === _field) {
+					toRelation = _field.relation.B
+				} else {
+					toRelation = _field.relation.A
 				}
 				connectGenerate += `const ${_field.name}Connections: Prisma.Enumerable<Prisma.${_field.type.slice(0, -2)}WhereUniqueInput> = []
 				for(const relation of this.${_field.name}){
@@ -268,6 +283,7 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				.replaceAll('#!{TO_MANY}', toMany)
 				.replaceAll('#!{ID}', primaryKey)
 				.replaceAll('#!{P_NAME}', `${this.name.substring(0, 1).toLowerCase()}${this.name.substring(1)}`)
+				.replaceAll('#!{MANY_REMOVE}', toManyRemove)
 				.replaceAll('#!{CONNECT_GEN}', connectGenerate)
 				.replaceAll('#!{CONNECT_SAVE}', connectSave)
 				.replaceAll('#!{CONNECT_UPDATE}', connectUpdate)

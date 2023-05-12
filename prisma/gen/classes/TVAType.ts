@@ -309,11 +309,11 @@ export class _TVAType implements PrismaClass {
 		// Relations toOne
 
 		// Relations toMany
-		const productsYield = this.products!.saveToTransaction(tx)
+		const productsYield = this.products.saveToTransaction(tx)
 		await productsYield.next()
 		saveYieldsArray.push(productsYield)
 
-		const sub_ordersYield = this.sub_orders!.saveToTransaction(tx)
+		const sub_ordersYield = this.sub_orders.saveToTransaction(tx)
 		await sub_ordersYield.next()
 		saveYieldsArray.push(sub_ordersYield)
 

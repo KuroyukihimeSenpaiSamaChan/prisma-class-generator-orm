@@ -73,8 +73,10 @@ async *saveToTransaction(
 
   if(this._isSaved && areRelationsSaved){
     this._saving = false
-    return new Promise<number>((resolve) => resolve(this._#!{ID})) 
+    return new Promise<number>((resolve) => resolve(this._#!{ID}))
   }
+
+  #!{MANY_REMOVE}
   
   #!{CONNECT_GEN}
 

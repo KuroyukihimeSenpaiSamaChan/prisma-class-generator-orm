@@ -1,8 +1,10 @@
 import { PrismaModel } from './prisma-model'
 
 export interface PrismaClass {
-	load(param?: number | any): Promise<void>
 	isSaved: boolean
+	primaryKey: number
+
+	load(param?: number | any): Promise<void>
 	save(): Promise<boolean>
 	saveToTransaction(
 		tx: Parameters<
