@@ -86,30 +86,41 @@ export class ClassComponent extends BaseComponent implements Echoable {
 				}
 				// If it is a relation toOne
 				else if (!isRelationMany(_field.relation) && _field.relation.hasOne === _field) {
-					parameters.toOne = {
-						genericsDeclaration: parameters.toOne.genericsDeclaration + `
-						ForeignKey | undefined,`,
-						generics: parameters.toOne.generics + `${_field.name}Type extends ForeignKey | undefined = ForeignKey | undefined,
-						`,
-						type: parameters.toOne.type + ` & (${_field.name}Type extends ForeignKey ? {
-							${_field.relation.fromField}: ForeignKey,
-							${_field.name}?: ${_field.type} | _${_field.type}
-						} : {
-							${_field.relation.fromField}?: ForeignKey,
-							${_field.name}: ${_field.type} | _${_field.type}
-						})`
-					}
 					initialiazers.toOne += `
-					if (obj.${_field.name} !== undefined) {
+					if (obj.${_field.name}) {
 						if (obj.${_field.name} instanceof _${_field.type}) {
 							this.${_field.name} = obj.${_field.name}
 						} else {
 							this.${_field.name} = new _${_field.type}(obj.${_field.name})
 						}
-					} else if (obj.${_field.relation.fromField} !== undefined) {
+					} else if (obj.${_field.relation.fromField} !== undefined && obj.${_field.relation.fromField} !== null) {
 						this._${_field.relation.fromField} = obj.${_field.relation.fromField}
-					} else throw new Error("Invalid constructor.")
+					}
 					`
+					if (_field.nullable) {
+						parameters.normal = parameters.normal + `
+								${_field.relation.fromField}?: ForeignKey | null,
+								${_field.name}?: ${_field.type} | _${_field.type} | null
+							`
+						initialiazers.toOne += ` else {
+							this.${_field.name} = null
+							this._${_field.relation.fromField} = null
+						}`
+					} else {
+						parameters.toOne = {
+							genericsDeclaration: parameters.toOne.genericsDeclaration + `
+							ForeignKey | undefined,`,
+							generics: parameters.toOne.generics + `${_field.name}Type extends ForeignKey | undefined = ForeignKey | undefined,
+							`,
+							type: parameters.toOne.type + ` & (${_field.name}Type extends ForeignKey ? {
+								${_field.relation.fromField}: ForeignKey,
+								${_field.name}?: ${_field.type} | _${_field.type}
+							} : {
+								${_field.relation.fromField}?: ForeignKey,
+								${_field.name}: ${_field.type} | _${_field.type}
+							})`
+						}
+					}
 				}
 				// If it is a relation toMany
 				else {
@@ -218,20 +229,6 @@ export class ClassComponent extends BaseComponent implements Echoable {
 
 				manySaved += `areRelationsSaved = areRelationsSaved && this.${_field.name}.isSaved
 				`
-
-				// if (this.name !== 'Product') continue
-				// // Needed for typing
-				// if (isRelationMany(_field.relation)) continue
-				// const fieldRelation = _field.relation.hasOne
-				// console.log(fieldRelation)
-				// if (fieldRelation.nullable) {
-				// 	toManyRemove += `//for (const relation of this.${_field.name}.toRemoveRelations) {
-				// 		//relation.${fieldRelation}
-				// 	//}
-				// 	`
-				// } else {
-
-				// }
 			}
 
 			let connectGenerate = ''

@@ -50,6 +50,7 @@ export class FieldComponent extends BaseComponent implements Echoable {
 		let template = ''
 		let foreignKey = ''
 		let toOneNullable = ''
+		let toOneNullableGetter = ''
 		if (!this.relation) {
 			if (this.nullable) type += ' | null'
 			template = FIELD_TEMPLATE
@@ -62,6 +63,7 @@ export class FieldComponent extends BaseComponent implements Echoable {
 					template = FIELD_TO_ONE_TEMPLATE
 					foreignKey = this.relation.fromField[0]
 					toOneNullable = this.nullable ? '| null = null' : ''
+					toOneNullableGetter = this.nullable ? '| null' : ''
 				} else {
 					template = FIELD_TO_MANY_TEMPLATE
 					type = this.type.substring(0, this.type.length - 2)
@@ -78,6 +80,7 @@ export class FieldComponent extends BaseComponent implements Echoable {
 			.replaceAll('#!{DEFAULT}', defaultValue)
 			.replaceAll('#!{FOREIGNKEY}', foreignKey)
 			.replaceAll('#!{NULLABLE}', toOneNullable)
+			.replaceAll('#!{NULLABLE_GETTER}', toOneNullableGetter)
 	}
 
 	constructor(obj: {

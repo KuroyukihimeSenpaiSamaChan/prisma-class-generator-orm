@@ -22,15 +22,16 @@ exports.FIELD_ID_TEMPLATE = ` #!{DECORATORS}
 `;
 exports.FIELD_TO_ONE_TEMPLATE = `
 private _#!{NAME}: _#!{TYPE} #!{NULLABLE}
-get #!{NAME}(): _#!{TYPE} #!{NULLABLE} {
+get #!{NAME}(): _#!{TYPE} #!{NULLABLE_GETTER} {
 	return this._#!{NAME}
 }
-set #!{NAME}(value: _#!{TYPE}) {
+set #!{NAME}(value: _#!{TYPE} #!{NULLABLE_GETTER}) {
 	this._#!{NAME} = value
-	this._#!{FOREIGNKEY} = value.id
+	if(value !== null)
+		this._#!{FOREIGNKEY} = value.id
 	this._isSaved = false
 }
-get #!{FOREIGNKEY}(): ForeignKey {
+get #!{FOREIGNKEY}(): ForeignKey #!{NULLABLE_GETTER} {
 	if(!this._#!{NAME}){
 		return this._#!{FOREIGNKEY}
 	} else {

@@ -39,6 +39,7 @@ class FieldComponent extends base_component_1.BaseComponent {
         let template = '';
         let foreignKey = '';
         let toOneNullable = '';
+        let toOneNullableGetter = '';
         if (!this.relation) {
             if (this.nullable)
                 type += ' | null';
@@ -53,6 +54,7 @@ class FieldComponent extends base_component_1.BaseComponent {
                     template = field_template_1.FIELD_TO_ONE_TEMPLATE;
                     foreignKey = this.relation.fromField[0];
                     toOneNullable = this.nullable ? '| null = null' : '';
+                    toOneNullableGetter = this.nullable ? '| null' : '';
                 }
                 else {
                     template = field_template_1.FIELD_TO_MANY_TEMPLATE;
@@ -69,7 +71,8 @@ class FieldComponent extends base_component_1.BaseComponent {
             .replaceAll('#!{DECORATORS}', decorators)
             .replaceAll('#!{DEFAULT}', defaultValue)
             .replaceAll('#!{FOREIGNKEY}', foreignKey)
-            .replaceAll('#!{NULLABLE}', toOneNullable);
+            .replaceAll('#!{NULLABLE}', toOneNullable)
+            .replaceAll('#!{NULLABLE_GETTER}', toOneNullableGetter);
     };
     constructor(obj) {
         super(obj);
