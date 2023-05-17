@@ -34,7 +34,7 @@ export const CONST_TEMPLATES = {
 
     findByPrimaryKey(primaryKey: number): R | null {
       for(const relation of this.relations) {
-        if(primaryKey === relation.primaryKey) {
+        if(primaryKey !== -1 && primaryKey === relation.primaryKey) {
           return relation
         }
       }
