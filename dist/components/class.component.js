@@ -90,14 +90,14 @@ class ClassComponent extends base_component_1.BaseComponent {
 						this._${_field.relation.fromField} = obj.${_field.relation.fromField}
 					}
 					`;
-                    if (_field.nullable) {
+                    const fieldToId = this.fields.find(f => f.name === _field.relation.fromField[0]);
+                    if (_field.nullable || fieldToId.default !== undefined) {
                         parameters.normal = parameters.normal + `
 								${_field.relation.fromField}?: ForeignKey | null,
 								${_field.name}?: ${_field.type} | _${_field.type} | null
 							`;
                         initialiazers.toOne += ` else {
-							this.${_field.name} = null
-							this._${_field.relation.fromField} = null
+							this._${_field.relation.fromField} = ${fieldToId.default}
 						}`;
                     }
                     else {
